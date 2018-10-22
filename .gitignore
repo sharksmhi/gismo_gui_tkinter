@@ -1,0 +1,16 @@
+.idea
+.ipynb_checkpoints
+.spyproject
+.project
+.pydevproject
+
+**/__pycache__/* 
+
+*.pyc
+*.log
+*.prefs
+*.pkl
+
+log/*
+temp/*
+
