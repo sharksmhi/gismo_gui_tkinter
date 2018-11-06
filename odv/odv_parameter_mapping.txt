@@ -1,0 +1,5 @@
+SMHI	ODV
+STATN	Station
+odv_time_string	yyyy-mm-ddThh:mm:ss.sss
+LONGI	Longitude [degrees_east]
+LATIT	Latitude [degrees_north]

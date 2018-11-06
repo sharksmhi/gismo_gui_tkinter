@@ -10,6 +10,7 @@
 *.log
 *.prefs
 *.pkl
+*.ipynb
 
 log/*
 temp/*
