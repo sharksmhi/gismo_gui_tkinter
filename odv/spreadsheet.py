@@ -97,7 +97,7 @@ class SpreadsheetFile():
     #==========================================================================
     def get_odv_station_count(self, show_process_every=100000): 
         """
-        Created:    20180613    by Magnus
+        Created:    20180613
         Updated:    
         
         Returns the number of stations acording to odv. 

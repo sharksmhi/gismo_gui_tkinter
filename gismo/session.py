@@ -322,13 +322,23 @@ class GISMOsession(object):
 
     def get_mask_options(self, file_id, **kwargs):
         """
-        Created 20181005       
+        Created 20181005
 
         :param file_id:
         :param kwargs:
         :return: list of mask options
         """
         return self.data_manager.get_mask_options(file_id, **kwargs)
+
+    def get_save_data_options(self, file_id, **kwargs):
+        """
+        Created 20181106
+
+        :param file_id:
+        :param kwargs:
+        :return: list of mask options
+        """
+        return self.data_manager.get_save_data_options(file_id, **kwargs)
 
     def get_data(self, file_id, *args, **kwargs):
         """
@@ -390,7 +400,7 @@ class GISMOsession(object):
         # Check type of file and load
         if reload or not os.path.exists(data_file_path_pkl): 
             # Load original file 
-            self.data_manager.add_file(data_file_path=data_file_path,
+            self.data_manager.load_file(data_file_path=data_file_path,
                                        sampling_type=sampling_type,
                                        settings_file_path=data_file_path_settings,
                                        root_directory=self.root_directory,
@@ -405,7 +415,7 @@ class GISMOsession(object):
             #     return False
             
             # Load buffer pickle file
-            self.data_manager.add_file(sampling_type=sampling_type,
+            self.data_manager.load_file(sampling_type=sampling_type,
                                        load_pkl=self.save_pkl,
                                        pkl_file_path=data_file_path_pkl)
 
@@ -425,7 +435,7 @@ class GISMOsession(object):
         return gismo_object
 
     # ==========================================================================
-    def load_qc_object(self,
+    def old_load_qc_object(self,
                        local_config_directory=None,
                        source_config_directory=None):
         """
@@ -437,7 +447,7 @@ class GISMOsession(object):
                           source_config_directory=source_config_directory)
 
     # ==========================================================================
-    def update_qc_files(self, **kwargs):
+    def old_update_qc_files(self, **kwargs):
         """
         Created 20181001       
 
@@ -446,9 +456,19 @@ class GISMOsession(object):
         if not self.qc:
             raise GISMOException('No QC object loaded. Run load_qc_object and try again.')
         self.qc.copy_config_files(**kwargs)
-    
+
+    def save_file(self, file_id, **kwargs):
+        """
+        Created 20181106
+
+        :param file_id:
+        :param kwargs:
+        :return: None
+        """
+        self.data_manager.save_file(file_id, **kwargs)
+
     #==========================================================================
-    def save_file(self, 
+    def old_save_file(self,
                   file_path='', 
                   sampling_type='', 
                   file_id=None,

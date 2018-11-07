@@ -162,3 +162,11 @@ class GISMOExceptionInvalidTimeFormat(GISMOException):
     """
     code = ''
     message = ''
+
+# ==============================================================================
+class GISMOExceptionFileExcists(GISMOException):
+    """
+    Created     20181106
+    """
+    code = ''
+    message = ''

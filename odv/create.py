@@ -298,16 +298,16 @@ class CreateODVfilesBiotaEEA(CreateODVfilesBaseRow):
 
         self.df['_edmo_author'] = '545'
         self.df['_edmo_originator'] = '545'
-        self.df['_edmo_custodian'] = '545'
+        self.df['_edmo_custodian'] = '730' # 730=ICES
 
         self.df['_local_cdi_id'] = self.df.apply(get_local_cdi_id, axis=1)
 
         self.df['_dataset_name'] = self.df['_local_cdi_id']
         self.df['_dataset_id'] = self.df['_local_cdi_id']
-        self.df['_dataset_abs'] = 'Not Specified'
+        self.df['_dataset_abs'] = 'Measurement of toxic substances in biota' # 'Not Specified'
         self.df['_platform_type'] = '0'
         self.df['_dataset_access'] = 'LS'
-        self.df['_method'] = '999'
+        self.df['_method'] = 'CDIMTH02'
         self.df['_instrument'] = '999'
         self.df['_abstract'] = self.df['Species'].apply(lambda x: 'Swedish measurements of chemicals in {}'.format(x))
 

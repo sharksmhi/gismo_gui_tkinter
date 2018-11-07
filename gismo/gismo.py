@@ -43,7 +43,7 @@ class GISMOdataManager(object):
         if file_id not in self.objects:
             raise GISMOExceptionInvalidFileId(file_id)
 
-    def add_file(self, sampling_type='', **kwargs):
+    def load_file(self, sampling_type='', **kwargs):
 
         if sampling_type not in self.sampling_type_list:
             raise GISMOExceptionInvalidSamplingType
@@ -121,6 +121,17 @@ class GISMOdataManager(object):
         self._check_file_id(file_id)
         return self.objects.get(file_id).mask_data_options
 
+    def get_save_data_options(self, file_id, **kwargs):
+        """
+
+        :param file_id:
+        :param kwargs:
+        :return:
+        """
+        self._check_file_id(file_id)
+        return self.objects.get(file_id).save_data_options
+
+
     def get_match_data(self, main_file_id, match_file_id, *args, **kwargs):
         self._check_file_id(main_file_id)
         self._check_file_id(match_file_id)
@@ -143,21 +154,21 @@ class GISMOdataManager(object):
         :return:
         """
         self._check_file_id(file_id)
-        gismo_object = self.objects.get(file_id)
 
         # Check if valid options
         for key in kwargs.get('filter_options', {}):
-            if key not in gismo_object.filter_data_options:
+            if key not in self.get_filter_options(file_id):
                 raise GISMOExceptionInvalidOption('{} is not a valid filter option'.format(key))
 
         for key in kwargs.get('flag_options', {}):
-            if key not in gismo_object.flag_data_options:
+            if key not in self.get_flag_options(file_id):
                 raise GISMOExceptionInvalidOption('{} is not a valid flag option'.format(key))
 
         for key in kwargs.get('mask_options', {}):
-            if key not in gismo_object.mask_data_options:
+            if key not in self.get_mask_options(file_id):
                 raise GISMOExceptionInvalidOption('{} is not a valid mask option'.format(key))
 
+        gismo_object = self.objects.get(file_id)
         return gismo_object.get_data(*args, **kwargs)
 
     def get_parameter_list(self, file_id, **kwargs):
@@ -171,6 +182,12 @@ class GISMOdataManager(object):
         self.match_objects.setdefault(main_file_id, {})
         self.match_objects[main_file_id][match_file_id] = MatchGISMOdata(self.objects.get(main_file_id), self.objects.get(match_file_id), **kwargs)
 
+    def save_file(self, file_id, **kwargs):
+        for key in kwargs:
+            if key not in self.get_save_data_options(file_id):
+                raise GISMOExceptionInvalidOption('{} is not a valid save data option'.format(key))
+
+        self.objects.get(file_id).save_file(**kwargs)
 
 
 # ==============================================================================
@@ -193,7 +210,12 @@ class GISMOdata(object):
         self.flag_data_options = []     # Options for flagging data (where should data be flagged)
         self.mask_data_options = []     # Options for masking data (replaced by "missing value"
 
+        self.save_data_options = []     # Options for saving data
+
         self.valid_flags = []
+
+        self.comment_id = None
+
 
     def flag_data(self, flag, *args, **kwargs):
         """
@@ -224,22 +246,32 @@ class GISMOdata(object):
         """
         raise GISMOExceptionMethodNotImplemented
 
+    def save_file(self, **kwargs):
+        """
+        Created 20181106
+        Saves data to file. Also saves metadata if available.
+
+        """
+        raise GISMOExceptionMethodNotImplemented
+
 
 
 # ==============================================================================
 # ==============================================================================
 class GISMOmetadata(object):
     """
-    Created 20181003     
+    Created 20181003
+    Updated 20181106
 
     Base class for GISMO metadata
     Class holds metadata information of a GISMO file.
     """
     def __init__(self, *args, **kwargs):
-        pass
-
-
-            
+        self.has_data = False
+        self.metadata_string = ''
+        self.data = {}
+        self.column_sep = ''
+        self.metadata_id = ''
 
 
 """

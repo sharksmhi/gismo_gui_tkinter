@@ -73,7 +73,7 @@ class GISMOfile(GISMOdata):
     """
     # TODO: filter_data, flag_options, flag_data
     # ==========================================================================
-    def __init__(self, data_file_path=None, settings_file_path=None, root_directory=None, comment_id='/', **kwargs):
+    def __init__(self, data_file_path=None, settings_file_path=None, root_directory=None, **kwargs):
 
         super().__init__()
 
@@ -83,6 +83,8 @@ class GISMOfile(GISMOdata):
         self.export_df = None
         self.root_directory = root_directory
 
+        self.comment_id = kwargs.get('comment_id', None)
+
         self.file_encoding = kwargs.get('file_encoding', 'cp1252')
         self.sampling_type = kwargs.get('sampling_type', '')
 
@@ -90,15 +92,17 @@ class GISMOfile(GISMOdata):
         self._load_station_mapping()
         self._load_parameter_mapping()
         #        return
-        self._load_data(comment_id=comment_id)
+        self._load_data()
         self._do_import_changes()
 
         self.parameter_list = []
 
         self.parameter_list = ['time', 'lat', 'lon', 'depth', 'visit_id', 'visit_depth_id'] + self.qpar_list
-        self.filter_data_options = ['visit_depth_id']
+        self.filter_data_options = []
         self.flag_data_options = []
         self.mask_data_options = ['include_flags', 'exclude_flags']
+
+        self.save_data_options = ['file_path', 'overwrite']
 
         self.valid_flags = self.settings.flag_list[:]
 
@@ -141,7 +145,7 @@ class GISMOfile(GISMOdata):
         data = []
         with codecs.open(self.file_path, encoding=kwargs.get('encoding', 'cp1252')) as fid:
             for line in fid:
-                if kwargs.get('comment_id') and line.startswith(kwargs.get('comment_id')):
+                if self.comment_id is not None and line.startswith(self.comment_id):
                     # We have comments and need to load all lines in file
                     metadata_raw.append(line)
                 else:
@@ -151,6 +155,7 @@ class GISMOfile(GISMOdata):
                     else:
                         data.append(split_line)
 
+        self.original_columns = header[:]
         self.df = pd.DataFrame(data, columns=header)
         self.df.fillna('', inplace=True)
 
@@ -188,7 +193,7 @@ class GISMOfile(GISMOdata):
         self.internal_to_external = dict(zip(self.parameters_internal, self.parameters_external))
         self.external_to_internal = dict(zip(self.parameters_external, self.parameters_internal))
 
-        self.qpar_list = sorted([par for par in self.parameters_external if self.get_qf_par(par) not in [None, False]])
+        self.qpar_list = sorted([par for par in self.parameters_external if self._get_qf_par(par) not in [None, False]])
         self.mapped_parameters = [self.parameter_mapping.get_internal(par) for par in self.qpar_list]
 
         # Set type of flags to str
@@ -207,7 +212,7 @@ class GISMOfile(GISMOdata):
     # ==========================================================================
     def _prepare_export(self):
         # Make a copy to be used for export
-        self.export_df = self.df.copy()
+        self.export_df = self.df[self.original_columns].copy()
         self.export_df.replace(np.nan, float(self.missing_value), inplace=True)
 
     def _get_argument_list(self, arg):
@@ -356,7 +361,7 @@ class GISMOfile(GISMOdata):
 
         # Flag data
         for par in args:
-            qf_par = self.get_qf_par(par)
+            qf_par = self._get_qf_par(par)
             if not qf_par:
                 raise GISMOExceptionMissingQualityParameter('for parameter "{}"'.format(par))
             self.df.loc[boolean, qf_par] = flag
@@ -388,12 +393,16 @@ class GISMOfile(GISMOdata):
     def get_data(self, *args, **kwargs):
         """
         Created 20181024
+        Updated 20181106
 
         :param args: parameters that you want to have data for.
         :param kwargs: specify filter. For example profile_id=<something>. Only = if implemented at the moment.
         :return: dict with args as keys and list(s) as values.
         """
-        return self._get_data(*args, **kwargs)
+        # Always return type float if possible
+        kw = {'type_float': True}
+        kw.update(kwargs)
+        return self._get_data(*args, **kw)
 
     # ===========================================================================
     def _get_data(self, *args, **kwargs):
@@ -438,7 +447,8 @@ class GISMOfile(GISMOdata):
                 boolean = boolean & (self.df.visit_id.isin(value_list))
 
         # Extract filtered dataframe
-        filtered_df = self.df.loc[boolean, sorted(args)].copy(deep=True)
+        # filtered_df = self.df.loc[boolean, sorted(args)].copy(deep=True)
+        filtered_df = self.df.loc[boolean].copy(deep=True)
 
         mask_options = kwargs.get('mask_options', {})
         # Create return dict and return
@@ -458,13 +468,14 @@ class GISMOfile(GISMOdata):
                 if opt not in self.mask_data_options:
                     raise GISMOExceptionInvalidOption
                 if opt == 'include_flags':
-                    qf_par = self.get_qf_par(par)
+                    qf_par = self._get_qf_par(par)
                     if not qf_par:
                         continue
+                    # print('\n'.join(sorted(filtered_df.columns)))
                     keep_boolean = filtered_df[qf_par].astype(str).isin([str(v) for v in value])
                     par_array[~keep_boolean] = ''
                 elif opt == 'exclude_flags':
-                    qf_par = self.get_qf_par(par)
+                    qf_par = self._get_qf_par(par)
                     if not qf_par:
                         continue
                     nan_boolean = filtered_df[qf_par].astype(str).isin([str(v) for v in value])
@@ -519,7 +530,7 @@ class GISMOfile(GISMOdata):
             return sorted([self.parameter_mapping.get_internal(par) for par in self.parameter_list])
 
     # ==========================================================================
-    def get_qf_par(self, par):
+    def _get_qf_par(self, par):
         """
         Updated 20181004
         :param par:
@@ -572,7 +583,12 @@ class GISMOfile(GISMOdata):
         return extended_qf_list
 
     # ===========================================================================
-    def write_to_file(self, file_path, **kwargs):
+    def save_file(self, **kwargs):
+        file_path = kwargs.get('file_path', None)
+        if not file_path:
+            file_path = self.file_path
+        if os.path.exists(file_path) and not kwargs.get('overwrite', False):
+            raise GISMOExceptionFileExcists(file_path)
 
         write_kwargs = {'index_label': False,
                         'index': False,
@@ -583,10 +599,21 @@ class GISMOfile(GISMOdata):
         write_kwargs.update(kwargs)
 
         self._prepare_export()
-        self.export_df.to_csv(file_path,
-                              columns=self.parameters_external,
-                              **write_kwargs)
 
+        data_dict = self.export_df.to_dict('split')
+
+        sep = kwargs.get('sep', '\t')
+        encoding = kwargs.get('encoding', 'cp1252')
+
+        with codecs.open(file_path, 'w', encoding=encoding) as fid:
+            if self.metadata.has_data:
+                pass
+            # Write column header
+            fid.write(sep.join(data_dict['columns']))
+            fid.write('\n')
+            for line in data_dict['data']:
+                fid.write(sep.join(line))
+                fid.write('\n')
 
 # ==============================================================================
 # ==============================================================================
@@ -661,14 +688,13 @@ class CTDfile(GISMOfile):
 
         kwargs.update(dict(file_path=file_path,
                            settings_file_path=settings_file_path,
-                           root_directory=root_directory))
+                           root_directory=root_directory,
+                           comment_id='//'))
         GISMOfile.__init__(self, **kwargs)
 
         self.filter_data_options = self.filter_data_options + ['visit_id', 'depth', 'from_depth', 'to_depth']
         self.flag_data_options = self.flag_data_options + ['depth', 'from_depth', 'to_depth']
         self.mask_data_options = self.mask_data_options + []
-
-        s
 
         self.metadata = GISMOmetadata(**kwargs)
 
@@ -687,7 +713,7 @@ class CTDfile(GISMOfile):
     #         self.internal_to_external = dict(zip(self.parameters_internal, self.parameters_external))
     #         self.external_to_internal = dict(zip(self.parameters_external, self.parameters_internal))
     #
-    #         self.qpar_list = sorted([par for par in self.parameters_external if self.get_qf_par(par) != False])
+    #         self.qpar_list = sorted([par for par in self.parameters_external if self._get_qf_par(par) != False])
     #         self.mapped_parameters = [self.parameter_mapping.get_internal(par) for par in self.qpar_list]
 
     # ==========================================================================
@@ -747,6 +773,7 @@ class CTDmetadata(GISMOmetadata):
     class Meatadata(object):
         """ Class to handle the METADATA """
         def __init__(self, **kwargs):
+            self.has_data = False
             self.metadata_string = 'METADATA'
             self.data = {}
             self.column_sep = kwargs.get('column_sep', ';')
@@ -761,6 +788,7 @@ class CTDmetadata(GISMOmetadata):
             if item_list[0] != self.metadata_id:
                 raise GISMOExceptionMetadataError('Non matching metadata string')
             self.data[item_list[1]] = item_list[2]
+            self.has_data = True
 
         def set(self, **kwargs):
             for key, value in kwargs.items():
@@ -774,8 +802,6 @@ class CTDmetadata(GISMOmetadata):
                 return_list.append(self.column_sep.join(line_list))
 
             return return_list
-
-
 
     class Unhandled(object):
         """

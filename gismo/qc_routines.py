@@ -10,7 +10,7 @@ import shutil
 from .gismo import GISMOqc
 from .exceptions import *
 
-from . import IOCFTP_QC
+# from . import IOCFTP_QC
 
 """
 ========================================================================
