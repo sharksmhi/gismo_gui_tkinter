@@ -17,9 +17,10 @@ import sys
 import gui
 import core
 
-from gtb_lib.shd_gismo.session import GISMOsession
+from libs.sharkpylib.gismo import GISMOsession
 
-import gtb_lib.shd_gismo.gismo as gismo
+from libs.sharkpylib import gismo
+from libs.sharkpylib.t
 import gtb_lib.shd_tk.tkinter_widgets as tkw
 
 
