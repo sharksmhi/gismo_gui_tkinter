@@ -18,7 +18,7 @@ import os
 #import gtb_lib
 #import gtb_utils
 
-import gtb_lib.shd_tk.tkinter_widgets as tkw
+import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 import logging 
 

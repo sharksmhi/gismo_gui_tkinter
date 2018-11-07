@@ -14,14 +14,13 @@ from tkinter import ttk
 from tkinter import messagebox
 
 
-import gtb_gui
-import gtb_lib
-import gtb_core
+import gui
+import core
 
 
-import gtb_lib.shd_gismo.gismo as gismo
-import gtb_lib.shd_plot.plot_selector as plot_selector
-import gtb_lib.shd_tk.tkinter_widgets as tkw
+import libs.sharkpylib.gismo as gismo
+import libs.sharkpylib.plot.plot_selector as plot_selector
+import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 import logging
 
@@ -213,7 +212,7 @@ class PageTimeSeries(tk.Frame):
         
         #----------------------------------------------------------------------
         # x-axis options
-        self.xrange_widget = gtb_gui.AxisSettingsTimeWidget(frame, 
+        self.xrange_widget = gui.AxisSettingsTimeWidget(frame, 
                                                    plot_object=self.plot_object, 
                                                    callback=self._callback_axis_widgets, 
                                                    label='time-axis', 
@@ -225,7 +224,7 @@ class PageTimeSeries(tk.Frame):
         
         #----------------------------------------------------------------------
         # y-axis options
-        self.yrange_widget = gtb_gui.AxisSettingsFloatWidget(frame, 
+        self.yrange_widget = gui.AxisSettingsFloatWidget(frame, 
                                                     self.plot_object, 
                                                     callback=self._callback_axis_widgets, 
                                                     label='y-axis', 
@@ -245,14 +244,14 @@ class PageTimeSeries(tk.Frame):
         
         #----------------------------------------------------------------------
         # Range widget
-        self.xrange_selection_widget = gtb_gui.RangeSelectorTimeWidget(frame, 
+        self.xrange_selection_widget = gui.RangeSelectorTimeWidget(frame, 
                                                           label='time-range', 
                                                           plot_object=self.plot_object,
                                                           axis='t', 
                                                           row=r)
         r+=1
         
-        self.yrange_selection_widget = gtb_gui.RangeSelectorFloatWidget(frame, 
+        self.yrange_selection_widget = gui.RangeSelectorFloatWidget(frame, 
                                                           label='y-range', 
                                                           plot_object=self.plot_object, 
                                                           axis='y', 
@@ -279,7 +278,7 @@ class PageTimeSeries(tk.Frame):
         pady=5
         r=0
         c=0
-        self.flag_widget = gtb_gui.get_flag_widget(parent=frame, 
+        self.flag_widget = gui.get_flag_widget(parent=frame, 
                                             settings_object=self.gismo_platform_settings, 
                                             callback_flag_data=self._on_flag_widget_flag, 
                                             callback_update=self._update_plot, 
@@ -298,17 +297,17 @@ class PageTimeSeries(tk.Frame):
     def _set_notebook_frame_compare(self):
         frame = self.notebook_options.frame_compare
                 
-        self.compare_widget = gtb_gui.CompareWidget(frame, 
+        self.compare_widget = gui.CompareWidget(frame, 
                                             callback=self._callback_sample)
         
         
     #===========================================================================
     def _callback_sample(self):
         logging.debug('page_ferrybox._callback_sample: Start')
-        gtb_gui.add_sample_data_to_plot(plot_object=self.plot_object, 
-                                    par=gtb_core.Boxen().current_par_ferrybox, 
-                                    sample_object=gtb_core.Boxen().current_sample_object, 
-                                    gismo_object=gtb_core.Boxen().current_ferrybox_object, 
+        gui.add_sample_data_to_plot(plot_object=self.plot_object, 
+                                    par=core.Boxen().current_par_ferrybox, 
+                                    sample_object=core.Boxen().current_sample_object, 
+                                    gismo_object=core.Boxen().current_ferrybox_object, 
                                     compare_widget=self.compare_widget, 
                                     help_info_function=self.controller.update_help_information)
         logging.debug('page_ferrybox._callback_sample: End')
@@ -318,7 +317,7 @@ class PageTimeSeries(tk.Frame):
     def _set_notebook_frame_save(self):
         frame = self.notebook_options.frame_save
         
-        self.save_widget = gtb_gui.SaveWidget(frame, 
+        self.save_widget = gui.SaveWidget(frame, 
                                       callback=self._callback_save_file, 
                                       sticky='nw') 
         
@@ -327,7 +326,7 @@ class PageTimeSeries(tk.Frame):
         
     #===========================================================================
     def _callback_save_file(self, directory, file_name):
-        current_gismo_object = gtb_core.Boxen().current_ferrybox_object
+        current_gismo_object = core.Boxen().current_ferrybox_object
         file_path = current_gismo_object.file_path #.replace('\\', '/')
         output_file_path = '/'.join([directory, file_name])
         
@@ -362,18 +361,18 @@ class PageTimeSeries(tk.Frame):
         logging.debug('page_ferrybox._on_file_selection: Start')
         # Update valid time range in time axis
         
-        gtb_gui.set_valid_time_in_time_axis(gismo_object=gtb_core.Boxen().current_ferrybox_object, 
+        gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
                                     time_axis_widget=self.xrange_widget)
         
-#         gtb_gui.set_valid_time_in_time_axis(gismo_object=gtb_core.Boxen().current_ferrybox_object, 
+#         gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
 #                                     time_axis_widget=self.xrange_widget2)
         
-        gtb_gui.set_valid_time_in_time_axis(gismo_object=gtb_core.Boxen().current_ferrybox_object, 
+        gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
                                     time_axis_widget=self.xrange_selection_widget)
         
         self._update_parameter_list()
         self._on_select_parameter()
-        gtb_core.Temp().f = self
+        core.Temp().f = self
         logging.debug('page_ferrybox._on_file_selection: End')
         
     #===========================================================================
@@ -382,18 +381,18 @@ class PageTimeSeries(tk.Frame):
         if not self.plot_object.mark_range_orientation:
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
-            gtb_gui.update_range_selection_widget(plot_object=self.plot_object, 
+            gui.update_range_selection_widget(plot_object=self.plot_object, 
                                           range_selection_widget=self.yrange_selection_widget)
         elif self.plot_object.mark_range_orientation == 'horizontal':
-            gtb_gui.update_range_selection_widget(plot_object=self.plot_object, 
+            gui.update_range_selection_widget(plot_object=self.plot_object, 
                                           range_selection_widget=self.xrange_selection_widget)  
         logging.debug('page_ferrybox._callback_plot_range: End')                                
     
     #===========================================================================
     def _update_parameter_list(self):
         logging.debug('page_ferrybox._update_parameter_list: Start')  
-        self.parameter_widget.update_items(gtb_core.Boxen().current_parameter_list_ferrybox, 
-                                           default_item=gtb_core.Boxen().current_par_ferrybox) # Will take current information in gtb_core.Boxen()
+        self.parameter_widget.update_items(core.Boxen().current_parameter_list_ferrybox, 
+                                           default_item=core.Boxen().current_par_ferrybox) # Will take current information in core.Boxen()
         logging.debug('page_ferrybox._update_parameter_list: End')  
                                            
     #===========================================================================
@@ -412,8 +411,8 @@ class PageTimeSeries(tk.Frame):
     #===========================================================================
     def _on_select_parameter(self):
         logging.debug('page_ferrybox._on_select_parameter: Start')
-        gtb_core.Boxen().current_par_ferrybox = self.parameter_widget.selected_item
-        if not gtb_core.Boxen().current_par_ferrybox:
+        core.Boxen().current_par_ferrybox = self.parameter_widget.selected_item
+        if not core.Boxen().current_par_ferrybox:
             return
             
         logging.debug('ferrybox: _on_select_parameter')
@@ -435,40 +434,40 @@ class PageTimeSeries(tk.Frame):
         
         self.plot_object.call_targets()
         
-        gtb_core.Temp().plot_object = self.plot_object
-        gtb_core.Temp().gismo_object = gtb_core.Boxen().current_ferrybox_object
-        gtb_core.Temp().settings = gtb_core.Boxen().current_ferrybox_object.settings
+        core.Temp().plot_object = self.plot_object
+        core.Temp().gismo_object = core.Boxen().current_ferrybox_object
+        core.Temp().settings = core.Boxen().current_ferrybox_object.settings
         logging.debug('page_ferrybox._on_select_parameter: End')
 
     #===========================================================================
     def _update_plot_limits(self):
         logging.debug('page_ferrybox._update_plot_limits: Start')
         
-        gtb_gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
-                                         settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
+                                         settings_object=core.Boxen().current_ferrybox_settings, 
                                          axis='x', 
                                          par='time', 
                                          call_targets_in_plot_object=False)
         
-        gtb_gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
-                                         settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
+                                         settings_object=core.Boxen().current_ferrybox_settings, 
                                          axis='y', 
-                                         par=gtb_core.Boxen().current_par_ferrybox, 
+                                         par=core.Boxen().current_par_ferrybox, 
                                          call_targets_in_plot_object=False)
         logging.debug('page_ferrybox._update_plot_limits: End')
     
     #===========================================================================
     def _save_limits_from_plot(self):
         logging.debug('ferrybox: _save_limits_from_plot: Start')
-        gtb_gui.save_limits_from_plot_object(plot_object=self.plot_object, 
-                                     settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.save_limits_from_plot_object(plot_object=self.plot_object, 
+                                     settings_object=core.Boxen().current_ferrybox_settings, 
                                      par='time', 
                                      axis='x',
                                      use_plot_limits=False)
         
-        gtb_gui.save_limits_from_plot_object(plot_object=self.plot_object, 
-                                     settings_object=gtb_core.Boxen().current_ferrybox_settings, 
-                                     par=gtb_core.Boxen().current_par_ferrybox, 
+        gui.save_limits_from_plot_object(plot_object=self.plot_object, 
+                                     settings_object=core.Boxen().current_ferrybox_settings, 
+                                     par=core.Boxen().current_par_ferrybox, 
                                      axis='y',
                                      use_plot_limits=False)
         logging.debug('page_ferrybox._save_limits_from_plot: End')
@@ -478,35 +477,35 @@ class PageTimeSeries(tk.Frame):
     def _save_limits_from_axis_widgets(self):
         logging.debug('page_ferrybox._save_limits_from_axis_widgets: Start')
                            
-        gtb_gui.save_limits_from_axis_time_widget(settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.save_limits_from_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
                                           axis_time_widget=self.xrange_widget, 
                                           par='time')
                                           
-        gtb_gui.save_limits_from_axis_float_widget(settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.save_limits_from_axis_float_widget(settings_object=core.Boxen().current_ferrybox_settings, 
                                           axis_float_widget=self.yrange_widget, 
-                                          par=gtb_core.Boxen().current_par_ferrybox)
+                                          par=core.Boxen().current_par_ferrybox)
         logging.debug('page_ferrybox._save_limits_from_axis_widgets: End')
         
     #===========================================================================
     def _update_axis_widgets(self):
         logging.debug('page_ferrybox._update_axis_widgets: Start')
         
-        gtb_gui.update_limits_in_axis_time_widget(settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.update_limits_in_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
                                           axis_time_widget=self.xrange_widget, 
                                           plot_object=self.plot_object, 
                                           par='time', 
                                           axis='x')
         
-#         gtb_gui.update_limits_in_axis_time_widget(settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+#         gui.update_limits_in_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
 #                                           axis_time_widget=self.xrange_selection_widget, 
 #                                           plot_object=self.plot_object, 
 #                                           par='time', 
 #                                           axis='x')
         
-        gtb_gui.update_limits_in_axis_float_widget(settings_object=gtb_core.Boxen().current_ferrybox_settings, 
+        gui.update_limits_in_axis_float_widget(settings_object=core.Boxen().current_ferrybox_settings, 
                                            axis_float_widget=self.yrange_widget, 
                                            plot_object=self.plot_object, 
-                                           par=gtb_core.Boxen().current_par_ferrybox, 
+                                           par=core.Boxen().current_par_ferrybox, 
                                            axis='y')    
         logging.debug('page_ferrybox._update_axis_widgets: End')    
     
@@ -514,10 +513,10 @@ class PageTimeSeries(tk.Frame):
     def _on_flag_widget_flag(self):
         logging.debug('page_ferrybox._on_flag_widget_flag: Start')
         self.controller.update_help_information('Flagging data, please wait...')
-        gtb_gui.flag_data_time_series(flag_widget=self.flag_widget, 
-                              gismo_object=gtb_core.Boxen().current_ferrybox_object, 
+        gui.flag_data_time_series(flag_widget=self.flag_widget, 
+                              gismo_object=core.Boxen().current_ferrybox_object, 
                               plot_object=self.plot_object, 
-                              par=gtb_core.Boxen().current_par_ferrybox)
+                              par=core.Boxen().current_par_ferrybox)
         
         self._update_plot()
         
@@ -531,8 +530,8 @@ class PageTimeSeries(tk.Frame):
         """        
         logging.debug('page_ferrybox._update_plot: Start')
         
-        gtb_gui.update_time_series_plot(gismo_object=gtb_core.Boxen().current_ferrybox_object, 
-                                par=gtb_core.Boxen().current_par_ferrybox, 
+        gui.update_time_series_plot(gismo_object=core.Boxen().current_ferrybox_object, 
+                                par=core.Boxen().current_par_ferrybox, 
                                 plot_object=self.plot_object, 
                                 flag_widget=self.flag_widget, 
                                 help_info_function=self.controller.update_help_information)
@@ -556,20 +555,20 @@ class PageTimeSeries(tk.Frame):
         selected_file = self.controller.loaded_files_combobox_widget.selected_item
         
         if not selected_file:
-            gtb_core.Boxen().update_ferrybox_object() # This will reset the gismo_object
+            core.Boxen().update_ferrybox_object() # This will reset the gismo_object
             self.save_widget.set_file_path('')
             self.stringvar_current_file.set('')
             return 
         
-        gtb_core.Boxen().update_ferrybox_object(gismo_file_path=selected_file)
+        core.Boxen().update_ferrybox_object(gismo_file_path=selected_file)
         
         self._reset_widgets()
         
         self._on_file_selection()
         
-        if not gtb_core.Boxen().current_ferrybox_object:
+        if not core.Boxen().current_ferrybox_object:
             return
-        file_path = gtb_core.Boxen().current_ferrybox_object.file_path
+        file_path = core.Boxen().current_ferrybox_object.file_path
         if not file_path:
             self.save_widget.set_file_path()
             return
@@ -577,8 +576,8 @@ class PageTimeSeries(tk.Frame):
         self.stringvar_current_file.set(file_path)
         
         # Set diff info
-        gtb_gui.update_compare_widget(compare_widget=self.compare_widget, 
-                              settings_object=gtb_core.Boxen().current_ferrybox_settings)
+        gui.update_compare_widget(compare_widget=self.compare_widget, 
+                              settings_object=core.Boxen().current_ferrybox_settings)
         logging.debug('page_ferrybox._update_file: End')
         
         
@@ -588,15 +587,15 @@ class PageTimeSeries(tk.Frame):
         selected_file = self.controller.loaded_files_combobox_widget_sample.selected_item
         
         if not selected_file:
-            gtb_core.Boxen().update_ferrybox_object() # This will reset the gismo_object
+            core.Boxen().update_ferrybox_object() # This will reset the gismo_object
             self.stringvar_current_sample_file.set('')
             return 
         
-        gtb_core.Boxen().update_sample_object(gismo_file_path=selected_file)
+        core.Boxen().update_sample_object(gismo_file_path=selected_file)
         
-        if not gtb_core.Boxen().current_sample_object:
+        if not core.Boxen().current_sample_object:
             return
-        file_path = gtb_core.Boxen().current_sample_object.file_path
+        file_path = core.Boxen().current_sample_object.file_path
         
         self.stringvar_current_sample_file.set(file_path)
         

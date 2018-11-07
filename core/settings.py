@@ -8,9 +8,6 @@ import codecs
 import os
 import pickle
 
-import gtb_utils
-from .exceptions import *
-
         
 """
 ========================================================================

@@ -20,8 +20,7 @@ import core
 from libs.sharkpylib.gismo import GISMOsession
 
 from libs.sharkpylib import gismo
-from libs.sharkpylib.t
-import gtb_lib.shd_tk.tkinter_widgets as tkw
+import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 
 import logging
@@ -62,8 +61,6 @@ all_pages.add(gui.PageTimeSeries)
 
 
 
-
-# @gtb_utils.singleton
 class App(tk.Tk):
     """
     This class contains the main window (page), "container", for 
@@ -84,14 +81,16 @@ class App(tk.Tk):
                  log_directory='',
                  input_directory='',
                  default_settings_file_path='',
+                 sampling_types_factory=None,
+                 qc_routines_factory=None,
                  *args, **kwargs):
         """
-        Updated 20181002    by Magnus
+        Updated 20181002
         """
 
         tk.Tk.__init__(self, *args, **kwargs) 
 
-        if not all([user, users_directory, root_directory, log_directory, input_directory]):
+        if not all([user, users_directory, root_directory, log_directory, input_directory, sampling_types_factory, qc_routines_factory]):
             raise AttributeError
 
         # Load settings and constants (singletons)
@@ -101,7 +100,7 @@ class App(tk.Tk):
         self.input_directory = input_directory
         
         # Initiate logging
-        log_file = self.log_directory + '/system/gismo.log'
+        log_file = os.path.join(self.log_directory, 'gismo.log')
         logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG) 
         logging.info('=== NEW RUN ===')       
         
@@ -112,17 +111,24 @@ class App(tk.Tk):
         # self.boxen = core.Boxen(self, root_directory=self.root_directory)
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
-                                    user=user)
+                                    log_directory=self.log_directory,
+                                    user=user,
+                                    sampling_types_factory=sampling_types_factory,
+                                    qc_routines_factory=qc_routines_factory,
+                                    save_pkl=False)
+
         
 #        CMEMSparameters(self.settings['directory']['CMEMS parameters'])
 #        CMEMSstations(self.settings['directory']['CMEMS stations'])
-        self.default_platform_settings = gismo.SampleTypeSettings(self.settings['directory']['Default ferrybox settings'])
+        self.default_platform_settings = gismo.sampling_types.SamplingTypeSettings(self.settings['directory']['Default ferrybox settings'],
+                                                                                   root_directory=self.root_directory)
         
         screen_padx = self.settings[u'general'][u'Main window indent x']
         screen_pady = self.settings[u'general'][u'Main window indent y']
         
 
         # Override "close window (x)". 
+        # Override "close window (x)".
         # If this is not implemented the program is not properly closed.
         self.protocol(u'WM_DELETE_WINDOW', self.quit_toolbox)
         
@@ -1100,12 +1106,17 @@ def main():
     log_directory = os.path.join(root_directory, 'log')
     default_settings_file_path = os.path.join(root_directory, 'system/settings.ini')
 
+    sampling_types_factory = gismo.sampling_types.PluginFactory()
+    qc_routines_factory = gismo.qc_routines.PluginFactory()
+
     app = App(user='default',
               root_directory=root_directory,
               users_directory=users_directory,
               log_directory=log_directory,
               input_directory=input_directory,
-              default_settings_file_path=default_settings_file_path)
+              default_settings_file_path=default_settings_file_path,
+              sampling_types_factory=sampling_types_factory,
+              qc_routines_factory=qc_routines_factory)
     if not app.all_ok:
         return 
     app.focus_force()

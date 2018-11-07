@@ -6,10 +6,10 @@ Created on Mon Jun 25 16:51:08 2018
 """
 
 # ==============================================================================
-class GTBException(Exception):
+class GUIException(Exception):
     """
-    Created     20181002    by Magnus Wenzer
-    Updated
+    Created     20181002
+    Updated     20181107
 
     Blueprint for error message.
     code is for external mapping of exceptions. For example if a GUI wants to
@@ -24,10 +24,10 @@ class GTBException(Exception):
             self.code = code
 
 
-class GTBExceptionMissingAttribute(GTBException):
+class GUIExceptionMissingAttribute(GUIException):
     """
-    Created 20180625    by Magnus Wenzer
-    Updated 20181002    by Magnus Wenzer
+    Created 20180625
+    Updated 20181107
     """
     code = ''
     message = ''

@@ -894,7 +894,7 @@ class SamplingTypeSettings(dict):
                         raise GISMOExceptionMissingPath('Must provide root_directory')
                     value = value.replace('root', root_directory)
                     if not os.path.exists(value):
-                        raise GISMOExceptionMissingPath
+                        raise GISMOExceptionMissingPath(value)
 
                 if ';' in value:
                     value = [item.strip() for item in value.split(';')]

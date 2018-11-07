@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 #
-# Copyright (c) 2013-2014 SMHI, Swedish Meteorological and Hydrological Institute 
+# Copyright (c) 2018 SMHI, Swedish Meteorological and Hydrological Institute
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
 import numpy as np
 
-import gtb_gui
-import gtb_lib
-import gtb_core
+import core
 
 
-import gtb_lib.shd_gismo.gismo as gismo
-import gtb_lib.shd_plot.plot_selector as plot_selector
-# from gtb_lib.shd_tk.tkmap import TkMap
-import gtb_lib.shd_tk.tkinter_widgets as tkw
+import libs.sharkpylib.gismo as gismo
+import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 import logging 
 
@@ -34,7 +30,7 @@ def add_sample_data_to_plot(plot_object=None,
     gismo_object is the file where matching data will be extracted from 
     """
     print('add_sample_data_to_plot')
-    if not gtb_core.Boxen().sample_index or compare_widget.values_are_updated:
+    if not core.Boxen().sample_index or compare_widget.values_are_updated:
         if help_info_function:
             help_info_function('Adding reference data...please wait...')
             
@@ -54,15 +50,15 @@ def add_sample_data_to_plot(plot_object=None,
                                                        gismo_object=gismo_object, 
 #                                                       modulus=modulus, 
                                                        diffs=diffs)
-        gtb_core.Boxen().sample_index = index
+        core.Boxen().sample_index = index
     else:
-        index = gtb_core.Boxen().sample_index
+        index = core.Boxen().sample_index
 #    print 'index', index
     # Get data
     if not len(index):
         logging.debug('No matching data found')
         help_info_function('No matching data found!')
-        gtb_core.Boxen().sample_index = []
+        core.Boxen().sample_index = []
         return
     par = sample_object.parameter_mapping.get_external(par)
     if par not in sample_object.df.columns:
@@ -73,8 +69,8 @@ def add_sample_data_to_plot(plot_object=None,
     time_list = np.array(sample_object.df.ix[index, 'time'])
     value_list = np.array(sample_object.df.ix[index, par])
 #    qf_list = gismo_object.df.ix[index, qpar]
-    gtb_core.Temp().time_list = time_list
-    gtb_core.Temp().value_list = value_list
+    core.Temp().time_list = time_list
+    core.Temp().value_list = value_list
     
     print('matching data')
     plot_object.set_data(x=time_list, y=value_list, line_id='matching data', marker='x', color='black')
@@ -100,9 +96,9 @@ def add_sample_data_to_boxen(par=None,
     """
     
     # Remove old data
-    gtb_core.Boxen().sample_data = {}
+    core.Boxen().sample_data = {}
     
-    if not gtb_core.Boxen().sample_index or compare_widget.values_are_updated:
+    if not core.Boxen().sample_index or compare_widget.values_are_updated:
         if help_info_function:
             help_info_function('Adding reference data...please wait...')
             
@@ -121,14 +117,14 @@ def add_sample_data_to_boxen(par=None,
                                                        gismo_object=gismo_object, 
 #                                                       modulus=modulus, 
                                                        diffs=diffs)
-        gtb_core.Boxen().sample_index = index
+        core.Boxen().sample_index = index
     else:
-        index = gtb_core.Boxen().sample_index
+        index = core.Boxen().sample_index
 #    print 'index', index
     # Get data
     if not len(index):
         logging.debug('No matching data found')
-        gtb_core.Boxen().sample_index = []
+        core.Boxen().sample_index = []
         return
     par = sample_object.parameter_mapping.get_external(par)
     if par not in sample_object.df.columns:
@@ -148,7 +144,7 @@ def add_sample_data_to_boxen(par=None,
     else:
         value_list = sample_object.get_column(par)
     
-    gtb_core.Boxen().set_sample_data(lat=lat_list[index], 
+    core.Boxen().set_sample_data(lat=lat_list[index], 
                                             lon=lon_list[index], 
                                             t=time_list[index], 
                                             values=value_list[index])
@@ -250,7 +246,7 @@ def flag_data_profile(flag_widget=None,
 #         print 'par', par
 #         for sub_par in dependent_list:
 #             print 'sub_par', sub_par
-#             gtb_core.Boxen().current_ferrybox_object.flag_parameter_at_index(par=sub_par, 
+#             core.Boxen().current_ferrybox_object.flag_parameter_at_index(par=sub_par, 
 #                                                                  index=index, 
 #                                                                  qflag=flag_nr) 
 
@@ -498,16 +494,16 @@ def update_scatter_route_map(gismo_object=None,
                                                        start_time=start_time, 
                                                        end_time=end_time)
     
-    lat = gtb_core.Boxen().current_ferrybox_object.get_column('lat')
-    lon = gtb_core.Boxen().current_ferrybox_object.get_column('lon')
+    lat = core.Boxen().current_ferrybox_object.get_column('lat')
+    lon = core.Boxen().current_ferrybox_object.get_column('lon')
     # TODO: These should be given as arguments
     
     # Add additional points. 
-    if gtb_core.Boxen().sample_data:
-        for la, lo, val, t in zip(gtb_core.Boxen().sample_data['lat'], 
-                                   gtb_core.Boxen().sample_data['lon'], 
-                                   gtb_core.Boxen().sample_data['values'],
-                                    gtb_core.Boxen().sample_data['time']):
+    if core.Boxen().sample_data:
+        for la, lo, val, t in zip(core.Boxen().sample_data['lat'], 
+                                   core.Boxen().sample_data['lon'], 
+                                   core.Boxen().sample_data['values'],
+                                    core.Boxen().sample_data['time']):
 #             print '='*30
 #             print t, type(t)
 #             print start_time, type(start_time)
@@ -532,7 +528,7 @@ def update_scatter_route_map(gismo_object=None,
                                         marker_id='ferrybox', 
                                         legend_nr=1)
     
-    for unit in gtb_core.Settings().unit_list:
+    for unit in core.Settings().unit_list:
         if unit in par.split()[-1]:
             title = unit
             break
@@ -650,7 +646,7 @@ def update_limits_in_axis_time_widget(settings_object=None,
                                       par=None, 
                                       axis=None):
     """
-    Takes information from settings_object and updates the Axisgtb_core.SettingsTimeWidget. 
+    Takes information from settings_object and updates the Axiscore.SettingsTimeWidget. 
     If parameter not present in settings limits are taken from the current plot_object. 
     if no information is avalable full range is set. 
     """
@@ -707,7 +703,7 @@ def update_limits_in_axis_float_widget(settings_object=None,
                                        par=None, 
                                        axis=None):
     """
-    Takes information from settings_object and updates the Axisgtb_core.SettingsFloatWidget. 
+    Takes information from settings_object and updates the Axiscore.SettingsFloatWidget. 
     If parameter not present in settings limits are taken from the current plot_object. 
     """
 
@@ -752,7 +748,7 @@ def update_limits_in_axis_float_widget(settings_object=None,
 def update_compare_widget(compare_widget=None, 
                           settings_object=None): 
     """
-    gtb_core.Settings object is the gismo settings
+    core.Settings object is the gismo settings
     """
     
     compare_widget.set_data(time=settings_object.matching_criteria.time, 
@@ -768,7 +764,7 @@ def save_limits_from_axis_time_widget(settings_object=None,
                                       axis_time_widget=None, 
                                       par=None):
     """
-    Takes informatioen from a Axisgtb_core.SettingsTimeWidget object and store them in given gismo settings object. 
+    Takes informatioen from a Axiscore.SettingsTimeWidget object and store them in given gismo settings object. 
     """
     
     if not settings_object:

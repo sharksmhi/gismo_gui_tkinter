@@ -1,22 +1,13 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 #
-# Copyright (c) 2013-2014 SMHI, Swedish Meteorological and Hydrological Institute 
+# Copyright (c) 2018 SMHI, Swedish Meteorological and Hydrological Institute
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
 import tkinter as tk
 
-#import os
+import gui
 
-import gtb_gui
-#import gtb_lib
-#import gtb_core
-
-
-#import gtb_lib.shd_gismo.gismo as gismo
-#import gtb_lib.shd_plot.plot_selector as plot_selector
-#from gtb_lib.shd_tk.tkmap import TkMap
-#import gtb_lib.shd_tk.tkinter_widgets as tkw
 
 import logging
 
@@ -24,7 +15,7 @@ pages = set()
 #============================================================================
 # Ferrybox pages
 try:
-    pages.add(gtb_gui.PageTimeSeries)
+    pages.add(gui.PageTimeSeries)
 #     logging.info('PageFerrybox imported!')
 except:
     pass
@@ -32,7 +23,7 @@ except:
 
 #----------------------------------------------------------------------------
 #try:
-#    pages.add(gtb_gui.PageFerryboxRoute)
+#    pages.add(gui.PageFerryboxRoute)
 ##     logging.info('PageFerryboxRoute imported!')
 #except:
 #    pass
@@ -42,7 +33,7 @@ except:
 #============================================================================
 # CTD pages
 try:
-    pages.add(gtb_gui.PageCTD)
+    pages.add(gui.PageCTD)
 #     logging.info('PageCTD imported!')
 except:
     pass
@@ -107,8 +98,8 @@ class PageStart(tk.Frame):
         
         # Buttons 
         self.button = {} 
-        self.button_texts = {gtb_gui.PageTimeSeries: 'Ferrybox and\nfixed platforms'}
-        self.button_colors = {gtb_gui.PageTimeSeries:'sandybrown'}
+        self.button_texts = {gui.PageTimeSeries: 'Ferrybox and\nfixed platforms'}
+        self.button_colors = {gui.PageTimeSeries:'sandybrown'}
         
         r=0
         c=0
@@ -138,10 +129,10 @@ class PageStart(tk.Frame):
         
         #-----------------------------------------------------------------------
 #        try:
-#            if gtb_gui.PageFerryboxRoute in pages:
+#            if gui.PageFerryboxRoute in pages:
 #                self.button_ferrybox_route = tk.Button(self, 
 #                            text='Ferrybox Route', 
-#                            command=lambda: self.controller.show_frame(gtb_gui.PageFerryboxRoute), 
+#                            command=lambda: self.controller.show_frame(gui.PageFerryboxRoute), 
 #                            width=width, height=height, font=font, bg='darkgreen')
 #        except:
 #            self.button_ferrybox_route = tk.Button(self, 
@@ -161,10 +152,10 @@ class PageStart(tk.Frame):
 #        
 #        #-----------------------------------------------------------------------
 #        try:
-#            if gtb_gui.PageCTD in pages:
+#            if gui.PageCTD in pages:
 #                self.button_ctd = tk.Button(self, 
 #                            text='CTD', 
-#                            command=lambda: self.controller.show_frame(gtb_gui.PageCTD), 
+#                            command=lambda: self.controller.show_frame(gui.PageCTD), 
 #                            width=width, height=height, font=font, bg='pink') 
 #            self.button_ctd.grid(row=r, column=c, padx=padx, pady=pady, sticky='sw')
 #        except:
