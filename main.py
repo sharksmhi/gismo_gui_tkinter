@@ -355,7 +355,7 @@ class App(tk.Tk):
         self.combobox_widget_sampling_type = tkw.ComboboxWidget(frame_sampling_type, 
                                                                 items=sorted(self.session.get_sampling_types()),
                                                                 title='Sampling type', 
-                                                                prop_compobox={'width':20}, 
+                                                                prop_combobox={'width':20},
                                                                 column=0, 
                                                                 columnspan=1, 
                                                                 row=0, 
@@ -429,26 +429,6 @@ class App(tk.Tk):
             self.button_load_file.configure(state='normal')
         else:
             self.button_load_file.configure(state='disabled')
-    
-    
-    #===========================================================================
-    def old_get_data_file_path(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Input directory']
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('GISMO-file','*.txt')])
-                                                 
-        if file_path:
-            self.stringvar_file_ferrybox.set(file_path)
-            
-            # Check settings file path
-            settings_file_path = self.stringvar_settings_file_ferrybox.get()
-            if not settings_file_path: 
-                self.stringvar_settings_file_ferrybox.set(self.settings['directory']['Default gismo settings'])
-            
             
     #===========================================================================
     def _get_settings_file_path(self):
@@ -486,6 +466,8 @@ class App(tk.Tk):
             return 
 
         self._update_loaded_files_widget()
+
+        self.update_all()
         self.update_help_information('File loaded! Please continue.')
 
     def _update_loaded_files_widget(self):
@@ -502,293 +484,7 @@ class App(tk.Tk):
         :return:
         """
         return self.listbox_widget_loaded_files.items[:]
-        
-    #===========================================================================
-    def old_set_load_frame(self):
-        frames = []
-        if 'gui.page_time_series' in sys.modules:
-            frames.append('Time series files')
-        if 'gui.page_ctd' in sys.modules:
-            frames.append('CTD files')
-        frames.append('Sample files')
-        
-        self.notebook_load = tkw.NotebookWidget(self.load_frame, frames=frames)
-        
-        if 'gui.page_ferrybox' in sys.modules:
-            self._set_load_ferrybox_frame()
-        if 'gui.page_ctd' in sys.modules:
-            self._set_load_ctd_frame()
-        self._set_load_sample_frame()
-        
-        
-    #===========================================================================
-    def old_set_load_ferrybox_frame(self):
-        frame = self.notebook_load.frame_ferrybox_files
-        
-        entry_width = 100
-        padx=5
-        pady=5
-        r=0
-        
-        #----------------------------------------------------------------------
-        self.button_get_file = ttk.Button(frame, text='Get file:', command=self._get_file_path_ferrybox)
-        self.button_get_file.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        
-        self.stringvar_file_ferrybox = tk.StringVar()
-        self.entry_file = tk.Entry(frame, textvariable=self.stringvar_file_ferrybox, width=entry_width, state='disabled')
-        self.entry_file.grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
-        r+=1
-        
-        #----------------------------------------------------------------------
-        self.button_get_settings_file_ferrybox = ttk.Button(frame, text='Get settings file:', command=self._get_settings_file_path_ferrybox)
-        self.button_get_settings_file_ferrybox.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        
-        self.stringvar_settings_file_ferrybox = tk.StringVar()
-        self.entry_settings_file = tk.Entry(frame, textvariable=self.stringvar_settings_file_ferrybox, width=entry_width, state='disabled')
-        self.entry_settings_file.grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
-        r+=1
-        
-        #----------------------------------------------------------------------
-        # Load file button
-        self.button_load_file = ttk.Button(frame, text='Load file', command=self._load_file)
-        self.button_load_file.grid(row=r, column=1, padx=padx, pady=pady, sticky='e')
-        
-        
-        r+=1
-        self.loaded_files_combobox_widget = tkw.ComboboxWidget(frame, 
-                                                               title='Active file:', 
-                                                               prop_compobox={'width':entry_width}, 
-                                                               column=1, 
-                                                               columnspan=1, 
-                                                               sticky='w')
-    
-    
-    #===========================================================================
-    def old_set_load_ctd_frame(self):
-        frame = self.notebook_load.frame_ctd_files
-        
-        entry_width = 80
-        padx=5
-        pady=5
-        r=0
-        
-        self.button_load_ctd = ttk.Button(frame, text='Load CTD files', command=self._load_ctd)
-        self.button_load_ctd.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        r+=1
-        
-        prop = {'width': 90, 
-                'height': 5}
-        self.listbox_widget_ctd = tkw.ListboxSelectionWidget(frame, 
-                                                             sort_selected=True, 
-                                                             vertical=True, 
-                                                             prop_items=prop, 
-                                                             prop_selected=prop, 
-                                                             row=r, 
-                                                             columnspan=2)
-        r+=1
-        
-        #----------------------------------------------------------------------
-        self.button_get_settings_file_ctd = ttk.Button(frame, text='Get settings file:', command=self._get_settings_file_path_ctd)
-        self.button_get_settings_file_ctd.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        
-        self.stringvar_settings_file_ctd = tk.StringVar()
-        self.entry_settings_file_ctd = tk.Entry(frame, textvariable=self.stringvar_settings_file_ctd, width=entry_width, state='disabled')
-        self.entry_settings_file_ctd.grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
-        self.stringvar_settings_file_ctd.set(self.settings['directory']['Default ctd settings'])
-        core.Boxen().current_ctd_settings = gismo.PlatformSettings(self.stringvar_settings_file_ctd.get())
-        r+=1
-    
-    
-    #===========================================================================
-    def old_set_load_sample_frame(self):
-        frame = self.notebook_load.frame_sample_files
-        
-        entry_width = 100
-        padx=5
-        pady=5
-        r=0
-        
-        #----------------------------------------------------------------------
-        self.button_get_file_sample = ttk.Button(frame, text='Get file:', command=self._get_sample_file_path)
-        self.button_get_file_sample.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        
-        self.stringvar_file_sample = tk.StringVar()
-        self.entry_file_sample = tk.Entry(frame, textvariable=self.stringvar_file_sample, width=entry_width, state='disabled')
-        self.entry_file_sample.grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
-        r+=1
-        
-        #----------------------------------------------------------------------
-        self.button_get_settings_file_sample = ttk.Button(frame, text='Get settings file:', command=self._get_settings_file_path_sample)
-        self.button_get_settings_file_sample.grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
-        
-        self.stringvar_settings_file_sample = tk.StringVar()
-        self.entry_settings_file_sample = tk.Entry(frame, textvariable=self.stringvar_settings_file_sample, width=entry_width, state='disabled')
-        self.entry_settings_file_sample.grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
-        r+=1
-        
-        #----------------------------------------------------------------------
-        # Load file button
-        self.button_load_file_sample = ttk.Button(frame, text='Load sample file', command=self._load_sample_file)
-        self.button_load_file_sample.grid(row=r, column=1, padx=padx, pady=pady, sticky='e')
-        
-        
-        r+=1
-        self.loaded_files_combobox_widget_sample = tkw.ComboboxWidget(frame, 
-                                                                           title='Active sample file:', 
-                                                                           prop_compobox={'width':entry_width}, 
-                                                                           column=1, 
-                                                                           columnspan=1, 
-                                                                           sticky='w')
-                                                               
-    #===========================================================================
-    def old_load_ferrybox(self):
-        self.update_help_information('Loading file...please wait...')
-        file_path = self.stringvar_file_ferrybox.get()
-        settings_file_path = self.stringvar_settings_file_ferrybox.get()
-        
-        if not all([file_path, settings_file_path]):
-            return
-            
-        core.Boxen().add_ferrybox_file(file_path=file_path, 
-                                           settings_file_path=settings_file_path)
-        
-        self.update_files_information()
-        self.update_help_information('Done!')
-    
-    
-    #===========================================================================
-    def old_load_ctd(self):
-        
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Input directory']
-        file_paths = filedialog.askopenfilenames(initialdir=open_directory, 
-                                                 filetypes=[('CTD gismo-files','*.txt')])
-        
-        settings_file_path = self.stringvar_settings_file_ctd.get() 
-        
-        self.update_help_information('Loading ctd files...please wait...')
-        if file_paths:
-            core.Boxen().add_ctd_files(file_paths=file_paths, 
-                                  settings_file_path=settings_file_path)
-            self.listbox_widget_ctd.add_items(file_paths)
-        self.update_help_information('Done!')
-        return
-        
-#         self.update_help_information('Loading ctd files...please wait...')
-#         settings_file_path = self.stringvar_settings_file.get()
-#         
-#         if not all([file_path, settings_file_path]):
-#             return
-#             
-#         core.Boxen().add_ctd_files(file_path=file_path, 
-#                          settings_file_path=settings_file_path)
-#         
-#         self.update_files_information()
-#         self.update_help_information('Done!')
-        
-        
-        
-    #===========================================================================
-    def old_get_file_path_ferrybox(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Input directory']
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('GISMO-file','*.txt')])
-                                                 
-        if file_path:
-            self.stringvar_file_ferrybox.set(file_path)
-            
-            # Check settings file path
-            settings_file_path = self.stringvar_settings_file_ferrybox.get()
-            if not settings_file_path: 
-                self.stringvar_settings_file_ferrybox.set(self.settings['directory']['Default ferrybox settings'])
-            
-            
-    #===========================================================================
-    def old_get_settings_file_path_ferrybox(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Data directory']
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('core.Settings-file','*.ini')])
-                                                 
-        if file_path:
-            self.stringvar_settings_file_ferrybox.set(file_path)
-    
-    
-    #===========================================================================
-    def old_load_sample_file(self):
-#         print 'LOADING'
-        self.update_help_information('Loading sample file...please wait...')
-        file_path = self.stringvar_file_sample.get()
-        settings_file_path = self.stringvar_settings_file_sample.get()
-        
-        if not all([file_path, settings_file_path]):
-            return
-        core.Boxen().add_sample_file(file_path=file_path, 
-                                    settings_file_path=settings_file_path)
-                                  
-        self.update_files_information()
-        self.update_help_information('Done!')
-        
-    #===========================================================================
-    def old_get_sample_file_path(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Input directory']
-            print('open_directory', open_directory)
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('sample-file','*.txt')])
-                                                 
-        if file_path:
-            self.stringvar_file_sample.set(file_path)
-            
-            # Check settings file path
-            settings_file_path = self.stringvar_settings_file_sample.get()
-            if not settings_file_path: 
-                self.stringvar_settings_file_sample.set(self.settings['directory']['Default sample settings'])
-            
-    #===========================================================================
-    def old_get_settings_file_path_sample(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Data directory']
-            print('open_directory', open_directory)
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('sample settings-file','*.ini')])
-                                                 
-        if file_path:
-            self.stringvar_file_sample.set(file_path)
-            
-    #===========================================================================
-    def old_get_settings_file_path_ctd(self):
-        if core.Boxen().open_directory:
-            open_directory = core.Boxen().open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Data directory']
-            print('open_directory', open_directory)
-            
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('ctd settings-file','*.ini')])
-                                                 
-        if file_path:
-            self.stringvar_file_ctd.set(file_path)
-            core.Boxen().current_ctd_settings = gismo.PlatformSettings(file_path)
-    
-    
-    
-    
+
     #===========================================================================
     def _quick_run_F1(self, event):
         try:
@@ -875,18 +571,12 @@ class App(tk.Tk):
     #===========================================================================
     def update_all(self):
         
-        for page_name, frame in self.frames.iteritems():
+        for page_name, frame in self.frames.items():
             try:
                 if self.pages_started[page_name]:
                     frame.update_page()
             except:
                 pass
-        try:
-            self.update_series_information() 
-        except:
-            pass
-    
-    
     
     #===========================================================================
     def _set_menubar(self):

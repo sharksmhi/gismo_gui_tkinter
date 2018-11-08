@@ -48,6 +48,11 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def startup(self):
         self._set_frame()
+
+        # Set reference info
+        gui.update_compare_widget(compare_widget=self.compare_widget,
+                                  settings_object=self.settings)
+
         self.update_page()
         
     #===========================================================================
@@ -149,11 +154,13 @@ class PageTimeseries(tk.Frame):
         
         pad = {'padx': 5, 
                'pady': 5}
+        prop_combobox = {'width': 60}
         #----------------------------------------------------------------------
+
         # Data file
         self.select_data_widget = tkw.ComboboxWidget(self.labelframe_data, 
                                                    title='',
-                                                   width=30, 
+                                                   prop_combobox=prop_combobox,
 #                                                   callback_target=self._on_select_parameter, 
                                                    row=0, 
                                                    pady=5, 
@@ -161,30 +168,35 @@ class PageTimeseries(tk.Frame):
         
         
         self.button_load_current = tk.Button(self.labelframe_data, 
-                    text=u'Load/update current file', 
+                    text=u'Load/update main file', 
                     command=self._update_file)
-        self.button_load_current.grid(row=1, column=0, **pad)
+        self.button_load_current.grid(row=0, column=1, sticky='w', **pad)
         
-        self.stringvar_current_file = tk.StringVar()
-        tk.Label(self.labelframe_data, textvariable=self.stringvar_current_file, bg='red').grid(row=2, column=0, sticky='nsew', **pad)
+        self.stringvar_current_data_file = tk.StringVar()
+        tk.Label(self.labelframe_data, 
+                 textvariable=self.stringvar_current_data_file, 
+                 bg='red').grid(row=2, column=0, columnspan=2, sticky='nsew', **pad)
         tkw.grid_configure(self.labelframe_data, nr_rows=3)
         
         #----------------------------------------------------------------------
-        # Referens file
+        # Reference file
         self.select_ref_data_widget = tkw.ComboboxWidget(self.labelframe_reference,
                                                          title='',
+                                                         prop_combobox=prop_combobox,
                                                          #                                                   callback_target=self._on_select_parameter,
                                                          row=0,
                                                          pady=5,
                                                          sticky='w')
 
         self.button_load_current_sample = tk.Button(self.labelframe_reference, 
-                    text=u'Load/update current sample file', 
-                    command=self._update_file_sample)
-        self.button_load_current_sample.grid(row=1, column=0, **pad)
+                    text=u'Load/update reference file', 
+                    command=self._update_file_reference)
+        self.button_load_current_sample.grid(row=0, column=1, sticky='w', **pad)
         
-        self.stringvar_current_sample_file = tk.StringVar()
-        tk.Label(self.labelframe_reference, textvariable=self.stringvar_current_sample_file, bg='blue').grid(row=2, column=0, sticky='nsew', **pad)
+        self.stringvar_current_reference_file = tk.StringVar()
+        tk.Label(self.labelframe_reference, 
+                 textvariable=self.stringvar_current_reference_file, 
+                 bg='blue').grid(row=2, column=0, columnspan=2, sticky='nsew', **pad)
         tkw.grid_configure(self.labelframe_reference, nr_rows=2)
         
         #----------------------------------------------------------------------
@@ -208,7 +220,7 @@ class PageTimeseries(tk.Frame):
         self._set_notebook_frame_axis_range()
         self._set_notebook_frame_select()
         self._set_notebook_frame_flag()
-#        self._set_notebook_frame_compare()
+        self._set_notebook_frame_compare()
         self._set_notebook_frame_save()
         
         
@@ -377,10 +389,12 @@ class PageTimeseries(tk.Frame):
         logging.debug('page_ferrybox._callback_axis_widgets: End')
     
     #===========================================================================
-    def _on_file_selection(self):
-        logging.debug('page_ferrybox._on_file_selection: Start')
+    def _on_file_update(self):
+        logging.debug('page_ferrybox._on_file_update: Start')
         # Update valid time range in time axis
-        
+
+        file_id = self.stringvar_current_data_file.get()
+        print('file_id', file_id)
         gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
                                     time_axis_widget=self.xrange_widget)
         
@@ -393,7 +407,7 @@ class PageTimeseries(tk.Frame):
         self._update_parameter_list()
         self._on_select_parameter()
         core.Temp().f = self
-        logging.debug('page_ferrybox._on_file_selection: End')
+        logging.debug('page_ferrybox._on_file_update: End')
         
     #===========================================================================
     def _callback_plot_range(self):
@@ -568,53 +582,57 @@ class PageTimeseries(tk.Frame):
         for k, flag in enumerate(selection.selected_flags):
             self.plot_object.set_prop(ax='first', line_id=flag, **selection.get_prop(flag))
         logging.debug('page_ferrybox._on_flag_widget_change: End')
-    
+
+    def _get_file_id(self, string):
+        """
+        Returns file_id from a information string like Ferrybox CMEMS: <file_id>
+        :param string:
+        :return:
+        """
+        return string.split(':')[-1].strip()
+
     #===========================================================================
     def _update_file(self):
         logging.debug('page_ferrybox._update_file: Start')
-        file_id = self.stringvar_current_file.get()
+        file_id = self._get_file_id(self.select_data_widget.get_value())
         
         if not file_id:
-            core.Boxen().update_ferrybox_object() # This will reset the gismo_object
             self.save_widget.set_file_path('')
             self.stringvar_current_file.set('')
             return
         
         self._reset_widgets()
         
-        self._on_file_selection()
+        self._on_file_update()
 
+        print('FILE ID', file_id)
         file_path = self.session.get_file_path(file_id)
         if not file_path:
             self.save_widget.set_file_path()
+            self.stringvar_current_data_file.set('')
             return
+        print('FILE PATH', file_path)
         self.save_widget.set_file_path(file_path)
-        self.stringvar_current_file.set(file_path)
-        
-        # Set diff info
-        gui.update_compare_widget(compare_widget=self.compare_widget, 
-                                  settings_object=self.settings)
+        self.stringvar_current_data_file.set(file_path)
+
         logging.debug('page_ferrybox._update_file: End')
         
         
     #===========================================================================
-    def _update_file_sample(self):
-        logging.debug('page_ferrybox._update_file_sample: Start')
-        selected_file = self.controller.loaded_files_combobox_widget_sample.selected_item
+    def _update_file_reference(self):
+        logging.debug('page_ferrybox._update_file_reference: Start')
+        file_id = self.select_ref_data_widget.get_value()
         
-        if not selected_file:
-            core.Boxen().update_ferrybox_object() # This will reset the gismo_object
-            self.stringvar_current_sample_file.set('')
-            return 
-        
-        core.Boxen().update_sample_object(gismo_file_path=selected_file)
-        
-        if not core.Boxen().current_sample_object:
+        if not file_id:
+            self.stringvar_current_reference_file.set('')
             return
-        file_path = core.Boxen().current_sample_object.file_path
-        
-        self.stringvar_current_sample_file.set(file_path)
-        
-        logging.debug('page_ferrybox._update_file_sample: End')
+
+        file_path = self.session.get_file_path(file_id)
+        if not file_path:
+            self.stringvar_current_reference_file.set('')
+            return
+        self.stringvar_current_reference_file.set(file_path)
+
+        logging.debug('page_ferrybox._update_file_reference: End')
         
 

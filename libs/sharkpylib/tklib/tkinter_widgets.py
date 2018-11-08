@@ -220,7 +220,7 @@ class ComboboxWidget(tk.Frame):
                  items=[], 
                  default_item=None, 
                  prop_frame={}, 
-                 prop_compobox={}, 
+                 prop_combobox={}, 
                  grid_items={}, 
                  callback_target=[], 
                  **kwargs):
@@ -238,9 +238,9 @@ class ComboboxWidget(tk.Frame):
         self.prop_frame = {}
         self.prop_frame.update(prop_frame)
         
-        self.prop_compobox = {'width':20, 
+        self.prop_combobox = {'width':20, 
                               'state':'readonly'}
-        self.prop_compobox.update(prop_compobox)
+        self.prop_combobox.update(prop_combobox)
         
         self.grid_frame = {}
         self.grid_frame.update(kwargs)
@@ -271,7 +271,7 @@ class ComboboxWidget(tk.Frame):
         self.stringvar = tk.StringVar()
         self.combobox = ttk.Combobox(self, 
                                      textvariable=self.stringvar, 
-                                     **self.prop_compobox)
+                                     **self.prop_combobox)
         self.combobox.grid(row=r, column=0, **self.grid_items) 
         
         grid_configure(self, nr_rows=r+1)
@@ -299,6 +299,7 @@ class ComboboxWidget(tk.Frame):
         """
         Created     20180821     
         """
+        print('self.stringvar.get()'.upper(), self.stringvar.get())
         return self.stringvar.get() 
             
     
@@ -2470,7 +2471,7 @@ class TimeWidget(ttk.Labelframe):
                  lowest_time_resolution='minute', 
                  show_header=True, 
                  prop_frame={}, 
-                 prop_compobox={}, 
+                 prop_combobox={}, 
                  grid_items={}, 
                  callback_target=None, 
                  **kwargs):
@@ -2494,9 +2495,9 @@ class TimeWidget(ttk.Labelframe):
         if title:
             self.prop_frame.update({'text': title})
         
-        self.prop_compobox = {'width':8, 
+        self.prop_combobox = {'width':8, 
                               'state':'readonly'}
-        self.prop_compobox.update(prop_compobox)
+        self.prop_combobox.update(prop_combobox)
         
         self.grid_frame = {'sticky': 'nsew'}
         self.grid_frame.update(kwargs) 
@@ -2542,7 +2543,7 @@ class TimeWidget(ttk.Labelframe):
         for c, part in enumerate(self.time_resolution):
             self.combobox[part] = ttk.Combobox(self, 
                                                 textvariable=self.stringvar[part], 
-                                                **self.prop_compobox)
+                                                **self.prop_combobox)
             self.combobox[part].grid(row=r, column=c, **self.grid_items)
             self.combobox[part].bind('<<ComboboxSelected>>', self._on_select)
 #        r+=1

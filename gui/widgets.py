@@ -861,7 +861,7 @@ class CompareWidget(tk.Frame):
     
     #===========================================================================
     def set_data(self, **kwargs):
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key in self.stringvar:
                 self.stringvar[key].set(str(int(value)))
         
