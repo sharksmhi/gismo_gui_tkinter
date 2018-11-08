@@ -158,18 +158,29 @@ def add_sample_data_to_boxen(par=None,
 ================================================================================
 """ 
 def get_flag_widget(parent=None, 
-                    settings_object=None, 
+                    settings_object=None,
                     callback_flag_data=None, 
                     callback_update=None, 
                     callback_prop_change=None,
                     include_marker_size=True,
                     **kwargs):
-    
-    # Flags are sorted
-    flags = settings_object.get_flag_list()
-    descriptions = settings_object.get_flag_description_list()
-    colors = settings_object.get_flag_color_list()
-    markersize = settings_object.get_flag_markersize_list()
+
+    if settings_object:
+
+        # Flags are sorted
+        flags = settings_object.get_flag_list()
+        descriptions = settings_object.get_flag_description_list()
+        nr_flags = len(flags)
+        # colors = settings_object.get_flag_color_list()
+        # markersize = settings_object.get_flag_markersize_list()
+    else:
+        nr_flags = 6
+        flags = list(range(nr_flags))
+        descriptions = ['unknown']*nr_flags
+
+    colors = ['red' if flags[i] in [4, 8] else 'black' for i in range(nr_flags)]
+    markersize = [6] * nr_flags
+
     flag_widget = tkw.FlagWidget(parent, 
                                   flags=flags, 
                                   descriptions=descriptions, 
@@ -751,9 +762,9 @@ def update_compare_widget(compare_widget=None,
     core.Settings object is the gismo settings
     """
     
-    compare_widget.set_data(time=settings_object.matching_criteria.time, 
-                             dist=settings_object.matching_criteria.dist, 
-                             depth=settings_object.matching_criteria.depth)
+    compare_widget.set_data(time=settings_object['compare']['time'],
+                             dist=settings_object['compare']['distance'],
+                             depth=settings_object['compare']['depth'])
             
 """
 ================================================================================

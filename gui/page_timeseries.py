@@ -42,9 +42,8 @@ class PageTimeseries(tk.Frame):
         self.controller = controller
         self.session = controller.session
         self.settings = controller.settings
-        
-        self.gismo_platform_settings = gismo.SampleTypeSettings(self.settings['directory']['Default ferrybox settings'])
 
+        self.gismo_platform_settings = None
 
     #===========================================================================
     def startup(self):
@@ -53,8 +52,10 @@ class PageTimeseries(tk.Frame):
         
     #===========================================================================
     def update_page(self):
-        self.stringvar_current_file.set('')
-        self.stringvar_current_sample_file.set('')
+        self.select_data_widget.update_items(self.controller.get_loaded_files_list())
+        self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
+        # self.stringvar_current_file.set('')
+        # self.stringvar_current_sample_file.set('')
 
     #===========================================================================
     def _set_frame(self):
@@ -152,6 +153,7 @@ class PageTimeseries(tk.Frame):
         # Data file
         self.select_data_widget = tkw.ComboboxWidget(self.labelframe_data, 
                                                    title='',
+                                                   width=30, 
 #                                                   callback_target=self._on_select_parameter, 
                                                    row=0, 
                                                    pady=5, 
@@ -169,13 +171,20 @@ class PageTimeseries(tk.Frame):
         
         #----------------------------------------------------------------------
         # Referens file
+        self.select_ref_data_widget = tkw.ComboboxWidget(self.labelframe_reference,
+                                                         title='',
+                                                         #                                                   callback_target=self._on_select_parameter,
+                                                         row=0,
+                                                         pady=5,
+                                                         sticky='w')
+
         self.button_load_current_sample = tk.Button(self.labelframe_reference, 
                     text=u'Load/update current sample file', 
                     command=self._update_file_sample)
-        self.button_load_current_sample.grid(row=0, column=0, **pad)
+        self.button_load_current_sample.grid(row=1, column=0, **pad)
         
         self.stringvar_current_sample_file = tk.StringVar()
-        tk.Label(self.labelframe_reference, textvariable=self.stringvar_current_sample_file, bg='blue').grid(row=1, column=0, sticky='nsew', **pad)
+        tk.Label(self.labelframe_reference, textvariable=self.stringvar_current_sample_file, bg='blue').grid(row=2, column=0, sticky='nsew', **pad)
         tkw.grid_configure(self.labelframe_reference, nr_rows=2)
         
         #----------------------------------------------------------------------
@@ -270,16 +279,26 @@ class PageTimeseries(tk.Frame):
     def _lasso_select(self):
         self.plot_object.add_mark_lasso_target('first', color='r') # Should be in an other place
         self.plot_object.mark_lasso(line_id='current_flags') # Negative values in plot
-        
+
+    def _update_notebook_frame_flag(self):
+        try:
+            self.frame_flag_widget.destroy()
+        except:
+            pass
+        # file_id self.
+        self.gismo_platform_settings = self.session.get()
+        self._set_notebook_frame_flag()
+
     #===========================================================================
     def _set_notebook_frame_flag(self):
-        frame = self.notebook_options.frame_flag
+        self.frame_flag_widget = tk.Frame(self.notebook_options.frame_flag)
+        self.frame_flag_widget.grid(row=0, column=0, sticky='nsew')
         
         padx=5
         pady=5
         r=0
         c=0
-        self.flag_widget = gui.get_flag_widget(parent=frame, 
+        self.flag_widget = gui.get_flag_widget(parent=self.frame_flag_widget,
                                             settings_object=self.gismo_platform_settings, 
                                             callback_flag_data=self._on_flag_widget_flag, 
                                             callback_update=self._update_plot, 
@@ -291,7 +310,7 @@ class PageTimeseries(tk.Frame):
                                             pady=pady, 
                                             sticky='nw')
         
-        tkw.grid_configure(frame)
+        tkw.grid_configure(self.frame_flag_widget)
     
     
     #===========================================================================
@@ -553,23 +572,19 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def _update_file(self):
         logging.debug('page_ferrybox._update_file: Start')
-        selected_file = self.controller.loaded_files_combobox_widget.selected_item
+        file_id = self.stringvar_current_file.get()
         
-        if not selected_file:
+        if not file_id:
             core.Boxen().update_ferrybox_object() # This will reset the gismo_object
             self.save_widget.set_file_path('')
             self.stringvar_current_file.set('')
-            return 
-        
-        core.Boxen().update_ferrybox_object(gismo_file_path=selected_file)
+            return
         
         self._reset_widgets()
         
         self._on_file_selection()
-        
-        if not core.Boxen().current_ferrybox_object:
-            return
-        file_path = core.Boxen().current_ferrybox_object.file_path
+
+        file_path = self.session.get_file_path(file_id)
         if not file_path:
             self.save_widget.set_file_path()
             return
@@ -578,7 +593,7 @@ class PageTimeseries(tk.Frame):
         
         # Set diff info
         gui.update_compare_widget(compare_widget=self.compare_widget, 
-                              settings_object=core.Boxen().current_ferrybox_settings)
+                                  settings_object=self.settings)
         logging.debug('page_ferrybox._update_file: End')
         
         

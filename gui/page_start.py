@@ -98,8 +98,8 @@ class PageStart(tk.Frame):
         
         # Buttons 
         self.button = {} 
-        self.button_texts = {gui.PageTimeSeries: 'Ferrybox and\nfixed platforms'}
-        self.button_colors = {gui.PageTimeSeries:'sandybrown'}
+        self.button_texts = {gui.PageTimeseries: 'Ferrybox and\nfixed platforms'}
+        self.button_colors = {gui.PageTimeseries:'sandybrown'}
         
         r=0
         c=0

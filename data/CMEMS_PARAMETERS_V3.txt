@@ -1,0 +1,913 @@
+smhi_channel	smhi_code	smhi_units	myo_scaling	myo_channel	myo_code	units	valid_min	valid_max	standard_name	type_of_analysis	long_name
+8001	Year	num_value	1	8001	YEAR	num_value	1700	2099	year	-	Year
+8002	Latitude	deg	1	8002	LATX	degree_north	-90	90	latitude	-	Latitude of each location
+8003	Longitude	deg	1	8003	LONX	degree_east	-180	180	longitude	-	Longitude of each location
+8028	WindForce	Beaufort	1	8028	WBFO	-	0	12	beaufort_wind_force	-	Beaufort wind force
+8029	Gust	m/s	1	8029	GSPD	m s-1	0	100	wind_speed_of_gust	-	Gust wind speed
+8030	WindDir	deg	1	8030	WDIR	degree	0	360	wind_from_direction	-	Wind from direction relative true north
+8031	WindSpeed	m/s	1	8031	WSPD	m s-1	0	100	wind_speed	-	Horizontal wind speed
+8032	Airpressure	hPa	1	8032	ATMP	hPa	950	1050	air_pressure	-	Atmospheric pressure at altitude
+8033	AirTemp	degC	1	8033	DRYT	degrees_C	-20	40	air_temperature	-	Air temperature in dry bulb
+8034	Humidity	%	1	8034	RELH	%	0	100	relative_humidity	-	Relative humidity
+8041	Hs	m	1	8041	VGHS	m	0	30	sea_surface_wave_significant_height	unkown	Generic format
+8042	Hs	m	1	8042	VAVH	m	0	30	sea_surface_wave_significant_height	zero crossing	Average height highest 1/3 wave (H1/3)
+8043	Hm0	m	1	8043	VHM0	m	0	30	sea_surface_wave_significant_height	spectral analysis	Spectral significant wave height (Hm0)
+8044	Tz	s	1	8044	VTZA	s	0	30	sea_surface_wave_mean_period	zero crossing	Average zero crossing wave period (Tz)
+8045	Mdir	deg	1	8045	VMDR	degree	0	360	sea_surface_wave_from_direction	spectral analysis	Mean wave direction from (Mdir)
+8046	Hmax_estimated	m	1	8046	VEMH	m	0	30	sea_surface_wave_maximum_height	unknown	Estimated maximum wave height
+8047	Hmax_zero_up	m	1	8047	VZMX	m	0	30	sea_surface_wave_maximum_height	zero crossing	Maximum zero crossing wave height (Hmax)
+8048	Hmax_zero_down	m	1	8048	VZMD	m	0	30	sea_surface_wave_maximum_height	zero crossing	Maximum zero down crossing wave height (Hmax)
+8060	Fluorescence	relative	1	8060	FLUO	relative	-0.1	10	fluorescence	-	Fluorescence
+8061	LightAtt	m-1	1	8061	TUR2	m-1	0	10	light_attenuation	-	Light attenuation coefficient
+8062	Chlorophyll	ug/l	1	8062	CPHL	mg m-3	0	1000	mass_concentration_of_chlorophyll_a_in_sea_water	-	Chlorophyll-a
+8063	Chlorophyll-fluorescence	ug/l	1	8063	FLU2	mg m-3	0	1000	mass_concentration_of_chlorophyll_a_fluorescence_in_sea_water	-	Chlorophyll-a fluorescence
+8086	Specific_weight	g/cm3	1	8086	SPEC	g cm-3	0	2	specific_weight	-	Specific weight
+8087	Temperature_specific_weight	degC	1	8087	TSPE	degrees_C	-2	32	temperature_specific_weight	-	Temperature specific weight
+8088	Number_of_hits	-	1	8088	CNUM	-	0	1000	number_of_hits	-	Number of hits
+8092	Quality_flag	-	1	8092	QFLA	-	0	9	quality_flag	-	Quality flag
+8165	CDOM	ppb	1	8165	CDOM	1e-9	0	100	concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent_mass_fraction_of_quinine_sulfate_dihydrate	-	Cdom
+8166	Phycoerythrin	ug/l	1	8166	PHER	mg m-3	0	100	phycoerythrin	-	Phycoerythrin
+8167	pCO2_luft	ppm	1	8167	PCO2	µatm	0	100	surface_partial_pressure_of_carbon_dioxide_in_sea_water	-	CO2 partial pressure
+8168	WatPres	dBar	1	8168	PRES	dbar	0	6000	sea_water_pressure	-	Sea pressure
+8169	Oxygen	umol/kg	1	8169	DOX2	µmol kg-1	0	450	moles_of_oxygen_per_unit_mass_in_sea_water	-	Dissolved oxygen
+8171	Speed	knots	1	8171	SPOG	knots	0	50	platform_speed_wrt_sea_water	-	Platform speed wrt sea water
+8173	Phycocyanin	ug/l	1	8173	PHYC	mg m-3	0	1000	phycocyanin	-	Phycocyanin
+8174	Turbidity	NTU	1	8174	TUR4	1	0	10000	sea_water_turbidity	-	Turbidity
+8175	PAR	uEm2s-1	1	8175	LGHT	uEm2s-1	0	4000	par	-	Light irradiance immerged par
+8176	Oxygen	mmol/m3	1	8176	DOXY	mmol m-3	0	650	mole_concentration_of_dissolved_molecular_oxygen_in_sea_water	-	Dissolved oxygen
+8177	PCO2	ppm	1	8177	XCO2	µatm	0	5000	pco2	-	CO2 mole fraction in dry gas
+8178	Depth	m	1	8178	DEPH	m	0	6000	depth	-	Depth
+8179	WatTemp	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8180	WatTemp2	degC	1	8180	TEMP2	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8181	Salinity	PSU	1	8181	PSAL	0.001	0	40	sea_water_practical_salinity	-	Practical salinity
+8182	Salinity2	PSU	1	8182	PSAL2	0.001	0	40	sea_water_practical_salinity	-	Practical salinity
+8183	CurDir	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8184	CurSp	cm/s	0.01	8184	HCSP	m s-1	0	3	sea_water_speed	-	Horizontal current speed
+8185	Conductivity	S/m	1	8185	CNDC	S m-1	0	1000	sea_water_electrical_conductivity	-	Electrical conductivity
+8186	Vdir	deg	1	8186	VDIR	degree	0	360	sea_surface_wave_from_direction	unknown	Wave direction rel. true north
+8187	SoundVelocity	m/s	1	8187	SVEL	m s-1	1350	1600	speed_of_sound_in_sea_water	-	Sound velocity
+8188	CurEast	m/s	1	8188	EWCT	m s-1	-20	20	eastward_sea_water_velocity	-	West-east current component
+8189	CurNorth	m/s	1	8189	NSCT	m s-1	-20	20	northward_sea_water_velocity	-	South-north current component
+8190	Oxy_sat	%	1	8190	OSAT	%	0	10	fractional_saturation_of_oxygen_in_sea_water	-	Oxygen saturation
+8191	Oxygen	ml/l	1	8191	DOX1	ml l-1	0	10	volume_fraction_of_oxygen_in_sea_water	-	Dissolved oxygen
+8194	Density	kg/m3	1	8194	DENS	kg m-3	10	35	sea_water_sigma_theta	-	Sea water sigma theta
+8195	Sealevel	m	1	8195	SLEV	m	-10	10	sea_surface_height_above_sea_level	-	Observed sea level
+8515	Tp	s	1	8515	VTPK	s	0	30	sea_surface_wave_period_at_variance_spectral_density_maximum	spectral analysis	Wave period at spectral peak / peak period (Tp)
+8523	ThTp	deg	1	8523	VPED	degree	0	360	sea_surface_wave_from_direction_at_variance_spectral_density_maximum	spectral analysis	Wave principal direction at spectral peak
+8525	SprTp	deg	1	8525	VPSP	degree	0	360	directional_spread_peak	unknown	Directional spread wave peak
+8600	WatTemp_00	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8601	WatTemp_01	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8602	WatTemp_02	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8603	WatTemp_03	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8604	WatTemp_04	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8605	WatTemp_05	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8606	WatTemp_06	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8607	WatTemp_07	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8608	WatTemp_08	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8609	WatTemp_09	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8610	WatTemp_10	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8611	WatTemp_11	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8612	WatTemp_12	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8613	WatTemp_13	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8614	WatTemp_14	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8615	WatTemp_15	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8616	WatTemp_16	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8617	WatTemp_17	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8618	WatTemp_18	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8619	WatTemp_19	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8620	WatTemp_20	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8621	WatTemp_21	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8622	WatTemp_22	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8623	WatTemp_23	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8624	WatTemp_24	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8625	WatTemp_25	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8626	WatTemp_26	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8627	WatTemp_27	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8628	WatTemp_28	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8629	WatTemp_29	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8630	WatTemp_30	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8631	WatTemp_31	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8632	WatTemp_32	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8633	WatTemp_33	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8634	WatTemp_34	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8635	WatTemp_35	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8636	WatTemp_36	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8637	WatTemp_37	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8638	WatTemp_38	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8639	WatTemp_39	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8640	WatTemp_40	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8641	WatTemp_41	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8642	WatTemp_42	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8643	WatTemp_43	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8644	WatTemp_44	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8645	WatTemp_45	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8646	WatTemp_46	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8647	WatTemp_47	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8648	WatTemp_48	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8649	WatTemp_49	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8650	WatTemp_50	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8651	WatTemp_51	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8652	WatTemp_52	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8653	WatTemp_53	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8654	WatTemp_54	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8655	WatTemp_55	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8656	WatTemp_56	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8657	WatTemp_57	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8658	WatTemp_58	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8659	WatTemp_59	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8660	WatTemp_60	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8661	WatTemp_61	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8662	WatTemp_62	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8663	WatTemp_63	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8664	WatTemp_64	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8665	WatTemp_65	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8666	WatTemp_66	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8667	WatTemp_67	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8668	WatTemp_68	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8669	WatTemp_69	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8670	WatTemp_70	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8671	WatTemp_71	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8672	WatTemp_72	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8673	WatTemp_73	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8674	WatTemp_74	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8675	WatTemp_75	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8676	WatTemp_76	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8677	WatTemp_77	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8678	WatTemp_78	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8679	WatTemp_79	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8680	WatTemp_80	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8681	WatTemp_81	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8682	WatTemp_82	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8683	WatTemp_83	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8684	WatTemp_84	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8685	WatTemp_85	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8686	WatTemp_86	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8687	WatTemp_87	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8688	WatTemp_88	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8689	WatTemp_89	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8690	WatTemp_90	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8691	WatTemp_91	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8692	WatTemp_92	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8693	WatTemp_93	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8694	WatTemp_94	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8695	WatTemp_95	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8696	WatTemp_96	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8697	WatTemp_97	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8698	WatTemp_98	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8699	WatTemp_99	degC	1	8179	TEMP	degrees_C	-2	32	sea_water_temperature	-	Sea temperature
+8700	Salinity_00	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8701	Salinity_01	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8702	Salinity_02	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8703	Salinity_03	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8704	Salinity_04	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8705	Salinity_05	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8706	Salinity_06	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8707	Salinity_07	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8708	Salinity_08	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8709	Salinity_09	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8710	Salinity_10	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8711	Salinity_11	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8712	Salinity_12	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8713	Salinity_13	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8714	Salinity_14	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8715	Salinity_15	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8716	Salinity_16	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8717	Salinity_17	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8718	Salinity_18	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8719	Salinity_19	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8720	Salinity_20	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8721	Salinity_21	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8722	Salinity_22	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8723	Salinity_23	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8724	Salinity_24	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8725	Salinity_25	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8726	Salinity_26	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8727	Salinity_27	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8728	Salinity_28	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8729	Salinity_29	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8730	Salinity_30	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8731	Salinity_31	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8732	Salinity_32	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8733	Salinity_33	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8734	Salinity_34	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8735	Salinity_35	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8736	Salinity_36	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8737	Salinity_37	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8738	Salinity_38	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8739	Salinity_39	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8740	Salinity_40	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8741	Salinity_41	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8742	Salinity_42	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8743	Salinity_43	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8744	Salinity_44	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8745	Salinity_45	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8746	Salinity_46	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8747	Salinity_47	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8748	Salinity_48	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8749	Salinity_49	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8750	Salinity_50	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8751	Salinity_51	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8752	Salinity_52	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8753	Salinity_53	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8754	Salinity_54	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8755	Salinity_55	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8756	Salinity_56	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8757	Salinity_57	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8758	Salinity_58	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8759	Salinity_59	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8760	Salinity_60	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8761	Salinity_61	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8762	Salinity_62	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8763	Salinity_63	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8764	Salinity_64	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8765	Salinity_65	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8766	Salinity_66	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8767	Salinity_67	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8768	Salinity_68	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8769	Salinity_69	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8770	Salinity_70	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8771	Salinity_71	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8772	Salinity_72	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8773	Salinity_73	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8774	Salinity_74	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8775	Salinity_75	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8776	Salinity_76	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8777	Salinity_77	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8778	Salinity_78	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8779	Salinity_79	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8780	Salinity_80	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8781	Salinity_81	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8782	Salinity_82	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8783	Salinity_83	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8784	Salinity_84	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8785	Salinity_85	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8786	Salinity_86	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8787	Salinity_87	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8788	Salinity_88	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8789	Salinity_89	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8790	Salinity_90	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8791	Salinity_91	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8792	Salinity_92	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8793	Salinity_93	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8794	Salinity_94	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8795	Salinity_95	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8796	Salinity_96	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8797	Salinity_97	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8798	Salinity_98	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8799	Salinity_99	PSU	1	8181	PSAL	0.001	0	40	sea_water_salinity	-	Practical salinity
+8800	CurDir_00	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8801	CurDir_01	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8802	CurDir_02	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8803	CurDir_03	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8804	CurDir_04	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8805	CurDir_05	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8806	CurDir_06	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8807	CurDir_07	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8808	CurDir_08	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8809	CurDir_09	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8810	CurDir_10	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8811	CurDir_11	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8812	CurDir_12	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8813	CurDir_13	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8814	CurDir_14	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8815	CurDir_15	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8816	CurDir_16	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8817	CurDir_17	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8818	CurDir_18	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8819	CurDir_19	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8820	CurDir_20	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8821	CurDir_21	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8822	CurDir_22	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8823	CurDir_23	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8824	CurDir_24	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8825	CurDir_25	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8826	CurDir_26	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8827	CurDir_27	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8828	CurDir_28	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8829	CurDir_29	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8830	CurDir_30	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8831	CurDir_31	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8832	CurDir_32	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8833	CurDir_33	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8834	CurDir_34	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8835	CurDir_35	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8836	CurDir_36	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8837	CurDir_37	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8838	CurDir_38	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8839	CurDir_39	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8840	CurDir_40	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8841	CurDir_41	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8842	CurDir_42	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8843	CurDir_43	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8844	CurDir_44	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8845	CurDir_45	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8846	CurDir_46	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8847	CurDir_47	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8848	CurDir_48	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8849	CurDir_49	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8850	CurDir_50	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8851	CurDir_51	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8852	CurDir_52	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8853	CurDir_53	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8854	CurDir_54	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8855	CurDir_55	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8856	CurDir_56	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8857	CurDir_57	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8858	CurDir_58	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8859	CurDir_59	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8860	CurDir_60	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8861	CurDir_61	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8862	CurDir_62	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8863	CurDir_63	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8864	CurDir_64	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8865	CurDir_65	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8866	CurDir_66	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8867	CurDir_67	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8868	CurDir_68	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8869	CurDir_69	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8870	CurDir_70	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8871	CurDir_71	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8872	CurDir_72	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8873	CurDir_73	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8874	CurDir_74	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8875	CurDir_75	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8876	CurDir_76	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8877	CurDir_77	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8878	CurDir_78	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8879	CurDir_79	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8880	CurDir_80	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8881	CurDir_81	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8882	CurDir_82	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8883	CurDir_83	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8884	CurDir_84	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8885	CurDir_85	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8886	CurDir_86	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8887	CurDir_87	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8888	CurDir_88	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8889	CurDir_89	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8890	CurDir_90	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8891	CurDir_91	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8892	CurDir_92	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8893	CurDir_93	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8894	CurDir_94	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8895	CurDir_95	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8896	CurDir_96	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8897	CurDir_97	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8898	CurDir_98	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8899	CurDir_99	deg	1	8183	HCDT	degree	0	360	direction_of_sea_water_velocity	-	Current to direction relative true north
+8900	CurSp_00	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8901	CurSp_01	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8902	CurSp_02	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8903	CurSp_03	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8904	CurSp_04	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8905	CurSp_05	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8906	CurSp_06	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8907	CurSp_07	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8908	CurSp_08	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8909	CurSp_09	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8910	CurSp_10	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8911	CurSp_11	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8912	CurSp_12	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8913	CurSp_13	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8914	CurSp_14	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8915	CurSp_15	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8916	CurSp_16	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8917	CurSp_17	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8918	CurSp_18	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8919	CurSp_19	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8920	CurSp_20	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8921	CurSp_21	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8922	CurSp_22	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8923	CurSp_23	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8924	CurSp_24	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8925	CurSp_25	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8926	CurSp_26	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8927	CurSp_27	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8928	CurSp_28	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8929	CurSp_29	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8930	CurSp_30	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8931	CurSp_31	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8932	CurSp_32	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8933	CurSp_33	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8934	CurSp_34	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8935	CurSp_35	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8936	CurSp_36	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8937	CurSp_37	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8938	CurSp_38	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8939	CurSp_39	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8940	CurSp_40	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8941	CurSp_41	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8942	CurSp_42	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8943	CurSp_43	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8944	CurSp_44	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8945	CurSp_45	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8946	CurSp_46	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8947	CurSp_47	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8948	CurSp_48	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8949	CurSp_49	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8950	CurSp_50	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8951	CurSp_51	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8952	CurSp_52	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8953	CurSp_53	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8954	CurSp_54	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8955	CurSp_55	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8956	CurSp_56	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8957	CurSp_57	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8958	CurSp_58	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8959	CurSp_59	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8960	CurSp_60	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8961	CurSp_61	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8962	CurSp_62	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8963	CurSp_63	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8964	CurSp_64	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8965	CurSp_65	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8966	CurSp_66	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8967	CurSp_67	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8968	CurSp_68	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8969	CurSp_69	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8970	CurSp_70	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8971	CurSp_71	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8972	CurSp_72	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8973	CurSp_73	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8974	CurSp_74	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8975	CurSp_75	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8976	CurSp_76	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8977	CurSp_77	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8978	CurSp_78	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8979	CurSp_79	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8980	CurSp_80	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8981	CurSp_81	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8982	CurSp_82	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8983	CurSp_83	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8984	CurSp_84	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8985	CurSp_85	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8986	CurSp_86	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8987	CurSp_87	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8988	CurSp_88	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8989	CurSp_89	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8990	CurSp_90	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8991	CurSp_91	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8992	CurSp_92	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8993	CurSp_93	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8994	CurSp_94	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8995	CurSp_95	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8996	CurSp_96	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8997	CurSp_97	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8998	CurSp_98	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+8999	CurSp_99	cm/s	0.01	8184	HCSP	m s-1	0	20	sea_water_speed	-	Horizontal current speed
+88001	Year_QC	-	1	88001	YEAR_QC	-	0	9	year_qc	-	Year QC
+88002	Latitude_QC	-	1	88002	LATX_QC	-	0	9	latitude_qc	-	Latitude of each location QC
+88003	Longitude_QC	-	1	88003	LONX_QC	-	0	9	longitude_qc	-	Longitude of each location QC
+88028	WindForce_QC	-	1	88028	WBFO_QC	-	0	9	beaufort_wind_force_qc	-	Beaufort wind force QC
+88029	Gust_QC	-	1	88029	GSPD_QC	-	0	9	wind_speed_of_gust_qc	-	Gust wind speed QC
+88030	WindDir_QC	-	1	88030	WDIR_QC	-	0	9	wind_from_direction_qc	-	Wind from direction relative true north QC
+88031	WindSpeed_QC	-	1	88031	WSPD_QC	-	0	9	wind_speed_qc	-	Horizontal wind speed QC
+88032	Airpressure_QC	-	1	88032	ATMP_QC	-	0	9	air_pressure_qc	-	Atmospheric pressure at altitude QC
+88033	AirTemp_QC	-	1	88033	DRYT_QC	-	0	9	air_temperature_qc	-	Air temperature in dry bulb QC
+88034	Humidity_QC	-	1	88034	RELH_QC	-	0	9	relative_humidity_qc	-	Relative humidity QC
+88041	Hs_QC	-	1	88041	VGHS_QC	-	0	9	sea_surface_wave_significant_height_qc	-	Generic format QC
+88042	Hs_QC	-	1	88042	VAVH_QC	-	0	9	sea_surface_wave_significant_height_qc	-	Average height highest 1/3 wave (H1/3) QC
+88043	Hm0_QC	-	1	88043	VHM0_QC	-	0	9	sea_surface_wave_significant_height_qc	-	Spectral significant wave height (Hm0)QC
+88044	Tz_QC	-	1	88044	VTZA_QC	-	0	9	sea_surface_wave_mean_period_qc	-	Average zero crossing wave period (Tz) QC
+88045	Mdir_QC	-	1	88045	VMDR_QC	-	0	9	sea_surface_wave_from_direction_qc	-	Mean wave direction from (Mdir) QC
+88046	Hmax_estimated_QC	-	1	88046	VEMH_QC	-	0	9	sea_surface_wave_maximum_height_qc	-	Estimated maximum wave height QC
+88047	Hmax_zero_up_QC	-	1	88047	VZMX_QC	-	0	9	sea_surface_wave_maximum_height_qc	-	Maximum zero crossing wave height (Hmax) QC
+88048	Hmax_zero_down_QC	-	1	88048	VZMD_QC	-	0	9	sea_surface_wave_maximum_height_qc	-	Maximum estimated wave height (Hmax) QC
+88060	Fluorescence_QC	-	1	88060	FLUO_QC	-	0	9	fluorescence_qc	-	Fluorescence QC
+88061	LightAtt_QC	-	1	88061	TUR2_QC	-	0	9	light_attenuation_qc	-	Light attenuation coefficient QC
+88062	Chlorophyll_QC	-	1	88062	CPHL_QC	-	0	9	mass_concentration_of_chlorophyll_a_in_sea_water_qc	-	Chlorophyll-a QC
+88063	Chlorophyll-fluorescence_QC	-	1	88063	FLU2_QC	-	0	9	mass_concentration_of_chlorophyll_a_fluorescence_in_sea_water_qc	-	Chlorophyll-a fluorescence QC
+88086	Specific_weight_QC	-	1	88086	SPEC_QC	-	0	9	specific_weight_qc	-	Specific weight QC
+88087	Temperature_specific_weight_QC	-	1	88087	TSPE_QC	-	0	9	temperature_specific_weight_qc	-	Temperature specific weight QC
+88088	Number_of_hits_QC	-	1	88088	CNUM_QC	-	0	9	number_of_hits_qc	-	Number of hits QC
+88165	CDOM_QC	-	1	88165	CDOM_QC	-	0	9	colored_dissolved_organic_matter_qc	-	Colored dissolved organic matter QC
+88166	Phycoerythrin_QC	-	1	88166	PHER_QC	-	0	9	phycoerythrin_qc	-	Phycoerythrin QC
+88167	pCO2_luft_QC	-	1	88167	PCO2_QC	-	0	9	surface_partial_pressure_of_carbon_dioxide_in_sea_water_qc	-	PCO2 air QC
+88168	WatPres_QC	-	1	88168	PRES_QC	-	0	9	sea_water pressure_qc	-	Sea preassure QC
+88169	Oxygen_QC	-	1	88169	DOX2_QC	-	0	9	moles_of_oxygen_per_unit_mass_in_sea_water_qc	-	Dissolved oxygen QC
+88171	Speed_QC	-	1	88171	SPOG_QC	-	0	9	platform_speed_wrt_sea_water_qc	-	Platform speed wrt sea water QC
+88173	Phycocyanin_QC	-	1	88173	PHYC_QC	-	0	9	phycocyanin_qc	-	Phycocyanin QC
+88174	Turbidity_QC	-	1	88174	TUR4_QC	-	0	9	sea_water_turbidity_qc	-	Turbidity QC
+88175	PAR_QC	-	1	88175	LGHT_QC	-	0	9	par_qc	-	Light irradiance immerged par QC
+88176	Oxygen_QC	-	1	88176	DOXY_QC	-	0	9	mole_concentration_of_dissolved_molecular_oxygen_in_sea_water_qc	-	Dissolved oxygen QC
+88177	PCO2_QC	-	1	88177	XCO2_QC	-	0	9	pco2_qc	-	CO2 mole fraction in dry gas QC
+88178	Depth_QC	-	1	88178	DEPH_QC	-	0	9	depth_qc	-	Depth QC
+88179	WatTemp_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88180	WatTemp2_QC	-	1	88180	TEMP2_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88181	Salinity_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salininty QC
+88182	Salinity2_QC	-	1	88182	PSAL2_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88183	CurDir_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88184	CurSp_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88185	Conductivity_QC	-	1	88185	CNDC_QC	-	0	9	sea_water_electrical_conductivity_qc	-	Electrical conductivity QC
+88186	Vdir_QC	-	1	88186	VDIR_QC	-	0	9	sea_surface_wave_from_direction_qc	-	Wave direction relative true north QC
+88187	SoundVelocity_QC	-	1	88187	SVEL_QC	-	0	9	speed_of_sound_in_sea_water_qc	-	Sound velocity QC
+88188	CurEast_QC	-	1	88188	EWCT_QC	-	0	9	eastward_sea_water_velocity_qc	-	West-east current component QC
+88189	CurNorth_QC	-	1	88189	NSCT_QC	-	0	9	northward_sea_water_velocity_qc	-	Sout-north current component QC
+88190	Oxy_sat_QC	-	1	88190	OSAT_QC	-	0	9	fractional_saturation_of_oxygen_in_sea_water_qc	-	Oxygen saturation QC
+88191	Oxygen_QC	-	1	88191	DOX1_QC	-	0	9	volume_fraction_of_oxygen_in_sea_water_qc	-	Dissolved oxygen QC
+88194	Density_QC	-	1	88194	DENS_QC	-	0	9	sea_water_sigma_theta_qc	-	Sea water sigma theta QC
+88195	Sealevel_QC	-	1	88195	SLEV_QC	-	0	9	sea_surface_height_above_sea_level_qc	-	Observed sea level QC
+88515	Tp_QC	-	1	88515	VTPK_QC	-	0	9	sea_surface_wave_period_at_variance_spectral_density_maximum_qc	spectral analysis	Wave period at spectral peak / peak period (Tp) QC
+88523	ThTp_QC	-	1	88523	VPED_QC	-	0	9	sea_surface_wave_from_direction_at_variance_spectral_density_maximum_qc	spectral analysis	Wave principal direction at spectral peak QC
+88525	SprTp_QC	-	1	88525	VPSP_QC	-	0	9	directional_spread_peak_qc	unknown	Dir spread wave peak QC
+88600	WatTemp_00_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88601	WatTemp_01_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88602	WatTemp_02_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88603	WatTemp_03_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88604	WatTemp_04_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88605	WatTemp_05_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88606	WatTemp_06_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88607	WatTemp_07_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88608	WatTemp_08_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88609	WatTemp_09_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88610	WatTemp_10_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88611	WatTemp_11_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88612	WatTemp_12_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88613	WatTemp_13_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88614	WatTemp_14_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88615	WatTemp_15_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88616	WatTemp_16_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88617	WatTemp_17_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88618	WatTemp_18_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88619	WatTemp_19_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88620	WatTemp_20_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88621	WatTemp_21_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88622	WatTemp_22_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88623	WatTemp_23_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88624	WatTemp_24_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88625	WatTemp_25_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88626	WatTemp_26_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88627	WatTemp_27_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88628	WatTemp_28_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88629	WatTemp_29_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88630	WatTemp_30_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88631	WatTemp_31_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88632	WatTemp_32_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88633	WatTemp_33_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88634	WatTemp_34_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88635	WatTemp_35_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88636	WatTemp_36_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88637	WatTemp_37_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88638	WatTemp_38_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88639	WatTemp_39_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88640	WatTemp_40_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88641	WatTemp_41_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88642	WatTemp_42_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88643	WatTemp_43_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88644	WatTemp_44_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88645	WatTemp_45_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88646	WatTemp_46_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88647	WatTemp_47_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88648	WatTemp_48_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88649	WatTemp_49_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88650	WatTemp_50_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88651	WatTemp_51_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88652	WatTemp_52_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88653	WatTemp_53_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88654	WatTemp_54_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88655	WatTemp_55_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88656	WatTemp_56_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88657	WatTemp_57_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88658	WatTemp_58_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88659	WatTemp_59_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88660	WatTemp_60_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88661	WatTemp_61_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88662	WatTemp_62_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88663	WatTemp_63_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88664	WatTemp_64_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88665	WatTemp_65_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88666	WatTemp_66_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88667	WatTemp_67_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88668	WatTemp_68_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88669	WatTemp_69_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88670	WatTemp_70_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88671	WatTemp_71_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88672	WatTemp_72_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88673	WatTemp_73_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88674	WatTemp_74_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88675	WatTemp_75_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88676	WatTemp_76_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88677	WatTemp_77_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88678	WatTemp_78_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88679	WatTemp_79_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88680	WatTemp_80_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88681	WatTemp_81_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88682	WatTemp_82_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88683	WatTemp_83_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88684	WatTemp_84_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88685	WatTemp_85_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88686	WatTemp_86_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88687	WatTemp_87_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88688	WatTemp_88_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88689	WatTemp_89_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88690	WatTemp_90_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88691	WatTemp_91_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88692	WatTemp_92_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88693	WatTemp_93_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88694	WatTemp_94_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88695	WatTemp_95_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88696	WatTemp_96_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88697	WatTemp_97_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88698	WatTemp_98_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88699	WatTemp_99_QC	-	1	88179	TEMP_QC	-	0	9	sea_water_temperature_qc	-	Sea temperature QC
+88700	Salinity_00_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88701	Salinity_01_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88702	Salinity_02_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88703	Salinity_03_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88704	Salinity_04_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88705	Salinity_05_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88706	Salinity_06_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88707	Salinity_07_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88708	Salinity_08_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88709	Salinity_09_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88710	Salinity_10_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88711	Salinity_11_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88712	Salinity_12_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88713	Salinity_13_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88714	Salinity_14_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88715	Salinity_15_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88716	Salinity_16_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88717	Salinity_17_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88718	Salinity_18_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88719	Salinity_19_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88720	Salinity_20_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88721	Salinity_21_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88722	Salinity_22_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88723	Salinity_23_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88724	Salinity_24_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88725	Salinity_25_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88726	Salinity_26_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88727	Salinity_27_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88728	Salinity_28_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88729	Salinity_29_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88730	Salinity_30_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88731	Salinity_31_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88732	Salinity_32_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88733	Salinity_33_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88734	Salinity_34_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88735	Salinity_35_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88736	Salinity_36_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88737	Salinity_37_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88738	Salinity_38_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88739	Salinity_39_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88740	Salinity_40_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88741	Salinity_41_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88742	Salinity_42_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88743	Salinity_43_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88744	Salinity_44_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88745	Salinity_45_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88746	Salinity_46_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88747	Salinity_47_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88748	Salinity_48_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88749	Salinity_49_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88750	Salinity_50_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88751	Salinity_51_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88752	Salinity_52_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88753	Salinity_53_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88754	Salinity_54_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88755	Salinity_55_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88756	Salinity_56_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88757	Salinity_57_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88758	Salinity_58_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88759	Salinity_59_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88760	Salinity_60_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88761	Salinity_61_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88762	Salinity_62_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88763	Salinity_63_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88764	Salinity_64_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88765	Salinity_65_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88766	Salinity_66_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88767	Salinity_67_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88768	Salinity_68_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88769	Salinity_69_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88770	Salinity_70_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88771	Salinity_71_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88772	Salinity_72_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88773	Salinity_73_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88774	Salinity_74_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88775	Salinity_75_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88776	Salinity_76_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88777	Salinity_77_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88778	Salinity_78_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88779	Salinity_79_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88780	Salinity_80_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88781	Salinity_81_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88782	Salinity_82_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88783	Salinity_83_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88784	Salinity_84_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88785	Salinity_85_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88786	Salinity_86_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88787	Salinity_87_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88788	Salinity_88_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88789	Salinity_89_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88790	Salinity_90_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88791	Salinity_91_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88792	Salinity_92_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88793	Salinity_93_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88794	Salinity_94_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88795	Salinity_95_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88796	Salinity_96_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88797	Salinity_97_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88798	Salinity_98_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88799	Salinity_99_QC	-	1	88181	PSAL_QC	-	0	9	sea_water_salinity_qc	-	Practical salinity QC
+88800	CurDir_00_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88801	CurDir_01_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88802	CurDir_02_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88803	CurDir_03_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88804	CurDir_04_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88805	CurDir_05_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88806	CurDir_06_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88807	CurDir_07_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88808	CurDir_08_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88809	CurDir_09_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88810	CurDir_10_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88811	CurDir_11_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88812	CurDir_12_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88813	CurDir_13_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88814	CurDir_14_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88815	CurDir_15_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88816	CurDir_16_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88817	CurDir_17_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88818	CurDir_18_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88819	CurDir_19_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88820	CurDir_20_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88821	CurDir_21_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88822	CurDir_22_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88823	CurDir_23_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88824	CurDir_24_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88825	CurDir_25_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88826	CurDir_26_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88827	CurDir_27_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88828	CurDir_28_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88829	CurDir_29_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88830	CurDir_30_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88831	CurDir_31_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88832	CurDir_32_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88833	CurDir_33_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88834	CurDir_34_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88835	CurDir_35_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88836	CurDir_36_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88837	CurDir_37_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88838	CurDir_38_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88839	CurDir_39_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88840	CurDir_40_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88841	CurDir_41_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88842	CurDir_42_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88843	CurDir_43_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88844	CurDir_44_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88845	CurDir_45_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88846	CurDir_46_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88847	CurDir_47_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88848	CurDir_48_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88849	CurDir_49_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88850	CurDir_50_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88851	CurDir_51_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88852	CurDir_52_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88853	CurDir_53_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88854	CurDir_54_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88855	CurDir_55_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88856	CurDir_56_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88857	CurDir_57_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88858	CurDir_58_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88859	CurDir_59_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88860	CurDir_60_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88861	CurDir_61_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88862	CurDir_62_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88863	CurDir_63_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88864	CurDir_64_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88865	CurDir_65_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88866	CurDir_66_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88867	CurDir_67_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88868	CurDir_68_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88869	CurDir_69_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88870	CurDir_70_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88871	CurDir_71_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88872	CurDir_72_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88873	CurDir_73_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88874	CurDir_74_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88875	CurDir_75_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88876	CurDir_76_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88877	CurDir_77_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88878	CurDir_78_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88879	CurDir_79_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88880	CurDir_80_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88881	CurDir_81_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88882	CurDir_82_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88883	CurDir_83_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88884	CurDir_84_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88885	CurDir_85_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88886	CurDir_86_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88887	CurDir_87_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88888	CurDir_88_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88889	CurDir_89_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88890	CurDir_90_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88891	CurDir_91_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88892	CurDir_92_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88893	CurDir_93_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88894	CurDir_94_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88895	CurDir_95_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88896	CurDir_96_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88897	CurDir_97_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88898	CurDir_98_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88899	CurDir_99_QC	-	1	88183	HCDT_QC	-	0	9	direction_of_sea_water_velocity_qc	-	Current to direction relative true north QC
+88900	CurSp_00_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88901	CurSp_01_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88902	CurSp_02_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88903	CurSp_03_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88904	CurSp_04_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88905	CurSp_05_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88906	CurSp_06_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88907	CurSp_07_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88908	CurSp_08_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88909	CurSp_09_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88910	CurSp_10_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88911	CurSp_11_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88912	CurSp_12_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88913	CurSp_13_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88914	CurSp_14_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88915	CurSp_15_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88916	CurSp_16_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88917	CurSp_17_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88918	CurSp_18_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88919	CurSp_19_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88920	CurSp_20_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88921	CurSp_21_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88922	CurSp_22_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88923	CurSp_23_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88924	CurSp_24_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88925	CurSp_25_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88926	CurSp_26_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88927	CurSp_27_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88928	CurSp_28_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88929	CurSp_29_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88930	CurSp_30_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88931	CurSp_31_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88932	CurSp_32_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88933	CurSp_33_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88934	CurSp_34_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88935	CurSp_35_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88936	CurSp_36_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88937	CurSp_37_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88938	CurSp_38_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88939	CurSp_39_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88940	CurSp_40_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88941	CurSp_41_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88942	CurSp_42_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88943	CurSp_43_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88944	CurSp_44_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88945	CurSp_45_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88946	CurSp_46_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88947	CurSp_47_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88948	CurSp_48_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88949	CurSp_49_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88950	CurSp_50_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88951	CurSp_51_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88952	CurSp_52_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88953	CurSp_53_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88954	CurSp_54_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88955	CurSp_55_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88956	CurSp_56_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88957	CurSp_57_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88958	CurSp_58_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88959	CurSp_59_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88960	CurSp_60_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88961	CurSp_61_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88962	CurSp_62_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88963	CurSp_63_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88964	CurSp_64_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88965	CurSp_65_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88966	CurSp_66_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88967	CurSp_67_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88968	CurSp_68_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88969	CurSp_69_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88970	CurSp_70_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88971	CurSp_71_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88972	CurSp_72_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88973	CurSp_73_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88974	CurSp_74_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88975	CurSp_75_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88976	CurSp_76_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88977	CurSp_77_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88978	CurSp_78_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88979	CurSp_79_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88980	CurSp_80_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88981	CurSp_81_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88982	CurSp_82_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88983	CurSp_83_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88984	CurSp_84_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88985	CurSp_85_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88986	CurSp_86_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88987	CurSp_87_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88988	CurSp_88_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88989	CurSp_89_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88990	CurSp_90_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88991	CurSp_91_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88992	CurSp_92_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88993	CurSp_93_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88994	CurSp_94_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88995	CurSp_95_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88996	CurSp_96_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88997	CurSp_97_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88998	CurSp_98_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+88999	CurSp_99_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
+

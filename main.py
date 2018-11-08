@@ -161,7 +161,7 @@ class App(tk.Tk):
         
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
-        self.show_frame(gui.PageTimeSeries)
+        self.show_frame(gui.PageTimeseries)
 #        self.show_frame(eval('gui.' + self.settings['general']['Start page']))
         
     
@@ -304,9 +304,9 @@ class App(tk.Tk):
         
         #----------------------------------------------------------------------
         # Data frame 
-        self.button_get_ferrybox_data_file = ttk.Button(frame_data, text='Ferrybox', command=lambda: self._get_data_file_path('ferrybox'))
-        self.button_get_fixed_platform_data_file = ttk.Button(frame_data, text='Fixed platform', command=lambda: self._get_data_file_path('fixed platform'))
-        self.button_get_ctd_data_file = ttk.Button(frame_data, text='CTD-profile', command=lambda: self._get_data_file_path('ctd'))
+        self.button_get_ferrybox_data_file = ttk.Button(frame_data, text='Ferrybox', command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
+        self.button_get_fixed_platform_data_file = ttk.Button(frame_data, text='Fixed platform', command=lambda: self._get_data_file_path('Bouy CMEMS'))
+        self.button_get_ctd_data_file = ttk.Button(frame_data, text='CTD-profile', command=lambda: self._get_data_file_path('SHARK CTD'))
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -426,9 +426,9 @@ class App(tk.Tk):
             if not settings_file_path and sampling_type != old_sampling_type:
                 self.stringvar_settings_file.set(self.settings['directory']['Default {} settings'.format(sampling_type)])
             
-        #     self.button_load_file.configure(state='normal')
-        # else:
-        #     self.button_load_file.configure(state='disabled')
+            self.button_load_file.configure(state='normal')
+        else:
+            self.button_load_file.configure(state='disabled')
     
     
     #===========================================================================
@@ -484,16 +484,24 @@ class App(tk.Tk):
         if not all_ok: 
             self.update_help_information('Could not load file!', bg='red')
             return 
-            
+
+        self._update_loaded_files_widget()
+        self.update_help_information('File loaded! Please continue.')
+
+    def _update_loaded_files_widget(self):
         loaded_files = [] 
-        for sampling_type in self.session.sampling_types:
+        for sampling_type in self.session.get_sampling_types():
             for st in self.session.get_file_id_list(sampling_type): 
                 loaded_files.append('{}: {}'.format(sampling_type, st))
         self.listbox_widget_loaded_files.update_items(loaded_files)
-        self.update_help_information('File loaded! Please continue.')
-        
-#        self.listbox_widget_loaded_files.add_item(file_path)
-        
+
+
+    def get_loaded_files_list(self):
+        """
+        Returns a list with the items in self.listbox_widget_loaded_files
+        :return:
+        """
+        return self.listbox_widget_loaded_files.items[:]
         
     #===========================================================================
     def old_set_load_frame(self):
