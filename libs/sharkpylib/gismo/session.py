@@ -46,6 +46,9 @@ class FileInfo(dict):
         self['directory'] = directory 
         self['file_path'] = file_path 
         self['pkl_file_path'] = pkl_file_path
+
+    def get_file_path(self):
+        return self['file_path']
         
     
 
@@ -202,6 +205,12 @@ class UserInfo():
         Returns a list of the loaded files (file_id) for the given sampling type. 
         """ 
         return sorted(self.content['loaded_files'].get(sampling_type, {}).keys())
+
+    def get_file_path(self, file_id):
+        sampling_type = self.get_sampling_type_for_file_id(file_id)
+        return self.content['loaded_files'][sampling_type][file_id]['data_file'].get_file_path()
+
+
         
     
 #==============================================================================
@@ -300,6 +309,12 @@ class GISMOsession(object):
     def get_qc_routine_requirements(self, routine):
         return self.qc_routines_factory.get_requirements(routine)
 
+    def get_file_path(self, file_id):
+        """
+        Returns the file path for the given file_id
+        """
+        return self.user_info.get_file_path(file_id)
+
     def get_filter_options(self, file_id, **kwargs):
         """
         Created 20181004       
@@ -379,6 +394,9 @@ class GISMOsession(object):
         
         if not all([os.path.exists(file_path), os.path.exists(settings_file_path)]):
             raise GISMOExceptionInvalidPath
+
+        if sampling_type not in self.data_manager.sampling_type_list:
+            raise GISMOExceptionInvalidSamplingType
 
         # Add file path to user info 
         file_path = os.path.abspath(file_path)
