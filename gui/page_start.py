@@ -15,7 +15,7 @@ pages = set()
 #============================================================================
 # Ferrybox pages
 try:
-    pages.add(gui.PageTimeSeries)
+    pages.add(gui.PageTimeseries)
 #     logging.info('PageFerrybox imported!')
 except:
     pass
@@ -32,12 +32,12 @@ except:
 
 #============================================================================
 # CTD pages
-try:
-    pages.add(gui.PageCTD)
-#     logging.info('PageCTD imported!')
-except:
-    pass
-#     logging.info('PageCTD not imported!')
+# try:
+#     pages.add(gui.PageCTD)
+# #     logging.info('PageCTD imported!')
+# except:
+#     pass
+# #     logging.info('PageCTD not imported!')
 
 """
 ================================================================================

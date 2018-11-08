@@ -5,6 +5,8 @@
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
 #----------------------------------------------------------
+import sys
+
 from .gui_helpers import grid_configure
 
 
@@ -28,7 +30,7 @@ from .communicate import update_scatter_route_map
 from .communicate import update_time_series_plot
 
 from .communicate import save_limits_from_axis_float_widget
-from .communicate import save_limits_from_axis_time_widget 
+from .communicate import save_limits_from_axis_time_widget
 from .communicate import save_limits_from_plot_object
 from .communicate import set_valid_time_in_time_axis
 
@@ -38,10 +40,11 @@ from .widgets import AxisSettingsBaseWidget
 from .widgets import AxisSettingsFloatWidget
 from .widgets import AxisSettingsTimeWidget
 from .widgets import CompareWidget
-from .widgets import MovableText 
+from .widgets import MovableText
 from .widgets import RangeSelectorFloatWidget
 from .widgets import RangeSelectorTimeWidget
 from .widgets import SaveWidget
+
 
 
 #----------------------------------------------------------
@@ -51,7 +54,7 @@ except:
     pass
 
 try:
-    from .page_timeseries import PageTimeSeries
+    from .page_timeseries import PageTimeseries
 except:
     pass
 
@@ -61,7 +64,8 @@ except:
     pass
 
 from .page_start import PageStart
-    
-    
-    
-    
+
+# print('GUI IMPORT')
+# for key in sorted(sys.modules.keys()):
+#     print(key, sys.modules[key])
+

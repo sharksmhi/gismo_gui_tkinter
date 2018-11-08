@@ -30,8 +30,8 @@ all_pages = set()
 all_pages.add(gui.PageStart)
 
 #============================================================================
-# TimeSeries pages
-all_pages.add(gui.PageTimeSeries)
+# Timeseries pages
+all_pages.add(gui.PageTimeseries)
 #try:
 #    all_pages.add(gui.PageFerrybox)
 ##     logging.info('PageFerrybox imported!')
@@ -120,8 +120,9 @@ class App(tk.Tk):
         
 #        CMEMSparameters(self.settings['directory']['CMEMS parameters'])
 #        CMEMSstations(self.settings['directory']['CMEMS stations'])
-        self.default_platform_settings = gismo.sampling_types.SamplingTypeSettings(self.settings['directory']['Default ferrybox settings'],
-                                                                                   root_directory=self.root_directory)
+        self.default_platform_settings = None
+        # self.default_platform_settings = gismo.sampling_types.SamplingTypeSettings(self.settings['directory']['Default ferrybox settings'],
+        #                                                                            root_directory=self.root_directory)
         
         screen_padx = self.settings[u'general'][u'Main window indent x']
         screen_pady = self.settings[u'general'][u'Main window indent y']
@@ -352,7 +353,7 @@ class App(tk.Tk):
         #----------------------------------------------------------------------
         # Sampling type frame
         self.combobox_widget_sampling_type = tkw.ComboboxWidget(frame_sampling_type, 
-                                                                items=sorted(self.session.platform_types), 
+                                                                items=sorted(self.session.get_sampling_types()),
                                                                 title='Sampling type', 
                                                                 prop_compobox={'width':20}, 
                                                                 column=0, 
@@ -403,31 +404,31 @@ class App(tk.Tk):
             open_directory = self.boxen.open_directory
         else:
             open_directory = self.settings[u'directory'][u'Input directory']
-
+        return open_directory
 
     #===========================================================================
-    def _get_data_file_path(self, platform_type):
+    def _get_data_file_path(self, sampling_type):
         """
         Created     20180821    by Magnus 
         """
         open_directory = self._get_open_directory()
             
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                 filetypes=[('GISMO-file ({})'.format(platform_type), '*.txt')])
+                                               filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
                                                  
         if file_path:
-            old_platform_type = self.combobox_widget_sampling_type.get_value() 
-            self.combobox_widget_sampling_type.set_value(platform_type)
+            old_sampling_type = self.combobox_widget_sampling_type.get_value() 
+            self.combobox_widget_sampling_type.set_value(sampling_type)
             self.stringvar_data_file.set(file_path)
             
             # Check settings file path
             settings_file_path = self.stringvar_settings_file.get()
-            if not settings_file_path and platform_type != old_platform_type:
-                self.stringvar_settings_file.set(self.settings['directory']['Default {} settings'.format(platform_type)])
+            if not settings_file_path and sampling_type != old_sampling_type:
+                self.stringvar_settings_file.set(self.settings['directory']['Default {} settings'.format(sampling_type)])
             
-            self.button_load_file.configure(state='normal')
-        else:
-            self.button_load_file.configure(state='disabled')
+        #     self.button_load_file.configure(state='normal')
+        # else:
+        #     self.button_load_file.configure(state='disabled')
     
     
     #===========================================================================
@@ -485,7 +486,7 @@ class App(tk.Tk):
             return 
             
         loaded_files = [] 
-        for sampling_type in self.session.platform_types:
+        for sampling_type in self.session.sampling_types:
             for st in self.session.get_file_id_list(sampling_type): 
                 loaded_files.append('{}: {}'.format(sampling_type, st))
         self.listbox_widget_loaded_files.update_items(loaded_files)
@@ -1036,17 +1037,17 @@ class App(tk.Tk):
         self.titles = {}
         
         try:
-            self.titles[gui.PageFerrybox] =  u'Ferrybox'
+            self.titles[gui.PageFerrybox] = 'Ferrybox'
         except:
             pass
         
         try:
-            self.titles[gui.PageFerryboxRoute] =  u'Ferrybox route'
+            self.titles[gui.PageFerryboxRoute] = 'Ferrybox route'
         except:
             pass
         
         try:
-            self.titles[gui.PageCTD] =  u'CTD'
+            self.titles[gui.PageCTD] = 'CTD'
         except:
             pass
 

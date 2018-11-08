@@ -6,6 +6,7 @@
 
 import os
 import shutil
+import sys
 
 # Python 2.7
 import tkinter as tk 
@@ -30,7 +31,7 @@ import logging
 ================================================================================
 ================================================================================
 """
-class PageTimeSeries(tk.Frame):
+class PageTimeseries(tk.Frame):
     """
     Dummy page used as a base.
     """
