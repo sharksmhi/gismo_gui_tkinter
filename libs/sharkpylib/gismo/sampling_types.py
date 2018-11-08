@@ -28,10 +28,10 @@ class PluginFactory(object):
     """
     def __init__(self):
         # Add key and class to dict if you want to activate it
-        self.classes = {'ferrybox_cmems': FERRYBOXfile,
-                        'bouy_cmems': BOUYfile,
-                        'shark_physical_chemical': SHARKfilePhysicalChemichal,
-                        'ctd_gismo': CTDfile}
+        self.classes = {'Ferrybox CMEMS': FERRYBOXfile,
+                        'Bouy CMEMS': BOUYfile,
+                        'SHARK PhysicalChemical': SHARKfilePhysicalChemichal,
+                        'SHARK CTD': CTDfile}
 
         gismo_requirements = ['data_file_path', 'settings_file_path', 'root_directory']
         self.required_arguments = {'ferrybox_cmems': gismo_requirements,
