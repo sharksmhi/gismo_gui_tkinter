@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import font
 import numpy as np
+import pandas as pd
 import re
 import datetime
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -2583,13 +2584,19 @@ class TimeWidget(ttk.Labelframe):
         
     #===========================================================================
     def set_valid_time_span(self, from_time, to_time):
-        for time_format in self.time_formats:
-            try:
-                from_time = datetime.datetime.strptime(from_time, time_format)
-                to_time = datetime.datetime.strptime(to_time, time_format)
-            except:
-                pass
-            
+        if type(from_time) == str:
+            for time_format in self.time_formats:
+                try:
+                    from_time = datetime.datetime.strptime(from_time, time_format)
+                    to_time = datetime.datetime.strptime(to_time, time_format)
+                except:
+                    pass
+        else:
+            from_time = pd.to_datetime(from_time)
+            to_time = pd.to_datetime(to_time)
+
+
+
         self.from_time = from_time
         self.to_time = to_time
         

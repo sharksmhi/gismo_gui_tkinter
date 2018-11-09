@@ -368,6 +368,16 @@ def update_highlighted_profile_in_plot(profile=None,
                                         plot_object=None, 
                                         flag_widget=None, 
                                         help_info_function=None):
+    """
+    To be updated!
+
+    :param profile:
+    :param par:
+    :param plot_object:
+    :param flag_widget:
+    :param help_info_function:
+    :return:
+    """
     
     
     selection = flag_widget.get_selection()
@@ -425,8 +435,16 @@ def update_time_series_plot(gismo_object=None,
                             help_info_function=None):
     """
     Updates the plot_object (time series) using information from gismo_object, par and flag_widget.
-    If help_info_function (updating tkText) is given text information is passed to the funktion. 
+    If help_info_function (updating tkText) is given text information is passed to the function.
+
+    :param gismo_object:
+    :param par:
+    :param plot_object:
+    :param flag_widget:
+    :param help_info_function:
+    :return:
     """
+
     
     if help_info_function:
         help_info_function('Updating time series plot...please wait...')
@@ -439,27 +457,25 @@ def update_time_series_plot(gismo_object=None,
     plot_object.reset_plot()
     
     # Plot all flags combined
-    time_vector, values = gismo_object.get_time_series(par=par, qf_list=selection.selected_flags)
-    
-#     print 'time_vector', time_vector
-#     print 'values', values
+    data = gismo_object.get_data('time', par, mask_options={'include_flags': selection.selected_flags})
+
     prop = {'linestyle': '', 
              'marker': None}
-    plot_object.set_data(x=time_vector, y=values, line_id='current_flags', **prop)
-    
-    
+    plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', **prop)
+
     # Plot individual flags
     for k, flag in enumerate(selection.selected_flags):
-        
-        time_vector, values = gismo_object.get_time_series(par=par, qf_list=flag)
-        
-        if all(np.isnan(values)):
+
+        data = gismo_object.get_data('time', par, mask_options={'include_flags': [flag]})
+
+
+        if all(np.isnan(data[par])):
 #            print 'No data for flag "%s", will not plot.' % flag
             continue
         prop = settings.get_flag_prop_dict(flag)
         prop.update(selection.get_prop(flag)) # Is empty if no settings file is added while loading data
-        prop.update({'linestyle':''})
-        plot_object.set_data(x=time_vector, y=values, line_id=flag, **prop)
+        prop.update({'linestyle': ''})
+        plot_object.set_data(x=data['time'], y=data[par], line_id=flag, **prop)
         
     if help_info_function:
         help_info_function('Done!')
@@ -626,22 +642,20 @@ def update_plot_limits_from_settings(plot_object=None,
 #        ymin = settings_object['ranges'][par]['ymin'] 
 #        ymax = settings_object['ranges'][par]['ymax']
         plot_object.set_y_limits(limits=[min_value, max_value], call_targets=call_targets_in_plot_object)
-    
-      
-"""
-================================================================================
-================================================================================
-================================================================================
-""" 
-def set_valid_time_in_time_axis(gismo_object=None, 
+
+
+def set_valid_time_in_time_axis(gismo_object=None,
                                 time_axis_widget=None, 
-                                sample_object=None):
+                                match_object=None):
     """
-    Takes information from the plot_object and sets valid tame range in the axis_widget
+    Takes information from the plot_object and sets valid time range in the axis_widget
     """
-    time_array = gismo_object.get_time_series()
-    if sample_object:
-        time_array = np.append(time_array, sample_object.get_time_series())
+    data = gismo_object.get_data('time')
+    time_array = data['time']
+    if match_object:
+        match_data = gismo_object.get_data('time')
+        match_time_array = match_data['time']
+        time_array = np.append(time_array, match_time_array)
         
     time_axis_widget.set_valid_time_span_from_list(time_array)
     

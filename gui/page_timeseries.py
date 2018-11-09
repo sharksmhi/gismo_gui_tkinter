@@ -393,20 +393,16 @@ class PageTimeseries(tk.Frame):
         logging.debug('page_ferrybox._on_file_update: Start')
         # Update valid time range in time axis
 
-        file_id = self.stringvar_current_data_file.get()
-        print('file_id', file_id)
-        gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
-                                    time_axis_widget=self.xrange_widget)
-        
-#         gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
-#                                     time_axis_widget=self.xrange_widget2)
-        
-        gui.set_valid_time_in_time_axis(gismo_object=core.Boxen().current_ferrybox_object, 
-                                    time_axis_widget=self.xrange_selection_widget)
+        data_file_id = self._get_file_id(self.select_data_widget.get_value())
+        gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(data_file_id),
+                                        time_axis_widget=self.xrange_widget)
+
+        reference_file_id = self._get_file_id(self.select_ref_data_widget.get_value())
+        gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(reference_file_id),
+                                        time_axis_widget=self.xrange_selection_widget)
         
         self._update_parameter_list()
         self._on_select_parameter()
-        core.Temp().f = self
         logging.debug('page_ferrybox._on_file_update: End')
         
     #===========================================================================
@@ -425,8 +421,8 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def _update_parameter_list(self):
         logging.debug('page_ferrybox._update_parameter_list: Start')  
-        self.parameter_widget.update_items(core.Boxen().current_parameter_list_ferrybox, 
-                                           default_item=core.Boxen().current_par_ferrybox) # Will take current information in core.Boxen()
+        self.parameter_widget.update_items(self.session.get_parameter_list(self.current_file_id),
+                                           default_item=None)
         logging.debug('page_ferrybox._update_parameter_list: End')  
                                            
     #===========================================================================
@@ -445,8 +441,8 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def _on_select_parameter(self):
         logging.debug('page_ferrybox._on_select_parameter: Start')
-        core.Boxen().current_par_ferrybox = self.parameter_widget.selected_item
-        if not core.Boxen().current_par_ferrybox:
+        self.current_parameter = self.parameter_widget.selected_item
+        if not self.current_parameter:
             return
             
         logging.debug('ferrybox: _on_select_parameter')
@@ -467,10 +463,8 @@ class PageTimeseries(tk.Frame):
         self._update_plot_limits()
         
         self.plot_object.call_targets()
-        
-        core.Temp().plot_object = self.plot_object
-        core.Temp().gismo_object = core.Boxen().current_ferrybox_object
-        core.Temp().settings = core.Boxen().current_ferrybox_object.settings
+
+
         logging.debug('page_ferrybox._on_select_parameter: End')
 
     #===========================================================================
@@ -564,8 +558,8 @@ class PageTimeseries(tk.Frame):
         """        
         logging.debug('page_ferrybox._update_plot: Start')
         
-        gui.update_time_series_plot(gismo_object=core.Boxen().current_ferrybox_object, 
-                                par=core.Boxen().current_par_ferrybox, 
+        gui.update_time_series_plot(gismo_object=self.current_gismo_object,
+                                par=self.current_parameter,
                                 plot_object=self.plot_object, 
                                 flag_widget=self.flag_widget, 
                                 help_info_function=self.controller.update_help_information)
@@ -591,12 +585,34 @@ class PageTimeseries(tk.Frame):
         """
         return string.split(':')[-1].strip()
 
+    def _set_current_file(self):
+        """
+        Sets the current file information. file_id and file_path are set.
+        Information taken from self.select_data_widget
+        :return:
+        """
+        self.current_sampling_type = self.select_data_widget.get_value().split(':')[0].strip()
+        self.current_file_id = self._get_file_id(self.select_data_widget.get_value())
+        self.current_file_path = self.session.get_file_path(self.current_file_id)
+        self.current_gismo_object = self.session.get_gismo_object(self.current_file_id)
+
+    def _set_current_reference_file(self):
+        """
+        Sets the current reference file information. file_id and file_path are set.
+        Information taken from self.select_ref_data_widget
+        :return:
+        """
+        self.current_ref_sampling_type = self.select_ref_data_widget.get_value().split(':')[0].strip()
+        self.current_ref_file_id = self._get_file_id(self.select_ref_data_widget.get_value())
+        self.current_ref_file_path = self.session.get_file_path(self.current_ref_file_id)
+        self.current_ref_gismo_object = self.session.get_gismo_object(self.current_ref_file_id)
+
     #===========================================================================
     def _update_file(self):
         logging.debug('page_ferrybox._update_file: Start')
-        file_id = self._get_file_id(self.select_data_widget.get_value())
-        
-        if not file_id:
+        self._set_current_file()
+
+        if not self.current_file_id:
             self.save_widget.set_file_path('')
             self.stringvar_current_file.set('')
             return
@@ -605,15 +621,12 @@ class PageTimeseries(tk.Frame):
         
         self._on_file_update()
 
-        print('FILE ID', file_id)
-        file_path = self.session.get_file_path(file_id)
-        if not file_path:
+        if not self.current_file_path:
             self.save_widget.set_file_path()
             self.stringvar_current_data_file.set('')
             return
-        print('FILE PATH', file_path)
-        self.save_widget.set_file_path(file_path)
-        self.stringvar_current_data_file.set(file_path)
+        self.save_widget.set_file_path(self.current_file_path)
+        self.stringvar_current_data_file.set(self.current_file_path)
 
         logging.debug('page_ferrybox._update_file: End')
         
@@ -621,17 +634,16 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def _update_file_reference(self):
         logging.debug('page_ferrybox._update_file_reference: Start')
-        file_id = self.select_ref_data_widget.get_value()
+        self._set_current_reference_file()
         
-        if not file_id:
+        if not self.current_ref_file_id:
             self.stringvar_current_reference_file.set('')
             return
 
-        file_path = self.session.get_file_path(file_id)
-        if not file_path:
+        if not self.current_ref_file_path:
             self.stringvar_current_reference_file.set('')
             return
-        self.stringvar_current_reference_file.set(file_path)
+        self.stringvar_current_reference_file.set(self.current_ref_file_path)
 
         logging.debug('page_ferrybox._update_file_reference: End')
         

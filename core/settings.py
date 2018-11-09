@@ -6,6 +6,7 @@
 
 import codecs
 import os
+import shutil
 import pickle
 
         
@@ -13,15 +14,14 @@ import pickle
 ========================================================================
 ========================================================================
 ========================================================================
-""" 
-# @gtb_utils.singleton
+"""
 class Settings(dict):
 
     def __init__(self,
                  default_settings_file_path=None,
                  root_directory=False):
         """
-        Updated 20171002    by Magnus Wenzer
+        Updated 20171002    by
         """
         self.settings_are_modified = False
         if not default_settings_file_path:
@@ -203,65 +203,55 @@ class Settings(dict):
     #===========================================================================
     def _load_unit_list(self):
         self.unit_list = ['ml/l', 'umol/l', 'mmol/l', 'deg', 'deg C', 'C', 'mg/l', 'psu']
-#    #===========================================================================
-#    def _create_file_paths(self):
-#        
-#        # All directories/paths
-#        for key in self['directory']:
-#            
-#            current_path = self['directory'][key]
-#            
-#
-#        
-#    #===========================================================================
-#    def _fix_lists(self):
-#        """
-#        To split into list if given in settings.
-#        """
-#        for key in self['list'].keys():
-#            made_list = [item.strip() for item in self['list'][key].split(',')]
-#            self['list'][key] = made_list
-#       
-#    #===========================================================================
-#    def create_fonts(self):
-#        """
-#        Method to create/change font style and size. 
-#        For some reason the tkFont object works in Spyder but not in Eclipse
-#        """
-#        # TODO: Does not work in Eclipse
-#        # Font 1
-#        font1 = self['general']['Font 1']
-#        size1 = self['general']['Font size 1']
-#        weight1 = self['general']['Font weight 1']
-#        slant1 = self['general']['Font slant 1']
-#        print font1, size1, weight1, slant1
-#        
-#        # Font 2
-#        font2 = self['general']['Font 2']
-#        size2 = self['general']['Font size 2']
-#        weight2 = self['general']['Font weight 2']
-#        slant2 = self['general']['Font slant 2']
-#            
-#        try:    # If font attributes already exists
-#            self.font_1.configure(family=font1, 
-#                                            size=size1, 
-#                                            weight=weight1, 
-#                                            slant=slant1)
-#            
-#            self.font_2.configure(family=font2, 
-#                                            size=size2, 
-#                                            weight=weight2, 
-#                                            slant=slant2)
-#        except:
-#            
-#            font = (font1, size1, weight1, slant1)
-#            self.font_1 = tkFont.Font(family=font1, 
-#                                            size=size1, 
-#                                            weight=weight1, 
-#                                            slant=slant1)
-#
-#            self.font_2 = tkFont.Font(family=font2, 
-#                                            size=size2, 
-#                                            weight=weight2, 
-#                                            slant=slant2)
-   
+
+
+
+class SettingsFiles(object):
+    """
+    Class hold
+    """
+    def __init__(self, settings_directory):
+        """
+
+        :param settings_files_path:
+        """
+        self.directory = settings_directory
+
+        self.file_names = []
+        self.files = []
+        self.paths = []
+
+        self._list_files()
+
+    def _list_files(self):
+        self.file_names = []
+        self.files = []
+        self.paths = []
+
+        self.name_to_path = {}
+
+        for file_name in sorted(os.listdir(self.directory)):
+            self.file_names.append(file_name)
+            name = file_name.split('.')[0]
+            self.files.append(name)
+            p = os.path.join(self.directory, file_name)
+            self.paths.append(p)
+            self.name_to_path[name] = p
+
+    def get_list(self):
+        return self.files
+
+    def get_path(self, file):
+        return self.name_to_path.get(file, '')
+
+    def import_file(self, file_path):
+        """
+        Copies the given file to the settings directory and adds update the lists.
+        :param file_path:
+        :return:
+        """
+        file_name = os.path.basename(file_path)
+        base, ext = os.path.splitext(file_name)
+        target_file_path = os.path.join(self.directory, file_name)
+        shutil.copy(file_path, target_file_path)
+        self._list_files()

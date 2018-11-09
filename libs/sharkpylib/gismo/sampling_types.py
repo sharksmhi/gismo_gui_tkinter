@@ -1055,9 +1055,13 @@ class SamplingTypeSettings(dict):
 
     # ==================================================================
     def get_flag_prop_dict(self, flag):
+        flag = str(flag)
         if self:
             dont_include = ['qf', 'description']
-            return {par: item for par, item in self['flags'][flag].iteritems() if par not in dont_include}
+            # print('='*50)
+            # print(self['flags'][flag])
+            # print('=' * 50)
+            return {par: item for par, item in self['flags'][flag].items() if par not in dont_include}
         else:
             return {}
 

@@ -94,10 +94,17 @@ class App(tk.Tk):
             raise AttributeError
 
         # Load settings and constants (singletons)
+        self.app_directory = os.path.dirname(os.path.abspath(__file__))
         self.root_directory = root_directory
         self.users_directory = users_directory
         self.log_directory = log_directory
         self.input_directory = input_directory
+
+        # Load paths
+        self.paths = core.Paths(self.app_directory)
+
+        # Load settings files object
+        self.settings_files = core.SettingsFiles(self.paths.directory_settings_files)
         
         # Initiate logging
         log_file = os.path.join(self.log_directory, 'gismo.log')
@@ -163,7 +170,6 @@ class App(tk.Tk):
         self.page_history = [gui.PageStart]
         self.show_frame(gui.PageTimeseries)
 #        self.show_frame(eval('gui.' + self.settings['general']['Start page']))
-        
     
     #==========================================================================
     def _set_frame(self):
@@ -286,17 +292,19 @@ class App(tk.Tk):
         frame = self.frame_add
         frame_data = tk.LabelFrame(frame, text='Data file')
         frame_settings = tk.LabelFrame(frame, text='Settings file')
-        frame_sampling_type = tk.Frame(frame)
+        frame_sampling_type = tk.LabelFrame(frame, text='Sampling type')
+        frame_load = tk.Frame(frame)
         
         # Grid 
         padx=5 
         pady=5
-        frame_data.grid(row=0, column=0, sticky='nsew', padx=padx, pady=pady)
-        frame_settings.grid(row=1, column=0, sticky='nsew', padx=padx, pady=pady) 
-        frame_sampling_type.grid(row=2, column=0, sticky='nsew', padx=padx, pady=pady) 
-        
+        frame_data.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=padx, pady=pady)
+        frame_settings.grid(row=1, column=0, sticky='nsew', padx=padx, pady=pady)
+        frame_sampling_type.grid(row=1, column=1, sticky='nsew', padx=padx, pady=pady)
+        frame_load.grid(row=1, column=2, sticky='nsew', padx=padx, pady=pady)
+
         # Gridconfigure 
-        tkw.grid_configure(frame, nr_rows=3)
+        tkw.grid_configure(frame, nr_rows=2, nr_columns=3)
 #        frame.grid_rowconfigure(0, weight=1)
 #        frame.grid_rowconfigure(1, weight=1)
 #        frame.grid_rowconfigure(2, weight=1)
@@ -333,17 +341,27 @@ class App(tk.Tk):
         
         #----------------------------------------------------------------------
         # Settings frame
-        self.button_get_settings_file = ttk.Button(frame_settings, text='Get settings file:', command=self._get_settings_file_path)
+        self.combobox_widget_settings_file = tkw.ComboboxWidget(frame_settings,
+                                                                items=[],
+                                                                title='',
+                                                                prop_combobox={'width': 40},
+                                                                column=0,
+                                                                columnspan=1,
+                                                                row=0,
+                                                                sticky='w')
+        self._update_settings_combobox_widget()
+
+        self.button_import_settings_file = ttk.Button(frame_settings, text='Import settings file', command=self._import_settings_file)
         
-        self.stringvar_settings_file = tk.StringVar()
-        self.entry_settings_file = tk.Entry(frame_settings, textvariable=self.stringvar_settings_file, state='disabled')
+        # self.stringvar_settings_file = tk.StringVar()
+        # self.entry_settings_file = tk.Entry(frame_settings, textvariable=self.stringvar_settings_file, state='disabled')
         
         #Grid 
-        self.button_get_settings_file.grid(row=0, column=0, padx=padx, pady=pady, sticky='w')
-        self.entry_settings_file.grid(row=1, column=0, padx=padx, pady=pady, sticky='nsew')
+        self.button_import_settings_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='w')
+        # self.entry_settings_file.grid(row=1, column=0, padx=padx, pady=pady, sticky='nsew')
         
         # Gridconfigure 
-        tkw.grid_configure(frame_settings, nr_rows=2)
+        tkw.grid_configure(frame_settings, nr_rows=1, nr_columns=2)
 #        frame_settings.grid_rowconfigure(0, weight=1)
 #        frame_settings.grid_rowconfigure(1, weight=1)
 #        frame_settings.grid_columnconfigure(0, weight=1)
@@ -354,24 +372,29 @@ class App(tk.Tk):
         # Sampling type frame
         self.combobox_widget_sampling_type = tkw.ComboboxWidget(frame_sampling_type, 
                                                                 items=sorted(self.session.get_sampling_types()),
-                                                                title='Sampling type', 
+                                                                title='',
                                                                 prop_combobox={'width':20},
                                                                 column=0, 
                                                                 columnspan=1, 
                                                                 row=0, 
                                                                 sticky='w')
-        
+
+        # Gridconfigure
+        tkw.grid_configure(frame_sampling_type)
+
         # Load file button
-        self.button_load_file = ttk.Button(frame_sampling_type, text='Load file', command=self._load_file)
+        self.button_load_file = ttk.Button(frame_load, text='Load file', command=self._load_file)
         self.button_load_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='se')
         self.button_load_file.configure(state='disabled')
         
         # Gridconfigure 
-        tkw.grid_configure(frame_sampling_type, nr_columns=2)
+        tkw.grid_configure(frame_load)
 #        frame_sampling_type.grid_rowconfigure(0, weight=1)
 #        frame_sampling_type.grid_columnconfigure(0, weight=1)
 #        frame_sampling_type.grid_columnconfigure(1, weight=1)
-        
+
+    def _update_settings_combobox_widget(self):
+        self.combobox_widget_settings_file.update_items(self.settings_files.get_list())
 
     #===========================================================================
     def _set_frame_loaded_files(self):
@@ -422,31 +445,33 @@ class App(tk.Tk):
             self.stringvar_data_file.set(file_path)
             
             # Check settings file path
-            settings_file_path = self.stringvar_settings_file.get()
+            settings_file_path = self.combobox_widget_settings_file.get_value()
             if not settings_file_path and sampling_type != old_sampling_type:
-                self.stringvar_settings_file.set(self.settings['directory']['Default {} settings'.format(sampling_type)])
+                self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
             
             self.button_load_file.configure(state='normal')
         else:
             self.button_load_file.configure(state='disabled')
             
     #===========================================================================
-    def _get_settings_file_path(self):
+    def _import_settings_file(self):
 
         open_directory = self._get_open_directory()
             
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
-                                                filetypes=[('core.Settings-file','*.ini')])
-                                                 
-        if file_path:
-            self.stringvar_settings_file_ferrybox.set(file_path)
+                                                filetypes=[('GISMO Settings file','*.ini')])
+
+        self.settings_files.import_file(file_path)
+        self._update_settings_combobox_widget()
             
             
     #===========================================================================
     def _load_file(self):
         self.reset_help_information()
         data_file_path = self.stringvar_data_file.get()
-        settings_file_path = self.stringvar_settings_file.get() 
+        settings_file = self.combobox_widget_settings_file.get_value()
+        settings_file_path = self.settings_files.get_path(settings_file)
+
         sampling_type = self.combobox_widget_sampling_type.get_value()
         
         if not all([data_file_path, settings_file_path]): 
@@ -797,7 +822,7 @@ class Boxen(object):
 """
 def main():
     """
-    Updated 20181002    by Magnus Wenzer
+    Updated 20181002    by
     """
     root_directory = os.path.dirname(os.path.abspath(__file__))
     users_directory = os.path.join(root_directory, 'users')
