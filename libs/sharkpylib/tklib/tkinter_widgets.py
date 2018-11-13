@@ -316,7 +316,7 @@ class ComboboxWidget(tk.Frame):
     #===========================================================================
     def update_items(self, items=[], default_item=None, default_match=None):
         self.items = items
-        print('update_items', default_item, default_match)
+        # print('update_items', default_item, default_match)
         if not default_item and self.items:
             if default_match:
                 for k, item in enumerate(self.items):
@@ -2027,7 +2027,7 @@ class PlotFrame(tk.Frame):
         
         self.frame_plot = tk.Frame(self)
         self.frame_plot.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        grid_configure(self.frame_plot)
+        # grid_configure(self.frame_plot)
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame_plot)
         self.canvas.draw()
