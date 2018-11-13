@@ -223,7 +223,7 @@ class GISMOfile(GISMOdata):
         :param arg:
         :return: list
         """
-        if type(arg) in [list, tuple, np.array]:
+        if type(arg) in [list, tuple, np.array, np.ndarray]:
             return list(arg)
         else:
             return [arg]
@@ -353,6 +353,8 @@ class GISMOfile(GISMOdata):
                 raise GISMOExceptionInvalidOption
             if key == 'time':
                 value_list = self._get_argument_list(value)
+                print('type(value_list[0])', type(value_list[0]))
+                print(type(self.df.time.values[0]))
                 boolean = boolean & (self.df.time.isin(value_list))
             elif key == 'time_start':
                 boolean = boolean & (self.df.time >= value)

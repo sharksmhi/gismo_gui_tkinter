@@ -6,3 +6,5 @@ from .settings import Settings, SettingsFiles
 from .paths import Paths
 
 from .exceptions import *
+
+from .user import User

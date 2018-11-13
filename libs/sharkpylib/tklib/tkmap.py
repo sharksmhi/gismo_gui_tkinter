@@ -574,9 +574,9 @@ class TkMap(object):
             if marker_name in self.marker_order:
                 print('Remove marker', marker_name)
                 self.delete_marker(marker_name)
-            print(x_list[0])
-            print(y_list[0])
-            print(value_list[0])
+            # print(x_list[0])
+            # print(y_list[0])
+            # print(value_list[0])
             handle = self.m.scatter(x_list[i], y_list[i], c=value_list[i], 
                                     s=marker_size[i], cmap=color_map, marker=marker_type[i], 
 #                                     vmin=np.nanmin(values), vmax=np.nanmax(values),  

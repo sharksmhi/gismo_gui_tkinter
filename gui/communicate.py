@@ -159,6 +159,7 @@ def add_sample_data_to_boxen(par=None,
 """ 
 def get_flag_widget(parent=None, 
                     settings_object=None,
+                    user_object=None,
                     callback_flag_data=None, 
                     callback_update=None, 
                     callback_prop_change=None,
@@ -166,7 +167,6 @@ def get_flag_widget(parent=None,
                     **kwargs):
 
     if settings_object:
-
         # Flags are sorted
         flags = settings_object.get_flag_list()
         descriptions = settings_object.get_flag_description_list()
@@ -178,15 +178,23 @@ def get_flag_widget(parent=None,
         flags = list(range(nr_flags))
         descriptions = ['unknown']*nr_flags
 
-    colors = ['red' if flags[i] in [4, 8] else 'black' for i in range(nr_flags)]
-    markersize = [6] * nr_flags
+    color_list = []
+    markersize_list = []
+    for f in flags:
+        print(f)
+        if str(f) in '48':
+            color_list.append(user_object.flag_color.setdefault(f, 'red'))
+        else:
+            color_list.append(user_object.flag_color.setdefault(f, 'black'))
+
+        markersize_list.append(user_object.flag_markersize.setdefault(f, 6))
 
     flag_widget = tkw.FlagWidget(parent, 
                                   flags=flags, 
                                   descriptions=descriptions, 
-#                                              colors=set(colors),
-                                  default_colors=colors, 
-                                  markersize=markersize, 
+                                  colors=['blue', 'red', 'darkgreen', 'yellow', 'magenta', 'cyan', 'black', 'gray'],
+                                  default_colors=color_list,
+                                  markersize=markersize_list,
                                   include_marker_size=include_marker_size, 
                                   callback_flag_data=callback_flag_data, 
                                   callback_update=callback_update, 
@@ -211,21 +219,36 @@ def flag_data_time_series(flag_widget=None,
     """
     selection = flag_widget.get_selection()
     flag_nr = selection.flag
-    
-    index = plot_object.get_marked_index()
-    print('index[0]', index[0])
-    gismo_object.flag_parameter_at_index(par=par, 
-                                         index=index, 
-                                         qflag=flag_nr) 
+
+    time_values = plot_object.get_marked_x_values()
+    # index = plot_object.get_marked_index()
+    print('time_values[0]', time_values[0])
+    gismo_object.flag_data(flag_nr, par, time=time_values)
+    # gismo_object.flag_parameter_at_index(par=par,
+    #                                      index=index,
+    #                                      qflag=flag_nr)
     # Flag dependent parameters
     dependent_list = gismo_object.get_dependent_parameters(par)
     if dependent_list:
         print('par', par)
         for sub_par in dependent_list:
             print('sub_par', sub_par)
-            gismo_object.flag_parameter_at_index(par=sub_par, 
-                                                 index=index, 
-                                                 qflag=flag_nr) 
+            gismo_object.flag_data(flag_nr, sub_par, time=time_values)
+            # gismo_object.flag_parameter_at_index(par=sub_par,
+            #                                      index=index,
+            #                                      qflag=flag_nr)
+
+def save_user_info_from_flag_widget(flag_widget, user_object):
+    """
+    Saves color and marker size to user profile (user_object)
+    :param flag_widget:
+    :param user_object:
+    :return:
+    """
+    for f, c, ms in zip(flag_widget.flags, flag_widget.default_colors, flag_widget.markersize):
+        user_object.flag_color.set(f, c)
+        user_object.flag_markersize.set(f, ms)
+
                                                                  
 """
 ================================================================================
@@ -432,7 +455,8 @@ def update_time_series_plot(gismo_object=None,
                             par=None, 
                             plot_object=None, 
                             flag_widget=None, 
-                            help_info_function=None):
+                            help_info_function=None,
+                            call_targets=True):
     """
     Updates the plot_object (time series) using information from gismo_object, par and flag_widget.
     If help_info_function (updating tkText) is given text information is passed to the function.
@@ -456,12 +480,19 @@ def update_time_series_plot(gismo_object=None,
     # Clear old data from plot
     plot_object.reset_plot()
     
-    # Plot all flags combined
+    # Plot all flags combined. This is used for range selection.
     data = gismo_object.get_data('time', par, mask_options={'include_flags': selection.selected_flags})
 
     prop = {'linestyle': '', 
              'marker': None}
-    plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', **prop)
+    plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', call_targets=call_targets, **prop)
+
+    # if par in ['time', 'lat', 'lon']:
+    #
+    #     plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', **prop)
+    #     if help_info_function:
+    #         help_info_function('Done!')
+    #     return
 
     # Plot individual flags
     for k, flag in enumerate(selection.selected_flags):
@@ -473,10 +504,17 @@ def update_time_series_plot(gismo_object=None,
 #            print 'No data for flag "%s", will not plot.' % flag
             continue
         prop = settings.get_flag_prop_dict(flag)
-        prop.update(selection.get_prop(flag)) # Is empty if no settings file is added while loading data
-        prop.update({'linestyle': ''})
-        plot_object.set_data(x=data['time'], y=data[par], line_id=flag, **prop)
-        
+        prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
+        prop.update({'linestyle': '',
+                     'marker': '.'})
+        # print('='*50)
+        # print('par', par)
+        # print('flag', flag)
+        # print(data[par])
+        # print('prop', prop)
+        # print('-' * 50)
+        plot_object.set_data(x=data['time'], y=data[par], line_id=flag, call_targets=call_targets, **prop)
+
     if help_info_function:
         help_info_function('Done!')
         
@@ -616,8 +654,8 @@ def update_scatter_route_map(gismo_object=None,
 ================================================================================
 """ 
 #===========================================================================
-def update_plot_limits_from_settings(plot_object=None, 
-                                     settings_object=None, 
+def update_plot_limits_from_settings(plot_object=None,
+                                     user_object=None,
                                      axis=None, 
                                      par=None, 
                                      call_targets_in_plot_object=False):
@@ -627,11 +665,12 @@ def update_plot_limits_from_settings(plot_object=None,
     """
     
     
-    if not all([settings_object, settings_object, axis, par]):
+    if not all([user_object, axis, par]):
         return  
-    
-    min_value = settings_object['ranges'][par]['min'] 
-    max_value = settings_object['ranges'][par]['max']
+
+
+    min_value = user_object.range.get(par, 'min')
+    max_value = user_object.range.get(par, 'max')
     
     if axis in ['x', 't']:
 #        xmin = settings_object['ranges'][par]['xmin'] 
@@ -665,7 +704,7 @@ def set_valid_time_in_time_axis(gismo_object=None,
 ================================================================================
 ================================================================================
 """ 
-def update_limits_in_axis_time_widget(settings_object=None, 
+def update_limits_in_axis_time_widget(user_object=None,
                                       axis_time_widget=None, 
                                       plot_object=None, 
                                       par=None, 
@@ -673,7 +712,7 @@ def update_limits_in_axis_time_widget(settings_object=None,
     """
     Takes information from settings_object and updates the Axiscore.SettingsTimeWidget. 
     If parameter not present in settings limits are taken from the current plot_object. 
-    if no information is avalable full range is set. 
+    if no information is available full range is set.
     """
     
 #    if not all([settings_object, par, axis]):
@@ -681,34 +720,20 @@ def update_limits_in_axis_time_widget(settings_object=None,
     
     min_value = None 
     max_value = None
-    
-    if par in settings_object['ranges']:
-        min_value = settings_object['ranges'][par]['min']
-        max_value = settings_object['ranges'][par]['max']
-#        if axis in ['x', 't']:
-#            min_value = settings_object['ranges'][par]['xmin']
-#            max_value = settings_object['ranges'][par]['xmax']
-#        elif axis in ['y', 'z']:
-#            min_value = settings_object['ranges'][par]['ymin']
-#            max_value = settings_object['ranges'][par]['ymax']
-    else:
-        # Parameter not in settings. Values are taken from current plot_object
-        if plot_object:
-            if axis in ['x', 't']:
-                min_value, max_value = plot_object.get_xlim(ax='first')
-                
-            elif axis in ['y', 'z']:
-                min_value, max_value = plot_object.get_ylim(ax='first') 
 
-            # Save limits
-            save_limits_from_axis_time_widget(settings_object=settings_object, 
-                                              axis_time_widget=axis_time_widget, 
-                                              par=par, 
-                                              axis=axis)
-        
-            
-            
-    print('min_value', min_value)
+    if plot_object:
+        if axis in ['x', 't']:
+            min_value, max_value = plot_object.get_xlim(ax='first')
+
+        elif axis in ['y', 'z']:
+            min_value, max_value = plot_object.get_ylim(ax='first')
+
+        # Save limits
+        # print()
+        # save_limits_from_axis_time_widget(user_object=user_object,
+        #                                   axis_time_widget=axis_time_widget,
+        #                                   par=par)
+
     if min_value:
         axis_time_widget.time_widget_from.set_time(datenumber=min_value)
         axis_time_widget.time_widget_to.set_time(datenumber=max_value)
@@ -716,54 +741,49 @@ def update_limits_in_axis_time_widget(settings_object=None,
         axis_time_widget.time_widget_from.set_time(first=True)
         axis_time_widget.time_widget_to.set_time(last=True)
 
+    user_object.range.setdefault(par, 'min', float(min_value))
+    user_object.range.setdefault(par, 'max', float(max_value))
+
 
 """
 ================================================================================
 ================================================================================
 ================================================================================
 """
-def update_limits_in_axis_float_widget(settings_object=None, 
+def update_limits_in_axis_float_widget(user_object=None,
                                        axis_float_widget=None, 
                                        plot_object=None, 
                                        par=None, 
                                        axis=None):
     """
-    Takes information from settings_object and updates the Axiscore.SettingsFloatWidget. 
+    Takes information from settings_object and updates the Axis.SettingsFloatWidget.
     If parameter not present in settings limits are taken from the current plot_object. 
     """
 
-    if not all([settings_object, par, axis]):
+    if not all([user_object, par, axis]):
         return
     
     min_value = None 
     max_value = None
-    
-    if par in settings_object['ranges']:
-        min_value = settings_object['ranges'][par]['min']
-        max_value = settings_object['ranges'][par]['max']
-#        if axis in ['x', 't']:
-#            min_value = settings_object['ranges'][par]['xmin']
-#            max_value = settings_object['ranges'][par]['xmax']
-#        elif axis in ['y', 'z']:
-#            min_value = settings_object['ranges'][par]['ymin']
-#            max_value = settings_object['ranges'][par]['ymax']
-    else:
-        # Parameter not in settings. Values are taken from current plot_object
-        if plot_object:
-            if axis in ['x', 't']:
-                min_value, max_value = plot_object.get_xlim(ax='first')
-                
-            elif axis in ['y', 'z']:
-                min_value, max_value = plot_object.get_ylim(ax='first') 
-            
-            # Save limits
-            save_limits_from_axis_float_widget(settings_object=settings_object, 
-                                              axis_float_widget=axis_float_widget, 
-                                              par=par, 
-                                              axis=axis)
+
+    if plot_object:
+        if axis in ['x', 't']:
+            min_value, max_value = plot_object.get_xlim(ax='first')
+
+        elif axis in ['y', 'z']:
+            min_value, max_value = plot_object.get_ylim(ax='first')
+
+        # Save limits
+        # save_limits_from_axis_float_widget(user_object=user_object,
+        #                                    axis_float_widget=axis_float_widget,
+        #                                    par=par,
+        #                                    axis=axis)
     if min_value:
-        axis_float_widget.stringvar_min.set(str(min_value))
-        axis_float_widget.stringvar_max.set(str(max_value))
+        axis_float_widget.set_min_value(str(min_value))
+        axis_float_widget.set_max_value(str(max_value))
+
+    user_object.range.setdefault(par, 'min', float(min_value))
+    user_object.range.setdefault(par, 'max', float(max_value))
        
 """
 ================================================================================
@@ -785,14 +805,14 @@ def update_compare_widget(compare_widget=None,
 ================================================================================
 ================================================================================
 """
-def save_limits_from_axis_time_widget(settings_object=None, 
+def save_limits_from_axis_time_widget(user_object=None,
                                       axis_time_widget=None, 
                                       par=None):
     """
     Takes informatioen from a Axiscore.SettingsTimeWidget object and store them in given gismo settings object. 
     """
     
-    if not settings_object:
+    if not user_object:
         # Cant save if no settings_object is active. 
         return
     
@@ -801,12 +821,15 @@ def save_limits_from_axis_time_widget(settings_object=None,
     
     min_value = axis_time_widget.time_widget_from.get_time_number()
     max_value = axis_time_widget.time_widget_to.get_time_number()
-    
-    if par not in settings_object['ranges']:
-        settings_object['ranges'][par] = {}
-    
-    settings_object['ranges'][par]['min'] = float(min_value)
-    settings_object['ranges'][par]['max'] = float(max_value)
+
+    user_object.range.set(par, 'min', float(min_value))
+    user_object.range.set(par, 'max', float(max_value))
+
+    # if par not in settings_object['ranges']:
+    #     settings_object['ranges'][par] = {}
+    #
+    # settings_object['ranges'][par]['min'] = float(min_value)
+    # settings_object['ranges'][par]['max'] = float(max_value)
 #    if axis in ['x', 't']:
 #        settings_object['ranges'][par]['xmin'] = float(min_value)
 #        settings_object['ranges'][par]['xmax'] = float(max_value)
@@ -820,14 +843,14 @@ def save_limits_from_axis_time_widget(settings_object=None,
 ================================================================================
 ================================================================================
 """
-def save_limits_from_axis_float_widget(settings_object=None, 
+def save_limits_from_axis_float_widget(user_object=None,
                                        axis_float_widget=None, 
                                        par=None):
     """
     Takes informatioen from a AxisSettingsTimeWidget object and store them in given gismo settings object. 
     """
     
-    if not settings_object:
+    if not user_object:
         # Cant save if no settings_object is active. 
         return
     
@@ -836,13 +859,16 @@ def save_limits_from_axis_float_widget(settings_object=None,
     
     min_value = axis_float_widget.stringvar_min.get()
     max_value = axis_float_widget.stringvar_max.get()
+
+    print('type:', type(min_value), min_value)
+    user_object.range.set(par, 'min', float(min_value))
+    user_object.range.set(par, 'max', float(max_value))
     
-    
-    if par not in settings_object['ranges']:
-        settings_object['ranges'][par] = {}
-        
-    settings_object['ranges'][par]['min'] = float(min_value)
-    settings_object['ranges'][par]['max'] = float(max_value)
+    # if par not in settings_object['ranges']:
+    #     settings_object['ranges'][par] = {}
+    #
+    # settings_object['ranges'][par]['min'] = float(min_value)
+    # settings_object['ranges'][par]['max'] = float(max_value)
     
 #    if axis in ['x', 't']:
 #        settings_object['ranges'][par]['xmin'] = float(min_value)
@@ -857,56 +883,42 @@ def save_limits_from_axis_float_widget(settings_object=None,
 ================================================================================
 """ 
 def save_limits_from_plot_object(plot_object=None, 
-                                 settings_object=None,
+                                 user_object=None,
                                  par=None, 
                                  axis=None, 
                                  use_plot_limits=False):
     """
     Saves limits in in given settings_object from plot_object if limit not already in settings_object. 
-    If use_plot_limits==True limits are overwritten bu the limits in plot_object.
+    If use_plot_limits==True limits are overwritten by the limits in plot_object.
     """    
     
-    if not all([plot_object, settings_object, par, axis]):
+    if not all([plot_object, user_object, par, axis]):
         return
     
     if axis in ['x', 't']:
         min_value, max_value = plot_object.get_xlim()
     elif axis in ['y', 'z']:
         min_value, max_value = plot_object.get_ylim()
-    
-    if par not in settings_object['ranges']:
-        settings_object['ranges'][par] = {}
-        use_plot_limits = True
-    
-    if use_plot_limits:
-        settings_object['ranges'][par]['min'] = float(min_value)
-        settings_object['ranges'][par]['max'] = float(max_value)
-        
-#        if axis in ['x', 't']:
-#            settings_object['ranges'][par]['xmin'] = float(xmin)
-#            settings_object['ranges'][par]['xmax'] = float(xmax)
-#        elif axis in ['y', 'z']:
-#            settings_object['ranges'][par]['ymin'] = float(ymin)
-#            settings_object['ranges'][par]['ymax'] = float(ymax)
-    else:
-        for key, value in zip(['min', 'max'], [min_value, max_value]):
-            if key not in settings_object['ranges'][par]:
-                settings_object['ranges'][par][key] = float(value)
-            elif settings_object['ranges'][par][key] == None:
-                settings_object['ranges'][par][key] = float(value)
-        
-        print(par)
-        print(settings_object['ranges'][par])
-#        if axis in ['x', 't']:
-#            for key, value in zip(['xmin', 'xmax'], [xmin, xmax]):
-#                if key not in settings_object['ranges'][par]:
-#                    settings_object['ranges'][par][key] = float(value)
-#                elif not settings_object['ranges'][par][key]:
-#                    settings_object['ranges'][par][key] = float(value)
-#                    
-#        elif axis in ['y', 'z']:
-#            for key, value in zip(['ymin', 'ymax'], [ymin, ymax]):
-#                if key not in settings_object['ranges'][par]:
-#                    settings_object['ranges'][par][key] = float(value)
-#                elif not settings_object['ranges'][par][key]:
-#                    settings_object['ranges'][par][key] = float(value)
+
+    user_object.range.setdefault(par, 'min', float(min_value))
+    user_object.range.setdefault(par, 'max', float(max_value))
+
+
+    # if par not in settings_object['ranges']:
+    #     settings_object['ranges'][par] = {}
+    #     use_plot_limits = True
+    #
+    # if use_plot_limits:
+    #     settings_object['ranges'][par]['min'] = float(min_value)
+    #     settings_object['ranges'][par]['max'] = float(max_value)
+    #
+    #
+    # else:
+    #     for key, value in zip(['min', 'max'], [min_value, max_value]):
+    #         if key not in settings_object['ranges'][par]:
+    #             settings_object['ranges'][par][key] = float(value)
+    #         elif settings_object['ranges'][par][key] == None:
+    #             settings_object['ranges'][par][key] = float(value)
+    #
+    #     print(par)
+    #     print(settings_object['ranges'][par])

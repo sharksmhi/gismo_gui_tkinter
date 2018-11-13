@@ -255,3 +255,5 @@ class SettingsFiles(object):
         target_file_path = os.path.join(self.directory, file_name)
         shutil.copy(file_path, target_file_path)
         self._list_files()
+
+

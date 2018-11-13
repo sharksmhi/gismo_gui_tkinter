@@ -184,7 +184,7 @@ class GridPlotMW():
     #==========================================================================
     def set_xticksize(self, ax_nr, fontsize=10):
         self.ax[ax_nr][1]
-        print(ax_nr, self.ax)
+        # print(ax_nr, self.ax)
         for tick in self.ax[ax_nr][1].xaxis.get_major_ticks():
             tick.label.set_fontsize(fontsize) 
         plt.show()
@@ -236,7 +236,7 @@ class GridPlotMW():
         try:
             line_1_xdata = self.ax[from_ax_nr][1].lines[0].get_xdata()
             line_1_ydata = self.ax[from_ax_nr][1].lines[0].get_ydata()
-            print(line_1_xdata)
+            # print(line_1_xdata)
             
             indmin, indmax = np.searchsorted(line_1_xdata, (xmin, xmax))
             indmax = min(len(line_1_xdata) - 1, indmax)

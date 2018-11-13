@@ -8,6 +8,7 @@ import matplotlib as mpl
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 import os
 #import shutil
@@ -337,7 +338,7 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
     def _mark_min(self):
         if not self.plot_object:
             return
-        self.plot_object.add_mark_range_target(1, color='r') # Should be in an other place
+        self.plot_object.add_mark_range_target(1, color='r') # Should be in another place
         if self.axis in self.y_list:
             self.plot_object.mark_range_from_bottom(line_id=self.line_id) # Negative values in plot
         elif self.axis in self.x_list:
@@ -514,7 +515,12 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
     def reset_widget(self):
         self.stringvar_min.set('')
         self.stringvar_max.set('')
-        
+
+    def set_min_value(self, min_value):
+        self.stringvar_min.set(min_value)
+
+    def set_max_value(self, max_value):
+        self.stringvar_max.set(max_value)
         
     #===========================================================================
     def _set_frame(self):
@@ -1028,9 +1034,16 @@ class MovableText(object):
         for event in self.events:
             self.fig.canvas.mpl_disconnect(event)
         self.events = {}
-               
-"""
-================================================================================
-================================================================================
-================================================================================
-""" 
+
+
+def show_information(title, message):
+    messagebox.showinfo(title, message)
+
+
+def show_warning(title, message):
+    messagebox.showwarning(title, message)
+
+
+def show_error(title, message):
+    messagebox.showerror(title, message)
+

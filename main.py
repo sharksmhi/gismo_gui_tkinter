@@ -22,6 +22,8 @@ from libs.sharkpylib.gismo import GISMOsession
 from libs.sharkpylib import gismo
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
+from libs.sharkpylib.gismo.exceptions import *
+
 
 import logging
 
@@ -100,6 +102,12 @@ class App(tk.Tk):
         self.log_directory = log_directory
         self.input_directory = input_directory
 
+        # Add user
+        self.users_directory = os.path.join(self.root_directory, 'users')
+        if not os.path.exists(self.users_directory):
+            os.mkdir(self.users_directory)
+        self.user = core.User(user, self.users_directory)
+
         # Load paths
         self.paths = core.Paths(self.app_directory)
 
@@ -111,7 +119,7 @@ class App(tk.Tk):
         logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG) 
         logging.info('=== NEW RUN ===')       
         
-        self.user = user
+
         self.settings = core.Settings(default_settings_file_path=default_settings_file_path,
                                           root_directory=self.root_directory)
         self.boxen = Boxen(open_directory=input_directory)
@@ -119,7 +127,7 @@ class App(tk.Tk):
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
                                     log_directory=self.log_directory,
-                                    user=user,
+                                    user=self.user.name,
                                     sampling_types_factory=sampling_types_factory,
                                     qc_routines_factory=qc_routines_factory,
                                     save_pkl=False)
@@ -155,6 +163,8 @@ class App(tk.Tk):
         self.active_page = None
         self.previous_page = None
         self.admin_mode = False
+
+        self.latest_loaded_sampling_type = ''
         
 #        self.sv = tk.StringVar()
         self._set_frame()
@@ -383,7 +393,7 @@ class App(tk.Tk):
         tkw.grid_configure(frame_sampling_type)
 
         # Load file button
-        self.button_load_file = ttk.Button(frame_load, text='Load file', command=self._load_file)
+        self.button_load_file = tk.Button(frame_load, text='Load file', command=self._load_file, bg='darkgreen', width=30, height=5)
         self.button_load_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='se')
         self.button_load_file.configure(state='disabled')
         
@@ -399,7 +409,7 @@ class App(tk.Tk):
     #===========================================================================
     def _set_frame_loaded_files(self):
         """
-        Created     20180821    by Magnus 
+        Created     20180821
         """
         frame = self.frame_loaded 
         
@@ -432,7 +442,7 @@ class App(tk.Tk):
     #===========================================================================
     def _get_data_file_path(self, sampling_type):
         """
-        Created     20180821    by Magnus 
+        Created     20180821
         """
         open_directory = self._get_open_directory()
             
@@ -448,7 +458,13 @@ class App(tk.Tk):
             settings_file_path = self.combobox_widget_settings_file.get_value()
             if not settings_file_path and sampling_type != old_sampling_type:
                 self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
-            
+
+            # User settings
+            self.latest_loaded_sampling_type = sampling_type
+            user_settings_file = self.user.settingsfile.get(sampling_type)
+            if user_settings_file:
+                self.combobox_widget_settings_file.set_value(user_settings_file)
+
             self.button_load_file.configure(state='normal')
         else:
             self.button_load_file.configure(state='disabled')
@@ -479,21 +495,31 @@ class App(tk.Tk):
             return 
         
         
-        # Load file 
-        self.update_help_information('Loading file...please wait...', fg='red') 
-        all_ok = self.session.load_file(sampling_type=sampling_type, 
-                                        file_path=data_file_path, 
-                                        settings_file_path=settings_file_path, 
-                                        reload=False)
-        
-        if not all_ok: 
-            self.update_help_information('Could not load file!', bg='red')
-            return 
+        # Load file
+        try:
+            self.update_help_information('Loading file...please wait...', fg='red')
+            all_ok = self.session.load_file(sampling_type=sampling_type,
+                                            file_path=data_file_path,
+                                            settings_file_path=settings_file_path,
+                                            reload=False)
+
+
+        except GISMOExceptionMissingPath as e:
+            gui.show_information('Invalid path', 'The path "{}" given in i settings file "{} can not be found'.format(e.message,
+                                                                                                                      settings_file_path))
+            self.update_help_information('Please try again with a different settings file.')
+            return
+
 
         self._update_loaded_files_widget()
 
         self.update_all()
-        self.update_help_information('File loaded! Please continue.')
+
+        # Update user settings
+        if self.latest_loaded_sampling_type:
+            self.user.settingsfile.set(self.latest_loaded_sampling_type, self.combobox_widget_settings_file.get_value())
+
+        self.update_help_information('File loaded! Please continue by selecting a parameter.')
 
     def _update_loaded_files_widget(self):
         loaded_files = [] 

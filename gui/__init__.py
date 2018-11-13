@@ -32,8 +32,8 @@ from .communicate import update_time_series_plot
 from .communicate import save_limits_from_axis_float_widget
 from .communicate import save_limits_from_axis_time_widget
 from .communicate import save_limits_from_plot_object
+from .communicate import save_user_info_from_flag_widget
 from .communicate import set_valid_time_in_time_axis
-
 
 #----------------------------------------------------------
 from .widgets import AxisSettingsBaseWidget
@@ -44,6 +44,9 @@ from .widgets import MovableText
 from .widgets import RangeSelectorFloatWidget
 from .widgets import RangeSelectorTimeWidget
 from .widgets import SaveWidget
+from .widgets import show_information
+from .widgets import show_warning
+from .widgets import show_error
 
 
 

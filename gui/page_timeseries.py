@@ -43,7 +43,7 @@ class PageTimeseries(tk.Frame):
         self.session = controller.session
         self.settings = controller.settings
 
-        self.gismo_platform_settings = None
+        self.gismo_sampling_type_settings = None
 
     #===========================================================================
     def startup(self):
@@ -83,7 +83,7 @@ class PageTimeseries(tk.Frame):
         self.labelframe_options = ttk.Labelframe(self, text=u'Options')
         self.labelframe_options.grid(row=0, column=1, **opt)
                                        
-        tkw.grid_configure(self, nr_columns=2, c0=1, c1=1)
+        tkw.grid_configure(self, nr_columns=2, c0=7, c1=1)
         
         
     
@@ -97,7 +97,7 @@ class PageTimeseries(tk.Frame):
         self.plot_object = plot_selector.Plot(sync_colors=True, 
                                               allow_two_axis=False, 
                                               orientation='horizontal', 
-                                             figsize=(2, 2),
+                                              figsize=(2, 2),
 #                                               figsize=None,
 #                                              figsize=(12, 7), 
                                               time_axis='x')
@@ -117,7 +117,8 @@ class PageTimeseries(tk.Frame):
 #        f2.pack(side='right', fill='both', expand=True)
         self.plot_widget = tkw.PlotFrame(frame, 
                                          self.plot_object, 
-                                         pack=False)
+                                         pack=False,
+                                         include_toolbar=False)
         
 #        button = tk.Button(f2, text='TEST BUTTON')
 ##        button.pack(side='right', fill='both', expand=True)
@@ -175,7 +176,7 @@ class PageTimeseries(tk.Frame):
         self.stringvar_current_data_file = tk.StringVar()
         tk.Label(self.labelframe_data, 
                  textvariable=self.stringvar_current_data_file, 
-                 bg='red').grid(row=2, column=0, columnspan=2, sticky='nsew', **pad)
+                 bg=None).grid(row=2, column=0, columnspan=2, sticky='w', **pad)
         tkw.grid_configure(self.labelframe_data, nr_rows=3)
         
         #----------------------------------------------------------------------
@@ -196,7 +197,7 @@ class PageTimeseries(tk.Frame):
         self.stringvar_current_reference_file = tk.StringVar()
         tk.Label(self.labelframe_reference, 
                  textvariable=self.stringvar_current_reference_file, 
-                 bg='blue').grid(row=2, column=0, columnspan=2, sticky='nsew', **pad)
+                 bg=None).grid(row=2, column=0, columnspan=2, sticky='w', **pad)
         tkw.grid_configure(self.labelframe_reference, nr_rows=2)
         
         #----------------------------------------------------------------------
@@ -298,7 +299,7 @@ class PageTimeseries(tk.Frame):
         except:
             pass
         # file_id self.
-        self.gismo_platform_settings = self.session.get()
+        self.gismo_sampling_type_settings = self.current_gismo_object.settings
         self._set_notebook_frame_flag()
 
     #===========================================================================
@@ -311,16 +312,17 @@ class PageTimeseries(tk.Frame):
         r=0
         c=0
         self.flag_widget = gui.get_flag_widget(parent=self.frame_flag_widget,
-                                            settings_object=self.gismo_platform_settings, 
-                                            callback_flag_data=self._on_flag_widget_flag, 
-                                            callback_update=self._update_plot, 
-                                            callback_prop_change=self._on_flag_widget_change,
-                                            include_marker_size=True,
-                                            row=r, 
-                                            column=c, 
-                                            padx=padx, 
-                                            pady=pady, 
-                                            sticky='nw')
+                                               settings_object=self.gismo_sampling_type_settings,
+                                               user_object=self.controller.user,
+                                               callback_flag_data=self._on_flag_widget_flag,
+                                               callback_update=self._update_plot,
+                                               callback_prop_change=self._on_flag_widget_change,
+                                               include_marker_size=True,
+                                               row=r,
+                                               column=c,
+                                               padx=padx,
+                                               pady=pady,
+                                               sticky='nw')
         
         tkw.grid_configure(self.frame_flag_widget)
     
@@ -358,19 +360,18 @@ class PageTimeseries(tk.Frame):
         
     #===========================================================================
     def _callback_save_file(self, directory, file_name):
-        current_gismo_object = core.Boxen().current_ferrybox_object
-        file_path = current_gismo_object.file_path #.replace('\\', '/')
-        output_file_path = '/'.join([directory, file_name])
+        file_path = os.path.realpath(self.current_gismo_object.file_path)
+        output_file_path = os.path.realpath('/'.join([directory, file_name]))
         
         if file_path != output_file_path:
-            current_gismo_object.write_to_file(output_file_path)
+            self.current_gismo_object.save_file(output_file_path)
         else:
-            overwrite = messagebox.askyesno(u'Overwrite file!', u'Do you want to overwrite the original file?')
+            overwrite = messagebox.askyesno(u'Overwrite file!', u'Do you want to replace the original file?')
             if not overwrite:
                 return
-            # Create temporary file and then overwrite by changing the name. This is so that the process don't get enterupted. 
+            # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
             output_file_path = directory + '/temp_%s' % file_name
-            current_gismo_object.write_to_file(output_file_path)
+            self.current_gismo_object.save_file(output_file_path)
             os.remove(file_path)
             shutil.copy2(output_file_path, file_path)
         
@@ -411,17 +412,20 @@ class PageTimeseries(tk.Frame):
         if not self.plot_object.mark_range_orientation:
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
-            gui.update_range_selection_widget(plot_object=self.plot_object, 
+            gui.update_range_selection_widget(plot_object=self.plot_object,
                                           range_selection_widget=self.yrange_selection_widget)
         elif self.plot_object.mark_range_orientation == 'horizontal':
-            gui.update_range_selection_widget(plot_object=self.plot_object, 
-                                          range_selection_widget=self.xrange_selection_widget)  
-        logging.debug('page_ferrybox._callback_plot_range: End')                                
+            gui.update_range_selection_widget(plot_object=self.plot_object,
+                                          range_selection_widget=self.xrange_selection_widget)
+        logging.debug('page_ferrybox._callback_plot_range: End')
+
     
     #===========================================================================
     def _update_parameter_list(self):
-        logging.debug('page_ferrybox._update_parameter_list: Start')  
-        self.parameter_widget.update_items(self.session.get_parameter_list(self.current_file_id),
+        logging.debug('page_ferrybox._update_parameter_list: Start')
+        exclude_parameters = ['time', 'lat', 'lon']
+        parameter_list = [item for item in self.session.get_parameter_list(self.current_file_id) if item not in exclude_parameters]
+        self.parameter_widget.update_items(parameter_list,
                                            default_item=None)
         logging.debug('page_ferrybox._update_parameter_list: End')  
                                            
@@ -448,20 +452,20 @@ class PageTimeseries(tk.Frame):
         logging.debug('ferrybox: _on_select_parameter')
             
         # First plot...
-        self._update_plot()
+        self._update_plot(call_targets=False)
         
         # ...then set full range in plot without updating (not calling to update the tk.canvas). 
         self.plot_object.zoom_to_data(call_targets=False)
-        
-        # Next is to update limits in settings_object. This will not overwrite old settings. 
+        #
+        # # Next is to update limits in settings_object. This will not overwrite old settings.
         self._save_limits_from_plot()
-
-        # Now update the Axis-widgets...
+        #
+        # # Now update the Axis-widgets...
         self._update_axis_widgets()
-
-        # ...and update limits in plot
-        self._update_plot_limits()
-        
+        #
+        # # ...and update limits in plot
+        # self._update_plot_limits()
+        #
         self.plot_object.call_targets()
 
 
@@ -471,70 +475,68 @@ class PageTimeseries(tk.Frame):
     def _update_plot_limits(self):
         logging.debug('page_ferrybox._update_plot_limits: Start')
         
-        gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
-                                         settings_object=core.Boxen().current_ferrybox_settings, 
-                                         axis='x', 
-                                         par='time', 
-                                         call_targets_in_plot_object=False)
+        gui.update_plot_limits_from_settings(plot_object=self.plot_object,
+                                             user_object=self.controller.user,
+                                             axis='x',
+                                             par='time',
+                                             call_targets_in_plot_object=False)
         
-        gui.update_plot_limits_from_settings(plot_object=self.plot_object, 
-                                         settings_object=core.Boxen().current_ferrybox_settings, 
-                                         axis='y', 
-                                         par=core.Boxen().current_par_ferrybox, 
-                                         call_targets_in_plot_object=False)
+        gui.update_plot_limits_from_settings(plot_object=self.plot_object,
+                                             user_object=self.controller.user,
+                                             axis='y',
+                                             par=self.current_parameter,
+                                             call_targets_in_plot_object=False)
         logging.debug('page_ferrybox._update_plot_limits: End')
     
     #===========================================================================
     def _save_limits_from_plot(self):
-        logging.debug('ferrybox: _save_limits_from_plot: Start')
+        """
+        Method saves limits from plot object and adds information to user_object.
+        :return:
+        """
+        logging.debug('timeseries: _save_limits_from_plot: Start')
         gui.save_limits_from_plot_object(plot_object=self.plot_object, 
-                                     settings_object=core.Boxen().current_ferrybox_settings, 
-                                     par='time', 
-                                     axis='x',
-                                     use_plot_limits=False)
+                                         user_object=self.controller.user,
+                                         par='time',
+                                         axis='x',
+                                         use_plot_limits=False)
         
-        gui.save_limits_from_plot_object(plot_object=self.plot_object, 
-                                     settings_object=core.Boxen().current_ferrybox_settings, 
-                                     par=core.Boxen().current_par_ferrybox, 
-                                     axis='y',
-                                     use_plot_limits=False)
-        logging.debug('page_ferrybox._save_limits_from_plot: End')
+        gui.save_limits_from_plot_object(plot_object=self.plot_object,
+                                         user_object=self.controller.user,
+                                         par=self.current_parameter,
+                                         axis='y',
+                                         use_plot_limits=False)
+        logging.debug('page_timeseries._save_limits_from_plot: End')
         
     
     #===========================================================================
     def _save_limits_from_axis_widgets(self):
         logging.debug('page_ferrybox._save_limits_from_axis_widgets: Start')
                            
-        gui.save_limits_from_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
-                                          axis_time_widget=self.xrange_widget, 
-                                          par='time')
+        gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
+                                              axis_time_widget=self.xrange_widget,
+                                              par='time')
                                           
-        gui.save_limits_from_axis_float_widget(settings_object=core.Boxen().current_ferrybox_settings, 
-                                          axis_float_widget=self.yrange_widget, 
-                                          par=core.Boxen().current_par_ferrybox)
+        gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
+                                               axis_float_widget=self.yrange_widget,
+                                               par=self.current_parameter)
         logging.debug('page_ferrybox._save_limits_from_axis_widgets: End')
         
     #===========================================================================
     def _update_axis_widgets(self):
         logging.debug('page_ferrybox._update_axis_widgets: Start')
         
-        gui.update_limits_in_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
-                                          axis_time_widget=self.xrange_widget, 
-                                          plot_object=self.plot_object, 
-                                          par='time', 
-                                          axis='x')
+        gui.update_limits_in_axis_time_widget(user_object=self.controller.user,
+                                              axis_time_widget=self.xrange_widget,
+                                              plot_object=self.plot_object,
+                                              par='time',
+                                              axis='x')
         
-#         gui.update_limits_in_axis_time_widget(settings_object=core.Boxen().current_ferrybox_settings, 
-#                                           axis_time_widget=self.xrange_selection_widget, 
-#                                           plot_object=self.plot_object, 
-#                                           par='time', 
-#                                           axis='x')
-        
-        gui.update_limits_in_axis_float_widget(settings_object=core.Boxen().current_ferrybox_settings, 
-                                           axis_float_widget=self.yrange_widget, 
-                                           plot_object=self.plot_object, 
-                                           par=core.Boxen().current_par_ferrybox, 
-                                           axis='y')    
+        gui.update_limits_in_axis_float_widget(user_object=self.controller.user,
+                                               axis_float_widget=self.yrange_widget,
+                                               plot_object=self.plot_object,
+                                               par=self.current_parameter,
+                                               axis='y')
         logging.debug('page_ferrybox._update_axis_widgets: End')    
     
     #===========================================================================
@@ -542,9 +544,9 @@ class PageTimeseries(tk.Frame):
         logging.debug('page_ferrybox._on_flag_widget_flag: Start')
         self.controller.update_help_information('Flagging data, please wait...')
         gui.flag_data_time_series(flag_widget=self.flag_widget, 
-                              gismo_object=core.Boxen().current_ferrybox_object, 
+                              gismo_object=self.current_gismo_object,
                               plot_object=self.plot_object, 
-                              par=core.Boxen().current_par_ferrybox)
+                              par=self.current_parameter)
         
         self._update_plot()
         
@@ -552,22 +554,26 @@ class PageTimeseries(tk.Frame):
         logging.debug('page_ferrybox._on_flag_widget_flag: End')
         
     #===========================================================================
-    def _update_plot(self):
+    def _update_plot(self, **kwargs):
         """
         Called by the parameter widget to update plot.  
         """        
         logging.debug('page_ferrybox._update_plot: Start')
         
         gui.update_time_series_plot(gismo_object=self.current_gismo_object,
-                                par=self.current_parameter,
-                                plot_object=self.plot_object, 
-                                flag_widget=self.flag_widget, 
-                                help_info_function=self.controller.update_help_information)
+                                    par=self.current_parameter,
+                                    plot_object=self.plot_object,
+                                    flag_widget=self.flag_widget,
+                                    help_info_function=self.controller.update_help_information,
+                                    call_targets=kwargs.get('call_targets', True))
         
 #         self.xrange_selection_widget.reset_widget()
 #         self.yrange_selection_widget.reset_widget()
+        gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
         
         logging.debug('page_ferrybox._update_plot: End')
+
+
 
     #===========================================================================
     def _on_flag_widget_change(self):
@@ -617,7 +623,10 @@ class PageTimeseries(tk.Frame):
             self.stringvar_current_file.set('')
             return
         
-        self._reset_widgets()
+        self._reset_widgets() 
+        
+        # Update flag widget. The apperance of flag widget will change depending on the loaded settings file 
+        self._update_notebook_frame_flag()
         
         self._on_file_update()
 

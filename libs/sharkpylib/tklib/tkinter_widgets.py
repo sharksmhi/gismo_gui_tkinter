@@ -2682,7 +2682,8 @@ class TimeWidget(ttk.Labelframe):
                 time_string = self.stringvar[part].get()
             else:
                 time_string = time_string + ', ' + str(int(self.stringvar[part].get()))
-#        print('*eval(time_string)', eval(time_string)
+        print('type(time_string)', type(time_string), time_string)
+        print('*eval(time_string)', eval(time_string))
         datetime_object = datetime.datetime(*eval(time_string))
         return datetime_object
         
@@ -2889,7 +2890,7 @@ class FlagWidget(tk.Frame):
                                                    state='readonly', 
                                                    textvariable=self.stringvar_marker_size[flag_nr])
                 self.combobox_marker_size[flag_nr].grid(row=row , column=c, sticky='w', padx=padx, pady=2)
-                self.combobox_marker_size[flag_nr]['values'] = map(str, range(1, 12))
+                self.combobox_marker_size[flag_nr]['values'] = list(map(str, range(1, 12)))
                 self.stringvar_marker_size[flag_nr].set(str(self.markersize[k]))
                 self.combobox_marker_size[flag_nr].config(foreground=self.default_colors[k])
                 self.combobox_marker_size[flag_nr].bind('<<ComboboxSelected>>', self._on_change)

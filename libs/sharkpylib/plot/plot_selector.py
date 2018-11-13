@@ -22,6 +22,7 @@ import random
 import numpy as np
 import datetime
 import matplotlib.dates as dates
+import pandas as pd
 
 class PlotSeries():
     
@@ -470,7 +471,7 @@ class Plot():
     def mark_points(self, line_id='default'):
         if not self.mark_ax:
             return
-        print('mark_ax', self.mark_ax)
+        # print('mark_ax', self.mark_ax)
 #         self.clear_marked()
         self.mark_line_id = line_id
         self.rangetype = 'point'
@@ -638,8 +639,16 @@ class Plot():
     def get_marked_index(self, ax='first'):
         ax_object = self._get_ax_object(ax)
         return ax_object.get_marked_index()
-        
-    #===========================================================================
+
+    def get_marked_x_values(self, ax='first'):
+        ax_object = self._get_ax_object(ax)
+        return ax_object.get_marked_x_values(self.mark_line_id)
+
+    def get_marked_y_values(self, ax='first'):
+        ax_object = self._get_ax_object(ax)
+        return ax_object.get_marked_y_values(self.mark_line_id)
+
+        #===========================================================================
     def get_mark_from_value(self, ax='first'):
         ax_object = self._get_ax_object(ax)
         return ax_object.get_mark_from_value()
@@ -683,10 +692,9 @@ class Plot():
             self.disconnect_event('motion_notify_event')
             self.disconnect_event('button_press_event')
             self.rangetype = None
-    
+
     #===========================================================================
     def _on_movement(self, event):
-
         if self.rangetype == 'bottom':
             self.mark_bottom = event.ydata
             self.mark_range_orientation = 'vertical'
@@ -701,12 +709,12 @@ class Plot():
             self.mark_range_orientation = 'horizontal'
         else:
             return
-            
+
         for ax in self.mark_ax:
-            ax.mark_range_range(self.mark_bottom, 
-                                self.mark_top, 
-                                self.mark_left, 
-                                self.mark_right, 
+            ax.mark_range_range(self.mark_bottom,
+                                self.mark_top,
+                                self.mark_left,
+                                self.mark_right,
                                 self.mark_line_id)
         self.call_range_targets()
 
@@ -863,6 +871,10 @@ class Plot():
 #             print('='*20
 #             print('x:', x[0]
 #             print('y:', y[0]
+            try:
+                x = [pd.to_datetime(item) for item in x]
+            except:
+                pass
             ax.set_data(x=x, y=y, line_id=line_id, exclude_index=exclude_index, call_targets=call_targets, **kwargs)
 
     #===========================================================================
@@ -981,6 +993,14 @@ class Ax():
     #===========================================================================
     def get_marked_index(self):
         return self.mark_index
+
+    def get_marked_x_values(self, line_id):
+        index = self.get_marked_index()
+        return self.x_data[line_id][index]
+
+    def get_marked_y_values(self, line_id):
+        index = self.get_marked_index()
+        return self.y_data[line_id][index]
     
     #===========================================================================
     def get_marked_points(self, line_id='default'):
@@ -1072,7 +1092,7 @@ class Ax():
         #----------------------------------------------------------------------
         # Reset current markers
         self.reset_marked_range()
-        print('mark_left:', mark_left, 'mark_right:', mark_right)
+        # print('mark_left:', mark_left, 'mark_right:', mark_right)
         #----------------------------------------------------------------------
         # Plot range lines
         alpha = 0.2
@@ -1090,7 +1110,7 @@ class Ax():
             value_list = y
 #            print(x_min, x_max, x[0]
             if isinstance(x[0], datetime.datetime):
-                xt = map(dates.date2num, x)
+                xt = list(map(dates.date2num, x))
                 nan_index = np.logical_or(xt > x_max, xt < x_min)
             else:
                 nan_index = np.logical_or(x > x_max, x < x_min)
@@ -1107,9 +1127,22 @@ class Ax():
         #----------------------------------------------------------------------    
         # Horizontal orientation
         elif mark_left != None or mark_right != None:
+            # print('=' * 50)
+            # print('=' * 50)
+            # print('Horizontal orientation')
+            # print('y', y)
+            # print('ylim', y_min, y_max)
+            # print('x', x)
+            # print('type(x[0]', type(x[0]))
+
             value_list = x
             nan_index = np.logical_and(y > y_max, y < y_min)
-            value_list[nan_index] = np.nan
+            # print('nan_index', nan_index)
+            # print('np.where(nan_index)', np.where(nan_index))
+            # print('-' * 50)
+            value_list = np.where(nan_index, np.nan, value_list)
+            # value_list[np.where()] = np.nan
+            # value_list[nan_index] = np.nan
 #            value_list = np.array([value for value in x if not np.isnan(value)])
             mark_from_value = mark_left
             mark_to_value = mark_right
