@@ -19,138 +19,114 @@ import logging
 ================================================================================
 ================================================================================
 """ 
-def add_sample_data_to_plot(plot_object=None, 
-                                par=None, 
-                                sample_object=None, 
-                                gismo_object=None, 
-                                compare_widget=None, 
-                                help_info_function=None): 
+def add_sample_data_to_timeseries_plot(plot_object=None,
+                                        session=None,
+                                        sample_file_id=None,
+                                        main_file_id=None,
+                                        compare_widget=None,
+                                        help_info_function=None):
     """
     sample_object is the main GISMOfile. 
     gismo_object is the file where matching data will be extracted from 
     """
-    print('add_sample_data_to_plot')
-    if not core.Boxen().sample_index or compare_widget.values_are_updated:
-        if help_info_function:
-            help_info_function('Adding reference data...please wait...')
-            
-        if not all([sample_object, gismo_object]):
-            help_info_function('Ferrybox and/or sample file not loaded. Could not compare data!')
-            return
-            
-#        modulus = 1
-        diffs = {}
-        if compare_widget:
-#            modulus = compare_widget.modulus
-            diffs['time'] = compare_widget.time
-            diffs['dist'] = compare_widget.dist
-            diffs['depth'] = compare_widget.depth
-            
-        index = gismo.get_matching_sample_index(sample_object=sample_object, 
-                                                       gismo_object=gismo_object, 
-#                                                       modulus=modulus, 
-                                                       diffs=diffs)
-        core.Boxen().sample_index = index
-    else:
-        index = core.Boxen().sample_index
-#    print 'index', index
-    # Get data
-    if not len(index):
-        logging.debug('No matching data found')
-        help_info_function('No matching data found!')
-        core.Boxen().sample_index = []
-        return
-    par = sample_object.parameter_mapping.get_external(par)
-    if par not in sample_object.df.columns:
-        logging.debug('No parameter named "%s" in sample data file.' % par)
-        help_info_function('No parameter named "%s" in sample data file.')
-        return
-#    qpar = sample_object.get_qf_par(par)
-    time_list = np.array(sample_object.df.ix[index, 'time'])
-    value_list = np.array(sample_object.df.ix[index, par])
-#    qf_list = gismo_object.df.ix[index, qpar]
-    core.Temp().time_list = time_list
-    core.Temp().value_list = value_list
-    
-    print('matching data')
-    plot_object.set_data(x=time_list, y=value_list, line_id='matching data', marker='x', color='black')
+
+    help_info_function('Adding reference data...please wait...', fg='red')
+
+    diffs = {}
+    diffs['hours'] = compare_widget.time
+    diffs['dist'] = compare_widget.dist
+    diffs['depth'] = compare_widget.depth
+    session.match_files(main_file_id, sample_file_id, **diffs)
+
+    par = compare_widget.get_parameter()
+
+    match_data = session.get_match_data(main_file_id, sample_file_id, 'time', par)
+    print('='*50)
+    print('match_data')
+    print(match_data)
+
+    plot_object.set_data(x=match_data['time'], y=match_data[par], line_id='matching data', marker='x', color='black', linestyle=None)
+
+    help_info_function('Reference data for parameter {} added!'.format(par))
+
+
     
     if help_info_function:
         help_info_function('Done!')
         
 
-"""
-================================================================================
-================================================================================
-================================================================================
-""" 
-def add_sample_data_to_boxen(par=None, 
-                                sample_object=None, 
-                                gismo_object=None, 
-                                compare_widget=None, 
-                                help_info_function=None): 
-    """
-    UNDER CONSTRUCTON!
-    sample_object is the main GISMOfile. 
-    gismo_object is the file where matching data will be extracted from 
-    """
-    
-    # Remove old data
-    core.Boxen().sample_data = {}
-    
-    if not core.Boxen().sample_index or compare_widget.values_are_updated:
-        if help_info_function:
-            help_info_function('Adding reference data...please wait...')
-            
-        if not all([sample_object, gismo_object]):
-            return
-            
-#        modulus = 1
-        diffs = {}
-        if compare_widget:
-#            modulus = compare_widget.modulus
-            diffs['time'] = compare_widget.time
-            diffs['dist'] = compare_widget.dist
-            diffs['depth'] = compare_widget.depth
-            
-        index = gismo.get_matching_sample_index(sample_object=sample_object, 
-                                                       gismo_object=gismo_object, 
-#                                                       modulus=modulus, 
-                                                       diffs=diffs)
-        core.Boxen().sample_index = index
-    else:
-        index = core.Boxen().sample_index
-#    print 'index', index
-    # Get data
-    if not len(index):
-        logging.debug('No matching data found')
-        core.Boxen().sample_index = []
-        return
-    par = sample_object.parameter_mapping.get_external(par)
-    if par not in sample_object.df.columns:
-        logging.debug('No parameter named "%s" in sample data file.' % par)
-        return
-
-
-    time_list = sample_object.get_column('time')
-    lat_list = sample_object.get_column('lat')
-    lon_list = sample_object.get_column('lon')
-    
-    value_list = sample_object.get_column(par)
-    
-    if par == 'time':
-        value_list = sample_object.get_column(par, time_as_datenum=True)
- 
-    else:
-        value_list = sample_object.get_column(par)
-    
-    core.Boxen().set_sample_data(lat=lat_list[index], 
-                                            lon=lon_list[index], 
-                                            t=time_list[index], 
-                                            values=value_list[index])
-                                            
-    if help_info_function:
-        help_info_function('Done!')
+# """
+# ================================================================================
+# ================================================================================
+# ================================================================================
+# """
+# def add_sample_data_to_boxen(par=None,
+#                                 sample_object=None,
+#                                 gismo_object=None,
+#                                 compare_widget=None,
+#                                 help_info_function=None):
+#     """
+#     UNDER CONSTRUCTON!
+#     sample_object is the main GISMOfile.
+#     gismo_object is the file where matching data will be extracted from
+#     """
+#
+#     # Remove old data
+#     core.Boxen().sample_data = {}
+#
+#     if not core.Boxen().sample_index or compare_widget.values_are_updated:
+#         if help_info_function:
+#             help_info_function('Adding reference data...please wait...')
+#
+#         if not all([sample_object, gismo_object]):
+#             return
+#
+# #        modulus = 1
+#         diffs = {}
+#         if compare_widget:
+# #            modulus = compare_widget.modulus
+#             diffs['time'] = compare_widget.time
+#             diffs['dist'] = compare_widget.dist
+#             diffs['depth'] = compare_widget.depth
+#
+#         index = gismo.get_matching_sample_index(sample_object=sample_object,
+#                                                        gismo_object=gismo_object,
+# #                                                       modulus=modulus,
+#                                                        diffs=diffs)
+#         core.Boxen().sample_index = index
+#     else:
+#         index = core.Boxen().sample_index
+# #    print 'index', index
+#     # Get data
+#     if not len(index):
+#         logging.debug('No matching data found')
+#         core.Boxen().sample_index = []
+#         return
+#     par = sample_object.parameter_mapping.get_external(par)
+#     if par not in sample_object.df.columns:
+#         logging.debug('No parameter named "%s" in sample data file.' % par)
+#         return
+#
+#
+#     time_list = sample_object.get_column('time')
+#     lat_list = sample_object.get_column('lat')
+#     lon_list = sample_object.get_column('lon')
+#
+#     value_list = sample_object.get_column(par)
+#
+#     if par == 'time':
+#         value_list = sample_object.get_column(par, time_as_datenum=True)
+#
+#     else:
+#         value_list = sample_object.get_column(par)
+#
+#     core.Boxen().set_sample_data(lat=lat_list[index],
+#                                             lon=lon_list[index],
+#                                             t=time_list[index],
+#                                             values=value_list[index])
+#
+#     if help_info_function:
+#         help_info_function('Done!')
     
 """
 ================================================================================
@@ -180,15 +156,16 @@ def get_flag_widget(parent=None,
 
     color_list = []
     markersize_list = []
+    print(user_object.flag_color.data)
     for f in flags:
-        print(f)
-        if str(f) in '48':
+        f = str(f)
+        if f in '48':
             color_list.append(user_object.flag_color.setdefault(f, 'red'))
         else:
             color_list.append(user_object.flag_color.setdefault(f, 'black'))
 
         markersize_list.append(user_object.flag_markersize.setdefault(f, 6))
-
+    print('color_list', color_list)
     flag_widget = tkw.FlagWidget(parent, 
                                   flags=flags, 
                                   descriptions=descriptions, 
@@ -245,9 +222,15 @@ def save_user_info_from_flag_widget(flag_widget, user_object):
     :param user_object:
     :return:
     """
-    for f, c, ms in zip(flag_widget.flags, flag_widget.default_colors, flag_widget.markersize):
-        user_object.flag_color.set(f, c)
-        user_object.flag_markersize.set(f, ms)
+    prop = flag_widget.get_selection()
+    for flag, color in prop.colors.items():
+        user_object.flag_color.set(flag, color)
+        user_object.flag_markersize.set(flag, prop.markersize[flag])
+
+    # for f, c, ms in zip(flag_widget.flags, flag_widget.default_colors, flag_widget.markersize):
+    #     print('f, c, ms', f, c, ms)
+    #     user_object.flag_color.set(f, c)
+    #     user_object.flag_markersize.set(f, ms)
 
                                                                  
 """
@@ -476,9 +459,15 @@ def update_time_series_plot(gismo_object=None,
     settings = gismo_object.settings
     selection = flag_widget.get_selection()
 
-    
     # Clear old data from plot
     plot_object.reset_plot()
+
+    # Check if data is available
+    check_data = gismo_object.get_data(par)
+    print(np.where(~np.isnan(check_data[par])))
+    print('no', len(np.where(~np.isnan(check_data[par]))[0]))
+    print('yes', len(np.where(np.isnan(check_data[par]))[0]))
+
     
     # Plot all flags combined. This is used for range selection.
     data = gismo_object.get_data('time', par, mask_options={'include_flags': selection.selected_flags})
@@ -784,21 +773,7 @@ def update_limits_in_axis_float_widget(user_object=None,
 
     user_object.range.setdefault(par, 'min', float(min_value))
     user_object.range.setdefault(par, 'max', float(max_value))
-       
-"""
-================================================================================
-================================================================================
-================================================================================
-"""
-def update_compare_widget(compare_widget=None, 
-                          settings_object=None): 
-    """
-    core.Settings object is the gismo settings
-    """
-    
-    compare_widget.set_data(time=settings_object['compare']['time'],
-                             dist=settings_object['compare']['distance'],
-                             depth=settings_object['compare']['depth'])
+
             
 """
 ================================================================================

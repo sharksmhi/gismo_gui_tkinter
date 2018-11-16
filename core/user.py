@@ -7,16 +7,25 @@ import json
 class User(object):
     def __init__(self, name, user_root_directory):
         self.name = name
-
+        print(self.name)
         self.user_directory = os.path.join(user_root_directory, self.name)
         if not os.path.exists(self.user_directory):
             os.mkdir(self.user_directory)
 
         self.range = UserSettingsParameter(self.user_directory, 'range')
+
         self.settingsfile = UserSettings(self.user_directory, 'settingsfile')
 
         self.flag_color = UserSettings(self.user_directory, 'flag_color')
         self.flag_markersize = UserSettings(self.user_directory, 'flag_markersize')
+
+        self.match = UserSettings(self.user_directory, 'match')
+
+        self.path = UserSettings(self.user_directory, 'path')
+
+        # Save process information like warning for file size etc.
+        self.process = UserSettings(self.user_directory, 'process')
+
 
 
 class UserSettings(object):
@@ -24,6 +33,7 @@ class UserSettings(object):
     Baseclass for user settings.
     """
     def __init__(self, directory, settings_type):
+        print('UserSettings')
         self.directory = directory
         self.settings_type = settings_type
         self.file_path = os.path.join(self.directory, '{}.json'.format(self.settings_type))
@@ -43,7 +53,9 @@ class UserSettings(object):
         Loads dict from json
         :return:
         """
+        print('file_path', self.file_path)
         if os.path.exists(self.file_path):
+            print('_load')
             with open(self.file_path) as fid:
                 self.data = json.load(fid)
 
@@ -91,6 +103,13 @@ class UserSettings(object):
             self.data[key] = value
         self._save()
 
+    def get_settings(self):
+        """
+        Returns the whole dictionary self.data
+        :return:
+        """
+        return self.data
+
 
 class UserSettingsParameter(UserSettings):
     def __init__(self, directory, settings_type):
@@ -130,4 +149,3 @@ class UserSettingsParameter(UserSettings):
         :return:
         """
         return self.data[par].get(key, None)
-

@@ -5,6 +5,9 @@
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
 import matplotlib as mpl
+from matplotlib.figure import Figure
+from mpl_toolkits.basemap import Basemap
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import tkinter as tk
 from tkinter import ttk
@@ -588,8 +591,8 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
             min_value, max_value = self.plot_object.get_ylim(ax='first')
             
         if min_value and max_value:
-            self.stringvar_min.set(str(min_value))
-            self.stringvar_max.set(str(max_value))
+            self.stringvar_min.set(str(min_value)[:5])
+            self.stringvar_max.set(str(max_value)[:5])
         
         self._callback()
 #            self._save_limits()
@@ -757,14 +760,17 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
 """ 
 class CompareWidget(tk.Frame):
     def __init__(self, 
-                 parent,  
+                 parent,
+                 session=None,
+                 user=None,
                  callback=None, 
                  prop_frame={},  
                  **kwargs):
-                     
-        
+
         self.prop_frame = {}
         self.prop_frame.update(prop_frame)
+        self.session = session
+        self.user = user
         self.callback = callback
         
         self.grid_frame = {'padx': 5, 
@@ -779,6 +785,10 @@ class CompareWidget(tk.Frame):
         self.new_values = ''
         
         self._set_frame()
+
+        self.set_data(time=self.user.match.setdefault('hours', '24'),
+                      dist=self.user.match.setdefault('dist', '5000'),
+                      depth=self.user.match.setdefault('depth', '2'))
         
     #===========================================================================
     def _set_frame(self):
@@ -790,7 +800,7 @@ class CompareWidget(tk.Frame):
         self.stringvar = {}
         self.entry = {}
         
-        tk.Label(self, text='Max time diff [min]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
         self.stringvar['time'] = tk.StringVar()
         self.entry['time'] = tk.Entry(self, textvariable=self.stringvar['time'], width=40)
         self.entry['time'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
@@ -810,30 +820,31 @@ class CompareWidget(tk.Frame):
         self.entry['depth'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
         self.stringvar['depth'].trace("w", lambda name, index, mode, sv=self.stringvar['depth']: tkw.check_int_entry(sv))
         r+=1
-        
-#        tk.Label(self, text='Modulus:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-#        self.stringvar['modulus'] = tk.StringVar()
-#        self.entry['modulus'] = tk.Entry(self, textvariable=self.stringvar['modulus'], width=40)
-#        self.entry['modulus'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-#        self.stringvar['modulus'].trace("w", lambda name, index, mode, sv=self.stringvar['modulus']: tkw.check_int_entry(sv))
-#        r+=1
-        
-        
+
+        self.parameter_widget = tkw.ComboboxWidget(self,
+                                                   title='Parameter',
+                                                   callback_target=[],
+                                                   row=r,
+                                                   column=0,
+                                                   pady=5,
+                                                   sticky='w')
+        r += 1
+
         self.button_add_sample_values = tk.Button(self, 
-                    text=u'Add sample data', 
-                    command=self._on_add_sample_values)
-        self.button_add_sample_values.grid(row=r, column=c, padx=padx, pady=(pady, pady), sticky='w')
+                                                    text=u'Add sample data',
+                                                    command=self._on_add_sample_data)
+        self.button_add_sample_values.grid(row=r, column=0, padx=padx, pady=(pady, pady), sticky='w')
         r+=1
-        
+
+    def update_parameter_list(self, file_id):
+        parameter_list = self.session.get_parameter_list(file_id)
+        self.parameter_widget.update_items(parameter_list)
+
+    def get_parameter(self):
+        return self.parameter_widget.get_value()
+
     #===========================================================================
-    def _on_add_sample_values(self): 
-        
-#        gismo_object = Boxen().current_gismo_object
-#        sample_object = Boxen().current_sample_object
-#        print('_add_compre'
-#        if not all([gismo_object, sample_object]):
-#            return
-        
+    def _on_add_sample_data(self):
         self.time = float(self.stringvar['time'].get())
         self.dist = float(self.stringvar['dist'].get())
         self.depth = float(self.stringvar['depth'].get())
@@ -845,40 +856,30 @@ class CompareWidget(tk.Frame):
         else:
             self.values_are_updated = False
         self.old_values = self.new_values
-                
+
+        # Save settings to user
+        self.user.match.set('hours', str(self.time))
+        self.user.match.set('dist', str(self.dist))
+        self.user.match.set('depth', str(self.depth))
         
         if self.callback:
             self.callback()
-#        index = []
-#        # Loop values 
-#        for t, la, lo, d in zip(gismo_object.df.time, 
-#                                gismo_object.df.lat, 
-#                                gismo_object.df.lon, 
-#                                gismo_object.df.depth):
-#            if 
-#            bool_index = sample_object.get_closest_index(time_object=t, 
-#                                                          lat=la, 
-#                                                          lon=lo, 
-#                                                          depth=d)
-#                                                          
-#            index.append(list(np.where(bool_index)))
-#            
-#        print('index', sorted(set(index))
     
     #===========================================================================
     def set_data(self, **kwargs):
         for key, value in kwargs.items():
             if key in self.stringvar:
-                self.stringvar[key].set(str(int(value)))
+                self.stringvar[key].set(str(int(float(value))))
         
 """
 ================================================================================
 ================================================================================
 ================================================================================
-""" 
-class SaveWidget(tk.Frame):
+"""
+class SaveWidget(ttk.LabelFrame):
     def __init__(self, 
-                 parent,  
+                 parent,
+                 label='',
                  prop_frame={},  
                  prop_entry={}, 
                  callback=None, 
@@ -896,7 +897,7 @@ class SaveWidget(tk.Frame):
                            'sticky': 'nsew'}
         self.grid_frame.update(kwargs)
         
-        tk.Frame.__init__(self, parent, **self.prop_frame)
+        ttk.LabelFrame.__init__(self, parent, text=label, **self.prop_frame)
         self.grid(**self.grid_frame)
         
         self.callback = callback
@@ -929,7 +930,7 @@ class SaveWidget(tk.Frame):
         self.stringvar_file_name.trace("w", lambda name, index, mode, sv=self.stringvar_file_name: tkw.check_path_entry(sv))
         r+=1
         
-        ttk.Button(frame, text=u'Save', command=self._save_file).grid(row=r, column=c+1, columnspan=2, padx=padx, pady=pady, sticky='nw')  
+        ttk.Button(frame, text=u'Save', command=self._save_file).grid(row=r, column=c+1, columnspan=2, padx=padx, pady=pady, sticky='se')
         
         tkw.grid_configure(frame, nr_rows=r+1)
    
@@ -951,7 +952,138 @@ class SaveWidget(tk.Frame):
         directory = directory.replace('\\', '/')
         self.stringvar_directory.set(directory)
         self.stringvar_file_name.set(file_name)
-        
+
+
+
+
+class SaveWidgetHTML(ttk.LabelFrame):
+    def __init__(self,
+                 parent,
+                 user=None,
+                 label='',
+                 prop_frame={},
+                 prop_entry={},
+                 callback=None,
+                 default_directory='',
+                 **kwargs):
+
+        self.prop_frame = {}
+        self.prop_frame.update(prop_frame)
+
+        self.prop_entry = {'width': 50}
+        self.prop_entry.update(prop_entry)
+
+        self.grid_frame = {'padx': 5,
+                           'pady': 5,
+                           'sticky': 'nsew'}
+        self.grid_frame.update(kwargs)
+
+        ttk.Labelframe.__init__(self, parent, text=label, **self.prop_frame)
+        self.grid(**self.grid_frame)
+
+        self.callback = callback
+
+        self.user = user
+        self.default_directory = default_directory
+
+        self._set_frame()
+
+        self._set_directory()
+
+        # ===========================================================================
+
+    def _set_frame(self):
+        padx = 5
+        pady = 5
+
+        frame = tk.Frame(self)
+        frame.grid(row=0, column=0, padx=padx, pady=pady, sticky='w')
+        tkw.grid_configure(self)
+
+
+        tk.Label(frame, text='Directory:').grid(row=0, column=0, padx=padx, pady=pady, sticky='nw')
+        self.stringvar_directory = tk.StringVar()
+        self.entry_directory = tk.Entry(frame, textvariable=self.stringvar_directory, **self.prop_entry)
+        self.entry_directory.grid(row=0, column=1, padx=padx, pady=pady, sticky='nw')
+        self.stringvar_directory.trace("w",
+                                       lambda name, index, mode, sv=self.stringvar_directory: tkw.check_path_entry(sv))
+
+
+        self.frame_parameters = tk.Frame(frame)
+        # self.frame_parameters = tk.LabelFrame(frame, text='Parameters to export')
+        self.frame_parameters.grid(row=1, column=0, columnspan=2, padx=padx, pady=pady, sticky='nsew')
+
+        self.checkbutton_widget = tkw.CheckbuttonWidget(frame,
+                                                      items=['Combined plot', 'Individual plots'],
+                                                      pre_checked_items=[],
+                                                      include_select_all=False,
+                                                      colors=[],
+                                                      pady=0,
+                                                      row=1,
+                                                      column=2)
+
+
+        ttk.Button(frame, text=u'Export', command=self._save_file).grid(row=2, column=0, columnspan=2, padx=padx,
+                                                                      pady=pady, sticky='se')
+
+        tkw.grid_configure(frame, nr_rows=2, nr_columns=2)
+
+        self._set_frame_listbox_parameters()
+
+    def _set_frame_listbox_parameters(self):
+
+        self.listbox_widget_parameters = tkw.ListboxSelectionWidget(self.frame_parameters,
+                                                                    prop_frame={},
+                                                                    prop_items={'height': 5},
+                                                                    prop_selected={'height': 5},
+                                                                    items=[],
+                                                                    selected_items=[],
+                                                                    title_items='Available parameters',
+                                                                    title_selected='Selected parameters',
+                                                                    font=None,
+                                                                    include_button_move_all_items=True,
+                                                                    include_button_move_all_selected=True,
+                                                                    callback_match_in_file=None,
+                                                                    callback_match_subselection=None,
+                                                                    sort_selected=False,
+                                                                    include_blank_item=False,
+                                                                    target=None,
+                                                                    target_select=None,
+                                                                    target_deselect=None,
+                                                                    bind_tab_entry_items=None,
+                                                                    widget_id=u'',
+                                                                    allow_nr_selected=None,
+                                                                    vertical=False)
+
+
+    # ===========================================================================
+    def _save_file(self):
+        if self.callback:
+            self.callback()
+
+    def get_selection(self):
+        """
+        Returns all selections in the widget as a dict.
+        :return:
+        """
+        selection = dict()
+        selection['directory'] = self.stringvar_directory.get()
+        selection['parameters'] = self.listbox_widget_parameters.get_selected()
+        plot_types_selected = self.checkbutton_widget.get_checked_item_list()
+        selection['combined_plot'] = 'Combined plot' in plot_types_selected
+        selection['individual_plots'] = 'Individual plots' in plot_types_selected
+        selection['individual_maps'] = 'Individual maps' in plot_types_selected
+
+        return selection
+
+    # ===========================================================================
+    def _set_directory(self):
+        directory = self.user.path.setdefault('html_export_directory', self.default_directory)
+        directory = directory.replace('\\', '/')
+        self.stringvar_directory.set(directory)
+
+    def update_parameters(self, parameter_list):
+        self.listbox_widget_parameters.update_items(parameter_list)
      
 """
 ================================================================================
@@ -1034,6 +1166,8 @@ class MovableText(object):
         for event in self.events:
             self.fig.canvas.mpl_disconnect(event)
         self.events = {}
+
+
 
 
 def show_information(title, message):

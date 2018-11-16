@@ -6,6 +6,7 @@
 
 import os
 import shutil
+import datetime
 import sys
 
 # Python 2.7
@@ -22,6 +23,9 @@ import core
 import libs.sharkpylib.gismo as gismo
 import libs.sharkpylib.plot.plot_selector as plot_selector
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
+import libs.sharkpylib.tklib.tkmap as tkmap
+
+from libs.sharkpylib.gismo.exceptions import *
 
 import logging
 
@@ -40,24 +44,27 @@ class PageTimeseries(tk.Frame):
         # parent is the frame "container" in App. contoller is the App class
         self.parent = parent
         self.controller = controller
+        self.user = controller.user
         self.session = controller.session
         self.settings = controller.settings
 
         self.gismo_sampling_type_settings = None
 
+        self.current_ref_file_id = None
+        self.current_file_id = None
+
     #===========================================================================
     def startup(self):
         self._set_frame()
-
-        # Set reference info
-        gui.update_compare_widget(compare_widget=self.compare_widget,
-                                  settings_object=self.settings)
 
         self.update_page()
         
     #===========================================================================
     def update_page(self):
-        self.select_data_widget.update_items(self.controller.get_loaded_files_list())
+        loaded_file_list = self.controller.get_loaded_files_list()
+        add_file_list = [item for item in loaded_file_list if 'PhysicalChemical' not in item]
+
+        self.select_data_widget.update_items(add_file_list)
         self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
         # self.stringvar_current_file.set('')
         # self.stringvar_current_sample_file.set('')
@@ -208,13 +215,15 @@ class PageTimeseries(tk.Frame):
                                                    row=0, 
                                                    pady=5, 
                                                    sticky='w')
+        self.stringvar_parameter_info = tk.StringVar()
+        tk.Label(self.labelframe_parameter, textvariable=self.stringvar_parameter_info)
         tkw.grid_configure(self.labelframe_parameter, nr_rows=1)
         
         #----------------------------------------------------------------------
         # Options notebook
         
         self.notebook_options = tkw.NotebookWidget(self.frame_notebook, 
-                                                   frames=['Axis range', 'Select', 'Flag', 'Compare', 'Save'], row=0)  
+                                                   frames=['Axis range', 'Select', 'Flag', 'Compare', 'Save/Export', 'Preview map'], row=0)
         tkw.grid_configure(self.frame_notebook, nr_rows=1)
         
         
@@ -223,8 +232,17 @@ class PageTimeseries(tk.Frame):
         self._set_notebook_frame_flag()
         self._set_notebook_frame_compare()
         self._set_notebook_frame_save()
+        self._set_notebook_frame_preview_map()
         
-        
+    def _set_parameter_info(self, text=''):
+        self.stringvar_parameter_info.set(text)
+
+    def _set_notebook_frame_preview_map(self):
+        frame = self.notebook_options.frame_preview_map
+        self.preview_map_widget = tkmap.MapWidget(frame)
+        tkw.grid_configure(frame)
+
+
     #===========================================================================
     def _set_notebook_frame_axis_range(self):
         frame = self.notebook_options.frame_axis_range
@@ -325,60 +343,218 @@ class PageTimeseries(tk.Frame):
                                                sticky='nw')
         
         tkw.grid_configure(self.frame_flag_widget)
-    
+
     
     #===========================================================================
     def _set_notebook_frame_compare(self):
         frame = self.notebook_options.frame_compare
                 
-        self.compare_widget = gui.CompareWidget(frame, 
-                                            callback=self._callback_sample)
-        
+        self.compare_widget = gui.CompareWidget(frame,
+                                                session=self.controller.session,
+                                                user=self.user,
+                                                callback=self._callback_sample)
+
+    def _update_compare_widget(self):
+        self.compare_widget.update_parameter_list(self.current_ref_file_id)
+
         
     #===========================================================================
     def _callback_sample(self):
-        logging.debug('page_ferrybox._callback_sample: Start')
-        gui.add_sample_data_to_plot(plot_object=self.plot_object, 
-                                    par=core.Boxen().current_par_ferrybox, 
-                                    sample_object=core.Boxen().current_sample_object, 
-                                    gismo_object=core.Boxen().current_ferrybox_object, 
-                                    compare_widget=self.compare_widget, 
-                                    help_info_function=self.controller.update_help_information)
-        logging.debug('page_ferrybox._callback_sample: End')
-        
-        
-    #===========================================================================
+        logging.debug('page_timeseries._callback_sample: Start')
+        try:
+            gui.add_sample_data_to_timeseries_plot(plot_object=self.plot_object,
+                                                    session=self.controller.session,
+                                                    sample_file_id=self.current_ref_file_id,
+                                                    main_file_id=self.current_file_id,
+                                                    compare_widget=self.compare_widget,
+                                                    help_info_function=self.controller.update_help_information)
+        except GISMOExceptionInvalidOption as e:
+            gui.show_warning('Invalid option', e)
+        except gismo.exceptions.GISMOExceptionInvalidInputArgument as e:
+            # Could be
+            if not self.stringvar_current_reference_file.get():
+                gui.show_warning('File not loaded', 'No reference file selected')
+            else:
+                gui.show_error('Internal error', 'Un unexpected error occurred. Please contact administration. ')
+        logging.debug('page_timeseries._callback_sample: End')
+
     def _set_notebook_frame_save(self):
-        frame = self.notebook_options.frame_save
+        frame = self.notebook_options.frame_dict['Save/Export']
+        # frame = self.notebook_options.frame_save
         
-        self.save_widget = gui.SaveWidget(frame, 
-                                      callback=self._callback_save_file, 
-                                      sticky='nw') 
+        self.save_widget = gui.SaveWidget(frame,
+                                          label='Save file',
+                                          callback=self._callback_save_file,
+                                          sticky='nw')
+
+        # Export html plot and map
+        self.save_widget_html = gui.SaveWidgetHTML(frame,
+                                                   label='Export html plots',
+                                                   callback=self._callback_save_html,
+                                                   default_directory=self.settings['directory']['Export directory'],
+                                                   user=self.user,
+                                                   sticky='nw',
+                                                   row=1)
         
-        tkw.grid_configure(frame)
+        tkw.grid_configure(frame, nr_rows=2)
         
         
     #===========================================================================
     def _callback_save_file(self, directory, file_name):
+        if not self.current_file_id:
+            gui.show_information('No file loaded', 'Cant save file, no file loaded.')
         file_path = os.path.realpath(self.current_gismo_object.file_path)
         output_file_path = os.path.realpath('/'.join([directory, file_name]))
         
         if file_path != output_file_path:
-            self.current_gismo_object.save_file(output_file_path)
+            self.current_gismo_object.save_file(file_path=output_file_path)
         else:
             overwrite = messagebox.askyesno(u'Overwrite file!', u'Do you want to replace the original file?')
             if not overwrite:
                 return
             # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
             output_file_path = directory + '/temp_%s' % file_name
-            self.current_gismo_object.save_file(output_file_path)
+            self.current_gismo_object.save_file(file_path=output_file_path)
             os.remove(file_path)
             shutil.copy2(output_file_path, file_path)
-        
+
+
+
+
+    def _callback_save_html(self):
+
+        # Import lib here. We dont want to start a thread if we cant import modules
+        import libs.sharkpylib.plot.html_plot as html_plot
+        self.controller.run_progress(self._save_html, 'Saving plots...')
+
+    def _save_html(self):
+
+        def get_par_list_by_file_id(parameter_list):
+            """
+            Extendet par i is a parameter starting with Main: or Ref: depending on if its a parameter from the
+            main file of reference file.
+            :param plot_object:
+            :param extended_par:
+            :return:
+            """
+            return_dict = dict(main=set(['time']),
+                               ref=set(['time']))
+            for item in parameter_list:
+                par, file_id = item.split('(')
+                if file_id == 'main)':
+                    return_dict['main'].add(par.strip())
+                elif file_id == 'ref)':
+                    return_dict['ref'].add(par.strip())
+
+            return_dict['main'] = sorted(return_dict['main'])
+            return_dict['ref'] = sorted(return_dict['ref'])
+            return return_dict
+
+
+        import libs.sharkpylib.plot.html_plot as html_plot
+
+        selection = self.save_widget_html.get_selection()
+
+        # Check selection
+        export_combined_plots = selection.get('combined_plot')
+        export_individual_plots = selection.get('individual_plots')
+        export_individual_maps = selection.get('individual_maps')
+        parameter_list = selection.get('parameters')
+        directory = selection.get('directory')
+
+        # Check selection
+        if not any([export_combined_plots, export_individual_plots, export_individual_maps, parameter_list]):
+            gui.show_information('No selection', 'You need to select what type of plots/maps to export')
+
+        # Check directory
+        if not directory:
+            gui.show_information('Missing directory', 'Could not save html maps and/or plots. No directory selected.')
+            return
+        if not os.path.exists(directory):
+            create_dirs = tk.messagebox.askyesno('Missing directory', 'Directory does not exist. Would you like to create a new directory?')
+            if create_dirs:
+                os.makedirs(directory)
+            else:
+                return
+
+        # Create subdirectory
+        date_string = datetime.datetime.now().strftime('%Y%m%d%H%M')
+        subdir = 'html_exports_{}'.format(date_string)
+        export_dir = os.path.join(directory, subdir)
+        if not os.path.exists(export_dir):
+            os.mkdir(export_dir)
+
+        parameter_dict = get_par_list_by_file_id(parameter_list)
+
+        # Check nr of parameters and warn if too many
+        nr_par = len(parameter_dict['main']+parameter_dict['ref'])
+        max_nr_par = self.user.process.setdefault('warn_export_nr_parameters', 10)
+        if nr_par > max_nr_par:
+            ok_to_continue = tk.messagebox.askyesno('Export plots/maps',
+                                                    'You have chosen to export {} parameters. '
+                                                    'This might take some time and MAY make the program crash. '
+                                                    'Do you wish to continue anyway? ')
+            if not ok_to_continue:
+                self.controller.update_help_information('Export aborted by user.')
+                return
+
+        main_data = {}
+        ref_data = {}
+        if parameter_dict.get('main'):
+            main_data = self.session.get_data(self.current_file_id, *parameter_dict.get('main'))
+        if parameter_dict.get('ref'):
+            ref_data = self.session.get_data(self.current_file_id, *parameter_dict.get('ref'))
+
+        if export_combined_plots:
+            combined_plot_object = html_plot.PlotlyPlot()
+            # Add Main data
+            if main_data:
+                for par in main_data:
+                    if par == 'time':
+                        continue
+                    combined_plot_object.add_scatter_data(main_data['time'], main_data[par], name='{} (main)'.format(par),
+                                                                mode='markers')
+            if ref_data:
+                for par in ref_data:
+                    if par == 'time':
+                        continue
+                    combined_plot_object.add_scatter_data(ref_data['time'], ref_data[par], name='{} (ref)'.format(par),
+                                                                mode='markers')
+            combined_plot_object.plot_to_file(os.path.join(export_dir, 'plot_combined.html'))
+
+        if export_individual_plots:
+
+            flag_selection = self.flag_widget.get_selection()
+            selected_flags = flag_selection.selected_flags
+            selected_descriptions = flag_selection.selected_descriptions
+            if main_data:
+                for par in main_data:
+                    individual_plot_object = html_plot.PlotlyPlot(title=par, yaxis_title='')
+                    for qf, des in zip(selected_flags, selected_descriptions):
+                        data = self.session.get_data(self.current_file_id, 'time', par, mask_options={'include_flags': [qf]})
+                        individual_plot_object.add_scatter_data(data['time'], data[par],
+                                                                name='{} ({})'.format(qf, des),
+                                                                mode='markers')
+                    individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
+            if ref_data:
+                for par in ref_data:
+                    individual_plot_object = html_plot.PlotlyPlot(title=par, yaxis_title='')
+                    for qf, des in zip(selected_flags, selected_descriptions):
+                        data = self.session.get_data(self.current_ref_file_id, 'time', par, mask_options={'include_flags': [qf]})
+                        individual_plot_object.add_scatter_data(data['time'], data[par],
+                                                                name='{} ({})'.format(qf, des),
+                                                                mode='markers')
+                    individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
+
+        if export_individual_maps:
+            pass
+
+
+
         
     #===========================================================================
     def _callback_axis_widgets(self):
-        logging.debug('page_ferrybox._callback_axis_widgets: Start')
+        logging.debug('page_timeseries._callback_axis_widgets: Start')
         # Update limits in settings_object from axis widget.
         self._save_limits_from_axis_widgets()
         
@@ -387,28 +563,11 @@ class PageTimeseries(tk.Frame):
     
         
         self.plot_object.call_targets()
-        logging.debug('page_ferrybox._callback_axis_widgets: End')
-    
-    #===========================================================================
-    def _on_file_update(self):
-        logging.debug('page_ferrybox._on_file_update: Start')
-        # Update valid time range in time axis
-
-        data_file_id = self._get_file_id(self.select_data_widget.get_value())
-        gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(data_file_id),
-                                        time_axis_widget=self.xrange_widget)
-
-        reference_file_id = self._get_file_id(self.select_ref_data_widget.get_value())
-        gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(reference_file_id),
-                                        time_axis_widget=self.xrange_selection_widget)
-        
-        self._update_parameter_list()
-        self._on_select_parameter()
-        logging.debug('page_ferrybox._on_file_update: End')
+        logging.debug('page_timeseries._callback_axis_widgets: End')
         
     #===========================================================================
     def _callback_plot_range(self):
-        logging.debug('page_ferrybox._callback_plot_range: Start')
+        logging.debug('page_timeseries._callback_plot_range: Start')
         if not self.plot_object.mark_range_orientation:
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
@@ -417,21 +576,40 @@ class PageTimeseries(tk.Frame):
         elif self.plot_object.mark_range_orientation == 'horizontal':
             gui.update_range_selection_widget(plot_object=self.plot_object,
                                           range_selection_widget=self.xrange_selection_widget)
-        logging.debug('page_ferrybox._callback_plot_range: End')
+        logging.debug('page_timeseries._callback_plot_range: End')
 
     
     #===========================================================================
     def _update_parameter_list(self):
-        logging.debug('page_ferrybox._update_parameter_list: Start')
+        logging.debug('page_timeseries._update_parameter_list: Start')
         exclude_parameters = ['time', 'lat', 'lon']
         parameter_list = [item for item in self.session.get_parameter_list(self.current_file_id) if item not in exclude_parameters]
-        self.parameter_widget.update_items(parameter_list,
+
+        # Single (plot) parameter widget
+        self.parameter_widget.update_items(parameter_list[:],
                                            default_item=None)
-        logging.debug('page_ferrybox._update_parameter_list: End')  
-                                           
+
+        self._update_export_parameter_list()
+        logging.debug('page_timeseries._update_parameter_list: End')  
+
+    def _update_export_parameter_list(self):
+        # Parameters for exporting
+        parameter_list = []
+        if self.current_file_id:
+            for par in self.session.get_parameter_list(self.current_file_id):
+                if not par.strip():
+                    continue
+                parameter_list.append('{} (main)'.format(par))
+        if self.current_ref_file_id:
+            for par in self.session.get_parameter_list(self.current_file_id):
+                if not par.strip():
+                    continue
+                parameter_list.append('{} (ref)'.format(par))
+        self.save_widget_html.update_parameters(parameter_list)
+
     #===========================================================================
     def _reset_widgets(self):
-        logging.debug('page_ferrybox._reset_widgets: Start')  
+        logging.debug('page_timeseries._reset_widgets: Start')  
         self.plot_object.reset_plot()
         self.parameter_widget.update_items()
 
@@ -440,11 +618,11 @@ class PageTimeseries(tk.Frame):
         self.xrange_selection_widget.reset_widget()
         self.yrange_selection_widget.reset_widget()
         
-        logging.debug('page_ferrybox._reset_widgets: End')  
+        logging.debug('page_timeseries._reset_widgets: End')  
         
     #===========================================================================
     def _on_select_parameter(self):
-        logging.debug('page_ferrybox._on_select_parameter: Start')
+        logging.debug('page_timeseries._on_select_parameter: Start')
         self.current_parameter = self.parameter_widget.selected_item
         if not self.current_parameter:
             return
@@ -469,11 +647,11 @@ class PageTimeseries(tk.Frame):
         self.plot_object.call_targets()
 
 
-        logging.debug('page_ferrybox._on_select_parameter: End')
+        logging.debug('page_timeseries._on_select_parameter: End')
 
     #===========================================================================
     def _update_plot_limits(self):
-        logging.debug('page_ferrybox._update_plot_limits: Start')
+        logging.debug('page_timeseries._update_plot_limits: Start')
         
         gui.update_plot_limits_from_settings(plot_object=self.plot_object,
                                              user_object=self.controller.user,
@@ -486,7 +664,7 @@ class PageTimeseries(tk.Frame):
                                              axis='y',
                                              par=self.current_parameter,
                                              call_targets_in_plot_object=False)
-        logging.debug('page_ferrybox._update_plot_limits: End')
+        logging.debug('page_timeseries._update_plot_limits: End')
     
     #===========================================================================
     def _save_limits_from_plot(self):
@@ -511,7 +689,7 @@ class PageTimeseries(tk.Frame):
     
     #===========================================================================
     def _save_limits_from_axis_widgets(self):
-        logging.debug('page_ferrybox._save_limits_from_axis_widgets: Start')
+        logging.debug('page_timeseries._save_limits_from_axis_widgets: Start')
                            
         gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
                                               axis_time_widget=self.xrange_widget,
@@ -520,11 +698,11 @@ class PageTimeseries(tk.Frame):
         gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
                                                axis_float_widget=self.yrange_widget,
                                                par=self.current_parameter)
-        logging.debug('page_ferrybox._save_limits_from_axis_widgets: End')
+        logging.debug('page_timeseries._save_limits_from_axis_widgets: End')
         
     #===========================================================================
     def _update_axis_widgets(self):
-        logging.debug('page_ferrybox._update_axis_widgets: Start')
+        logging.debug('page_timeseries._update_axis_widgets: Start')
         
         gui.update_limits_in_axis_time_widget(user_object=self.controller.user,
                                               axis_time_widget=self.xrange_widget,
@@ -537,11 +715,11 @@ class PageTimeseries(tk.Frame):
                                                plot_object=self.plot_object,
                                                par=self.current_parameter,
                                                axis='y')
-        logging.debug('page_ferrybox._update_axis_widgets: End')    
+        logging.debug('page_timeseries._update_axis_widgets: End')    
     
     #===========================================================================
     def _on_flag_widget_flag(self):
-        logging.debug('page_ferrybox._on_flag_widget_flag: Start')
+        logging.debug('page_timeseries._on_flag_widget_flag: Start')
         self.controller.update_help_information('Flagging data, please wait...')
         gui.flag_data_time_series(flag_widget=self.flag_widget, 
                               gismo_object=self.current_gismo_object,
@@ -551,14 +729,14 @@ class PageTimeseries(tk.Frame):
         self._update_plot()
         
         self.controller.update_help_information('Done!')
-        logging.debug('page_ferrybox._on_flag_widget_flag: End')
+        logging.debug('page_timeseries._on_flag_widget_flag: End')
         
     #===========================================================================
     def _update_plot(self, **kwargs):
         """
         Called by the parameter widget to update plot.  
         """        
-        logging.debug('page_ferrybox._update_plot: Start')
+        logging.debug('page_timeseries._update_plot: Start')
         
         gui.update_time_series_plot(gismo_object=self.current_gismo_object,
                                     par=self.current_parameter,
@@ -569,19 +747,20 @@ class PageTimeseries(tk.Frame):
         
 #         self.xrange_selection_widget.reset_widget()
 #         self.yrange_selection_widget.reset_widget()
-        gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
+#         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
         
-        logging.debug('page_ferrybox._update_plot: End')
+        logging.debug('page_timeseries._update_plot: End')
 
 
 
     #===========================================================================
     def _on_flag_widget_change(self):
-        logging.debug('page_ferrybox._on_flag_widget_change: Start')
+        logging.debug('page_timeseries._on_flag_widget_change: Start')
         selection = self.flag_widget.get_selection()
         for k, flag in enumerate(selection.selected_flags):
             self.plot_object.set_prop(ax='first', line_id=flag, **selection.get_prop(flag))
-        logging.debug('page_ferrybox._on_flag_widget_change: End')
+        gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
+        logging.debug('page_timeseries._on_flag_widget_change: End')
 
     def _get_file_id(self, string):
         """
@@ -615,7 +794,7 @@ class PageTimeseries(tk.Frame):
 
     #===========================================================================
     def _update_file(self):
-        logging.debug('page_ferrybox._update_file: Start')
+        logging.debug('page_timeseries._update_file: Start')
         self._set_current_file()
 
         if not self.current_file_id:
@@ -627,8 +806,15 @@ class PageTimeseries(tk.Frame):
         
         # Update flag widget. The apperance of flag widget will change depending on the loaded settings file 
         self._update_notebook_frame_flag()
-        
-        self._on_file_update()
+
+        # Update valid time range in time axis
+        data_file_string = self.select_data_widget.get_value()
+        data_file_id = self._get_file_id(data_file_string)
+        gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(data_file_id),
+                                        time_axis_widget=self.xrange_widget)
+
+        self._update_parameter_list()
+        self._on_select_parameter()
 
         if not self.current_file_path:
             self.save_widget.set_file_path()
@@ -637,12 +823,30 @@ class PageTimeseries(tk.Frame):
         self.save_widget.set_file_path(self.current_file_path)
         self.stringvar_current_data_file.set(self.current_file_path)
 
-        logging.debug('page_ferrybox._update_file: End')
-        
+        # Update reference file combobox. Should not include selected file.
+        all_files = self.controller.get_loaded_files_list()
+        ref_file_list = [item for item in all_files if item != data_file_string]
+        self.select_ref_data_widget.update_items(ref_file_list)
+
+        self._update_preview_map()
+
+        logging.debug('page_timeseries._update_file: End')
+
+    def _update_preview_map(self):
+        data = self.session.get_data(self.current_file_id, 'lat', 'lon')
+        lat = data['lat']
+        lon = data['lon']
+
+        self.preview_map_widget.delete_all_markers()
+
+        if 'ferrybox' in self.current_sampling_type.lower():
+            title = 'Ferrybox route'
+            self.preview_map_widget.add_simple_line(lat, lon, title=title)
+
         
     #===========================================================================
     def _update_file_reference(self):
-        logging.debug('page_ferrybox._update_file_reference: Start')
+        logging.debug('page_timeseries._update_file_reference: Start')
         self._set_current_reference_file()
         
         if not self.current_ref_file_id:
@@ -654,6 +858,8 @@ class PageTimeseries(tk.Frame):
             return
         self.stringvar_current_reference_file.set(self.current_ref_file_path)
 
-        logging.debug('page_ferrybox._update_file_reference: End')
+        self._update_compare_widget()
+
+        logging.debug('page_timeseries._update_file_reference: End')
         
 

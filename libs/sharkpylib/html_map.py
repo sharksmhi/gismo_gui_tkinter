@@ -6,6 +6,7 @@
 
 import folium
 
+
 class FoliumMap(object):
     """  """
     def __init__(self, lat=58.8, lon=17.6, **kwargs):

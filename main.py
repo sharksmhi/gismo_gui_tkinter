@@ -24,7 +24,7 @@ import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 from libs.sharkpylib.gismo.exceptions import *
 
-
+import threading
 import logging
 
 all_pages = set()
@@ -90,7 +90,9 @@ class App(tk.Tk):
         Updated 20181002
         """
 
-        tk.Tk.__init__(self, *args, **kwargs) 
+        tk.Tk.__init__(self, *args, **kwargs)
+
+        self.withdraw()
 
         if not all([user, users_directory, root_directory, log_directory, input_directory, sampling_types_factory, qc_routines_factory]):
             raise AttributeError
@@ -121,8 +123,8 @@ class App(tk.Tk):
         
 
         self.settings = core.Settings(default_settings_file_path=default_settings_file_path,
-                                          root_directory=self.root_directory)
-        self.boxen = Boxen(open_directory=input_directory)
+                                      root_directory=self.root_directory)
+        self.boxen = Boxen(open_directory=self.settings['directory']['Input directory'])
         # self.boxen = core.Boxen(self, root_directory=self.root_directory)
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
@@ -163,6 +165,7 @@ class App(tk.Tk):
         self.active_page = None
         self.previous_page = None
         self.admin_mode = False
+        self.progress_running = False
 
         self.latest_loaded_sampling_type = ''
         
@@ -179,8 +182,11 @@ class App(tk.Tk):
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
         self.show_frame(gui.PageTimeseries)
+
 #        self.show_frame(eval('gui.' + self.settings['general']['Start page']))
-    
+        self.update()
+        self.deiconify()
+
     #==========================================================================
     def _set_frame(self):
 #        frame = tk.Frame(self, bg='blue')
@@ -235,21 +241,39 @@ class App(tk.Tk):
 #        self.frame_mid.grid_columnconfigure(1, weight=1)
         
         #----------------------------------------------------------------------
-        # Frame mid
-        self.frame_info = tk.LabelFrame(self.frame_bot) 
-        self.frame_info.grid(row=0, column=0, sticky="nsew")
-        tkw.grid_configure(self.frame_bot)
-#        self.frame_bot.grid_rowconfigure(0, weight=1)
-#        self.frame_bot.grid_columnconfigure(0, weight=1)
-
-        self.info_widget = tkw.LabelFrameLabel(self.frame_info)
-        self.info_widget.set_text('Test info line')
-
+        # Frame bot
+        self._set_frame_bot()
         
         self._set_frame_add_file()
         self._set_frame_loaded_files()
-        
-        
+
+    def _set_frame_bot(self):
+        self.frame_info = tk.Frame(self.frame_bot)
+        self.frame_info.grid(row=0, column=0, sticky="nsew")
+
+        ttk.Separator(self.frame_bot, orient=tk.VERTICAL).grid(row=0, column=1, sticky='ns')
+
+        self.frame_progress = tk.Frame(self.frame_bot)
+        self.frame_progress.grid(row=0, column=2, sticky="nsew")
+
+        self.info_widget = tkw.LabelFrameLabel(self.frame_info, pack=False)
+        self.info_widget.set_text('Test info line')
+
+        self.progress_widget = tkw.ProgressbarWidget(self.frame_progress, sticky='nsew')
+
+        tkw.grid_configure(self.frame_info)
+        tkw.grid_configure(self.frame_progress)
+        tkw.grid_configure(self.frame_bot, nr_columns=3, c0=20, c2=4)
+
+    def run_progress(self, run_function, message=''):
+        if self.progress_running:
+            print('Progress is running')
+            return
+        self.progress_running = True
+        run_thread = lambda: self.progress_widget.run_progress(run_function, message=message)
+        threading.Thread(target=run_thread).start()
+        self.progress_running = False
+
     #===========================================================================
     def startup_pages(self):
         # Tuple that store all pages
@@ -322,9 +346,14 @@ class App(tk.Tk):
         
         #----------------------------------------------------------------------
         # Data frame 
-        self.button_get_ferrybox_data_file = ttk.Button(frame_data, text='Ferrybox', command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
-        self.button_get_fixed_platform_data_file = ttk.Button(frame_data, text='Fixed platform', command=lambda: self._get_data_file_path('Bouy CMEMS'))
-        self.button_get_ctd_data_file = ttk.Button(frame_data, text='CTD-profile', command=lambda: self._get_data_file_path('SHARK CTD'))
+        self.button_get_ferrybox_data_file = ttk.Button(frame_data, text='Ferrybox',
+                                                        command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
+        self.button_get_fixed_platform_data_file = ttk.Button(frame_data, text='Fixed platform',
+                                                              command=lambda: self._get_data_file_path('Bouy CMEMS'))
+        self.button_get_ctd_data_file = ttk.Button(frame_data, text='CTD-profile',
+                                                   command=lambda: self._get_data_file_path('SHARK CTD'))
+        self.button_get_sampling_file = ttk.Button(frame_data, text='Sampling data',
+                                                   command=lambda: self._get_data_file_path('SHARK PhysicalChemical'))
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -334,14 +363,15 @@ class App(tk.Tk):
         padx=5
         pady=5
         self.button_get_ferrybox_data_file.grid(row=0, column=0, padx=padx, pady=pady, sticky='nsew')
-        self.button_get_fixed_platform_data_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='nsew') 
+        self.button_get_fixed_platform_data_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='nsew')
         self.button_get_ctd_data_file.grid(row=0, column=2, padx=padx, pady=pady, sticky='nsew')
+        self.button_get_sampling_file.grid(row=0, column=3, padx=padx, pady=pady, sticky='nsew')
         
         self.entry_data_file.grid(row=1, column=0, columnspan=5, padx=padx, pady=pady, sticky='nsew')
         
         
         # Gridconfigure 
-        tkw.grid_configure(frame_data, nr_rows=2, nr_columns=3)
+        tkw.grid_configure(frame_data, nr_rows=2, nr_columns=4)
 #        frame_data.grid_rowconfigure(0, weight=1)
 #        frame_data.grid_rowconfigure(1, weight=1)
 #        frame_data.grid_columnconfigure(0, weight=1)
@@ -606,7 +636,7 @@ class App(tk.Tk):
     #===========================================================================
     def update_help_information(self, text=u'', **kwargs):
         """
-        Created     20180822    by Magnus
+        Created     20180822
         """ 
         self.info_widget.set_text(text, **kwargs)
         
@@ -614,7 +644,7 @@ class App(tk.Tk):
     #===========================================================================
     def reset_help_information(self):
         """
-        Created     20180822    by Magnus
+        Created     20180822
         """ 
         self.info_widget.reset()
         
@@ -697,14 +727,16 @@ class App(tk.Tk):
         """
 #         if page == PageAdmin and not self.admin_mode:
 #             page = PagePassword
-        
+
         load_page = True
         frame = self.frames[page]
+        self.withdraw()
         title = self._get_title(page)
         if not self.pages_started[page]:
             frame.startup()
             self.pages_started[page] = True
-            
+
+
         frame.update_page()
 #             try:
 #                 frame.update()
@@ -730,8 +762,10 @@ class App(tk.Tk):
                 
         except:
             pass
-        
-            
+
+        self.update()
+        self.deiconify()
+
     #===========================================================================
     def goto_previous_page(self, event):
         self.page_history

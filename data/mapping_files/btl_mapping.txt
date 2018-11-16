@@ -1,0 +1,138 @@
+SHARKweb	parameter_name	parameter_unit
+Year	Year	
+Nation (code)		
+Sampling platform (code)		
+Visit event identifier		
+Expedition identifier		
+Station name		
+Reported station name		
+Project		
+Orderer		
+Sampling date		
+Sampling time (start)		
+Sampling date (end)		
+Sampling time (end)		
+Shark sample id		
+Sample latitude (DM)		
+Sample longitude (DM)		
+Sample latitude (DD)	Latitude	deg
+Sample longitude (DD)	Longitude	deg
+Positioning system (code)		
+Station water depth		
+Wind direction (code)	WindDir	deg
+Wind speed (m/s)	WindSpeed	m/s
+Air temperature (C)	AirTemp	degC
+Wet-bulb temperature (C)		
+Air pressure (hpa)	Airpressure	hPa
+Weather observations (code)		
+Cloud (code)		
+Wave observation (code)		
+Ice (code)		
+Secchi depth (m)		
+QFLAG Secchi depth		
+Sampling event comment		
+Sampling depth (m)		
+Temperature bottle (C)	WatTemp	degC
+Temperature bottle (C)	WatTemp2	degC
+QFLAG Temperature bottle		
+Temperature CTD (C)		
+QFLAG Temperature CTD		
+Salinity bottle (o/oo psu)	Salinity	PSU
+Salinity bottle (o/oo psu)	Salinity2	PSU
+QFLAG Salinity bottle		
+Salinity CTD (o/oo psu)		
+QFLAG Salinity CTD		
+Conductivity_25 bottle (mS/m)		
+QFLAG Conductivity_25 bottle		
+Conductivity CTD (mS/m)		
+QFLAG Conductivity CTD		
+Dissolved oxygen O2 bottle (ml/l)	Oxygen	ml/l
+QFLAG Dissolved oxygen O2 bottle		
+Dissolved oxygen O2 CTD (ml/l)		
+QFLAG Dissolved oxygen CTD		
+Hydrogen sulphide H2S (umol/l)		
+QFLAG Hydrogen sulphide H2S		
+pH		
+QFLAG pH		
+pH Laboratory		
+QFLAG pH Laboratory		
+Temperature pH Laboratory (C)		
+QFLAG Temperature pH Laboratory		
+Alkalinity (mmol/l)		
+QFLAG Alkalinity		
+Phosphate PO4-P (umol/l)		
+QFLAG Phosphate PO4-P		
+Total phosphorus Tot-P (umol/l)		
+QFLAG Total phosphorus Tot-P		
+Nitrite NO2-N (umol/l)		
+QFLAG Nitrite NO2-N		
+Nitrate NO3-N (umol/l)		
+QFLAG Nitrate NO3-N		
+Nitrite+Nitrate NO2+NO3-N (umol/l)		
+QFLAG Nitrite+Nitrate NO2+NO3-N		
+Ammonium NH4-N (umol/l)		
+QFLAG Ammonium NH4-N		
+Total Nitrogen Tot-N (umol/l)		
+QFLAG Total Nitrogen Tot-N		
+Silicate SiO3-Si (umol/l)		
+QFLAG Silicate SiO3-Si		
+Humus (mg/l)		
+QFLAG Humus		
+Chlorophyll-a bottle (ug/l)		
+Q-flag Chlorophyll-a bottle		
+Dissovled organic carbon DOC (umol/l)		
+QFLAG Dissovled organic carbon DOC		
+Particulate organic carbon POC (umol/l)		
+QFLAG Particulate organic carbon POC		
+Total organic carbon TOC (mg/l)		
+QFLAG Total organic carbon TOC		
+Particulate organic nitrogen PON (umol/l)		
+QFLAG Particulate organic nitrogen PON		
+Current direction (deca degrees)		
+QFLAG Current direction		
+Current velocity (cm/s)		
+QFLAG Current velocity		
+Lignin (mg/l)		
+QFLAG Lignin		
+Yellow substance (1/l)		
+QFLAG Yellow substance		
+Aluminium (ug/l)		
+QFLAG Aluminium		
+Urea (umol/l)		
+QFLAG Urea		
+Colored dissolved organic matter CDOM (1/m)		
+QFLAG Colored dissolved organic matter CDOM		
+Sample comment		
+Method of analysis (code)		
+Method of analysis reference (code)		
+Variable comment		
+Estimation uncertainty		
+Calculation uncertainty method (code)		
+Quantification limit		
+Detection limit		
+Range of analysis		
+Analytical laboratory		
+Analytical laboratory accreditated		
+Sampler type (phyche)		
+Sampling method reference (physchem)		
+Comment for sampling method (physchem)		
+Sampling laboratory (physchem)		
+Sampling laboratory accreditated (physchem)		
+Water category		
+Water district		
+Sea area name		
+Sea area code		
+Water type area		
+Sea basin		
+HELCOM/OSPAR area		
+Economic zone		
+County		
+Municipality		
+Station ID (VISS)		
+Reporting institute		
+Data holding centre		
+Check status		
+Checked by		
+Internet access		
+Data set name		
+File name		

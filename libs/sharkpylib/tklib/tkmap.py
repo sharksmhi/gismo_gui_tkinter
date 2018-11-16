@@ -8,7 +8,7 @@ Created on Thu Mar 16 15:37:10 2017
 import numpy as np
 import random
 
-
+from . import tkinter_widgets as tkw
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -23,7 +23,153 @@ matplotlib.use(u'TkAgg')
 from mpl_toolkits.basemap import Basemap
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+
+class MapWidget(object):
+    """
+        Class to display a basemap-map in figure or tkinter window.
+        Options in constructor are:
+            parent          give tkinter frame (optional)
+            figure_size     set figure size in inches
+            map_reslution   set map resolution
+            ..._space       set size of area aroundthe map.
+            toolbar         Set True to adds standard toolbar under the map.
+                Map coordinates can be given in three ways:
+                series_object_list    if given, map dimensions are taken from including series position
+                map_area_name         name matching predefined areas in stb_core.Settings() settings.ini
+                coordinates           coordinates as [min_lon, max_lon, min_lat, max_lat]
+        """
+    def __init__(self,
+                 parent,
+                 figsize=(2, 2),
+                 map_resolution=u'l',
+                 toolbar=False,
+                 coordinates=[9, 31, 53, 66],
+                 continent_color=[0.8, 0.8, 0.8],
+                 ocean_color=None,
+                 projection=u'merc',
+                 dpi=100,
+                 user=None,
+                 **kwargs):
+        self.parent = parent
+
+        #        self.frame = tk.Frame(parent)
+        #        self.frame.grid(row=row, column=column)
+        self.figsize = figsize
+        self.dpi = dpi
+        self.map_resolution = map_resolution
+        self.toolbar = toolbar
+        self.user = user
+
+        self.marker_order = []
+        self.markers = {}
+        self.map_items = {}
+        self.event_dict = {}
+
+        self.continent_color = continent_color
+        self.ocean_color = ocean_color
+        self.projection = projection
+
+        self.title = kwargs.get('title', '')
+
+        self.subplot_space = dict()
+        self.subplot_space['left'] = kwargs.get('space_left', 0.05)
+        self.subplot_space['right'] = 1 - kwargs.get('space_right', 0.05)
+        self.subplot_space['top'] = 1 - kwargs.get('space_top', 0.12)
+        self.subplot_space['bottom'] = kwargs.get('space_bottom', 0.05)
+
+
+        self.coordinates = dict()
+        self.coordinates['llcrnrlat'] = kwargs.get('min_lat', 53)
+        self.coordinates['urcrnrlat'] = kwargs.get('max_lat', 66)
+        self.coordinates['llcrnrlon'] = kwargs.get('min_lon', 9)
+        self.coordinates['urcrnrlon'] = kwargs.get('max_lon', 31)
+
+        self.markers = dict()
+
+        self._set_frame()
+        self._draw_map()
+        self._add_to_tkinter()
+
+    def _set_frame(self):
+        self.frame = tk.Frame(self.parent)
+        #                 self.frame.grid(row=0, column=0)
+        self.frame.grid(row=0, column=0, sticky='nsew')
+        tkw.grid_configure(self.frame)
+
+    def _draw_map(self):
+        """
+        Draw map. Some options for the layout (like projection continent filling etc.) are fixed here.
+        """
+        self.fig = Figure(figsize=self.figsize, dpi=self.dpi)
+        self.ax = self.fig.add_subplot(111)
+        self.fig.subplots_adjust(**self.subplot_space)
+
+        # Set title
+        self.title_handle = self.fig.suptitle(self.title, fontsize=10, x=0.5, y=1.0)
+
+        self.m = Basemap(resolution=self.map_resolution,
+                         projection=self.projection,
+                         ax=self.ax,
+                         **self.coordinates)
+
+        # self.m.etopo()
+        # self.m.shadedrelief()
+        # self.m.bluemarble()
+
+        self.m.drawcoastlines(linewidth=0.33)
+        self.m.drawcountries(linewidth=0.2)
+        self.m.fillcontinents(color=self.continent_color, zorder=3)
+        self.m.drawmapboundary(fill_color=self.ocean_color)
+
+    # ==========================================================================
+    def _add_to_tkinter(self):
+        """
+        Adds map and toolbar (if selected in constructor) to the given frame.
+        """
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        # self.canvas.show()
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    def add_simple_line(self, lat, lon, marker_id='simple_line', title='', **kwargs):
+        """
+        Adds a line to the map. lat and lon are lists or arrays.
+        :param lat:
+        :param lon:
+        :return:
+        """
+        try:
+            self.delete_handle(marker_id)
+        except:
+            pass
+
+        x, y = self.m(lon, lat)
+        handle = self.m.plot(x, y, zorder=10, **kwargs)
+
+        self.markers[marker_id] = handle
+
+        self.title_handle.set_text(title)
+
+        self.canvas.draw()
+
+
+    def delete_marker(self, marker_id, redraw=True):
+        self.markers.pop(marker_id)
+        self.canvas.draw()
+
+    # ==========================================================================
+    def delete_all_markers(self):
+
+        for marker_id in self.markers:
+            self.delete_marker(marker_id, redraw=False)
+        # if self.marker_order:
+        #     for marker in self.marker_order[:]:
+        #         self.delete_marker(marker)
+
+        self.canvas.draw()
+
 
 """
 ================================================================================

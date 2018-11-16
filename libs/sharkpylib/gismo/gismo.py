@@ -10,7 +10,7 @@ import pandas as pd
 
 import numpy as np
 
-from gismo.exceptions import *
+from .exceptions import *
 
 
 import pickle

@@ -97,7 +97,8 @@ class GISMOfile(GISMOdata):
 
         self.parameter_list = []
 
-        self.parameter_list = ['time', 'lat', 'lon', 'depth', 'visit_id', 'visit_depth_id'] + self.qpar_list
+        # self.parameter_list = ['time', 'lat', 'lon', 'depth', 'visit_id', 'visit_depth_id'] + self.qpar_list
+        self.parameter_list = ['time', 'lat', 'lon', 'depth'] + self.qpar_list
         self.filter_data_options = []
         self.flag_data_options = []
         self.mask_data_options = ['include_flags', 'exclude_flags']
@@ -269,7 +270,7 @@ class GISMOfile(GISMOdata):
         if 'index' in time_par:
             # At this moment mainly for CMEMS-files
             time_par = self.df.columns[int(time_par.split('=')[-1].strip())]
-
+            print('time_par', time_par)
             self.df['time'] = pd.to_datetime(self.df[time_par], format=self.time_format)
         else:
             time_pars = self.settings.column.get_list('time')
@@ -433,7 +434,7 @@ class GISMOfile(GISMOdata):
         boolean = self._get_pandas_series(True)
         for key, value in kwargs.get('filter_options', {}).items():
             if key not in self.filter_data_options:
-                raise GISMOExceptionInvalidOption
+                raise GISMOExceptionInvalidOption('{} not in {}'.format(key, self.filter_data_options))
             if key == 'time':
                 value_list = self._get_argument_list(value)
                 boolean = boolean & (self.df.time.isin(value_list))
@@ -527,9 +528,11 @@ class GISMOfile(GISMOdata):
 
     def get_parameter_list(self, **kwargs):
         if kwargs.get('external'):
-            return sorted(self.parameter_list)
+            par_list = sorted(self.parameter_list)
         else:
-            return sorted([self.parameter_mapping.get_internal(par) for par in self.parameter_list])
+            par_list = sorted([self.parameter_mapping.get_internal(par) for par in self.parameter_list])
+
+        return par_list
 
     # ==========================================================================
     def _get_qf_par(self, par):
@@ -1094,7 +1097,7 @@ class SHARKfilePhysicalChemichal(GISMOfile):
                            root_directory=root_directory))
         GISMOfile.__init__(self, **kwargs)
 
-        self.filter_data_options = self.filter_data_options + ['time', 'time_start', 'time_end', 'visit_id']
+        self.filter_data_options = self.filter_data_options + ['time', 'time_start', 'time_end', 'visit_id', 'visit_depth_id']
         self.flag_data_options = []
         self.mask_data_options = self.mask_data_options + []
 

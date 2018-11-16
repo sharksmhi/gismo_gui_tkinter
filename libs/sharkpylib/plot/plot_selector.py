@@ -22,6 +22,7 @@ import random
 import numpy as np
 import datetime
 import matplotlib.dates as dates
+import matplotlib.dates as mdates
 import pandas as pd
 
 class PlotSeries():
@@ -1415,7 +1416,31 @@ class Ax():
         self.set_y_limits(call_targets=False)
         if call_targets:
             self.parent.call_targets()
-        
+
+    def _set_date_ticks(self):
+        start_date, end_date = self.get_xlim()
+        start_date = datetime.datetime.fromordinal(int(start_date))
+        end_date = datetime.datetime.fromordinal(int(end_date))
+        dt = end_date - start_date
+        nr_days = dt.days
+
+        if nr_days <= 30:
+            loc = mdates.DayLocator()
+            fmt = mdates.DateFormatter('%Y-%m-%d')
+        elif nr_days <= 100:
+            loc = mdates.DayLocator(bymonthday=[1, 15])
+            fmt = mdates.DateFormatter('%Y-%m-%d')
+        elif nr_days <= 365:
+            loc = mdates.MonthLocator()
+            fmt = mdates.DateFormatter('%Y-%m-%d')
+        else:
+            loc = mdates.MonthLocator(bymonthday=2)
+            fmt = mdates.DateFormatter('%Y-%m-%d')
+
+        self.ax.xaxis.set_major_locator(loc)
+        self.ax.xaxis.set_major_formatter(fmt)
+
+
     #===========================================================================
     def set_x_limits(self, limits=[], call_targets=True):
         if self.p:
@@ -1430,7 +1455,7 @@ class Ax():
                     # Time series
                     mi_list = [min(self.x_data[key]) for key in self.x_data if self.x_data[key].size]
                     ma_list = [max(self.x_data[key]) for key in self.x_data if self.x_data[key].size]
-                
+
                 if not mi_list:
                     return
                 
@@ -1457,9 +1482,17 @@ class Ax():
                 
                 
             self.ax.set_xlim([x_min, x_max])
+
+            # self._set_date_ticks()
+            try:
+                self._set_date_ticks()
+            except:
+                pass
+
             if call_targets:
-                self.parent.call_targets()  
-            
+                self.parent.call_targets()
+
+
     #===========================================================================
     def set_y_limits(self, limits=[], call_targets=True):
         if self.p:
@@ -1481,12 +1514,12 @@ class Ax():
                 y_min = mi - margin
                 y_max = ma + margin
                 
-#                 print('='*30
-#                 print('margin', margin
-#                 print('mi', mi
-#                 print('ma', ma
-#                 print('y_min', y_min
-#                 print('y_max', y_max
+                print('='*30)
+                print('margin', margin)
+                print('mi', mi)
+                print('ma', ma)
+                print('y_min', y_min)
+                print('y_max', y_max)
                 
             self.ax.set_ylim([y_min, y_max])
             if call_targets:

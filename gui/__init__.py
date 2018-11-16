@@ -7,19 +7,18 @@
 #----------------------------------------------------------
 import sys
 
-from .gui_helpers import grid_configure
+# from .gui_helpers import grid_configure
 
 
 #----------------------------------------------------------
-from .communicate import add_sample_data_to_boxen
-from .communicate import add_sample_data_to_plot
+from .communicate import add_sample_data_to_timeseries_plot
 
 from .communicate import flag_data_profile
 from .communicate import flag_data_time_series
 
 from .communicate import get_flag_widget
 
-from .communicate import update_compare_widget
+# from .communicate import update_compare_widget
 from .communicate import update_highlighted_profile_in_plot
 from .communicate import update_limits_in_axis_float_widget
 from .communicate import update_limits_in_axis_time_widget
@@ -44,6 +43,7 @@ from .widgets import MovableText
 from .widgets import RangeSelectorFloatWidget
 from .widgets import RangeSelectorTimeWidget
 from .widgets import SaveWidget
+from .widgets import SaveWidgetHTML
 from .widgets import show_information
 from .widgets import show_warning
 from .widgets import show_error
