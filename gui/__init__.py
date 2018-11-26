@@ -11,7 +11,7 @@ import sys
 
 
 #----------------------------------------------------------
-from .communicate import add_sample_data_to_timeseries_plot
+from .communicate import add_compare_to_timeseries_plot
 
 from .communicate import flag_data_profile
 from .communicate import flag_data_time_series
@@ -47,26 +47,14 @@ from .widgets import SaveWidgetHTML
 from .widgets import show_information
 from .widgets import show_warning
 from .widgets import show_error
-
+from .widgets import InformationPopup
 
 
 #----------------------------------------------------------
-try:
-    from .page_ctd import PageCTD
-except:
-    pass
 
-try:
-    from .page_timeseries import PageTimeseries
-except:
-    pass
-
-try:
-    from .page_ferrybox_route import PageFerryboxRoute
-except:
-    pass
-
+from .page_timeseries import PageTimeseries
 from .page_start import PageStart
+from .page_user import PageUser
 
 # print('GUI IMPORT')
 # for key in sorted(sys.modules.keys()):

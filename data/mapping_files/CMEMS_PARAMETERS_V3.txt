@@ -910,4 +910,3 @@ smhi_channel	smhi_code	smhi_units	myo_scaling	myo_channel	myo_code	units	valid_m
 88997	CurSp_97_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
 88998	CurSp_98_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
 88999	CurSp_99_QC	-	1	88184	HCSP_QC	-	0	9	current_speed_qc	-	Horizontal current speed QC
-

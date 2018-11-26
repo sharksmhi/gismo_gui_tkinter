@@ -1,14 +1,52 @@
 # Copyright (c) 2018 SMHI, Swedish Meteorological and Hydrological Institute
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 import os
+import shutil
 import json
 
+from core.exceptions import *
+
+
+class UserManager(object):
+    def __init__(self, users_root_directory):
+        self.users_root_directory = users_root_directory
+        if not os.path.exists(self.users_root_directory):
+            os.mkdir(self.users_root_directory)
+        self.users = {}
+        self.user = None # Is the current user
+        for user in os.listdir(users_root_directory):
+            self.users[user] = User(user, users_root_directory)
+
+    def set_user(self, user_name, create_if_missing=False):
+        if user_name not in self.users:
+            if create_if_missing:
+                self.add_user(user_name)
+            else:
+                raise GUIExceptionUserError('Invalid user name')
+        self.user = self.users.get(user_name)
+
+    def get_user_list(self):
+        return sorted(self.users)
+
+    def add_user(self, user_name, from_user=None):
+        if user_name in self.users:
+            raise GUIExceptionUserError('User already exists')
+        if from_user:
+            if from_user not in self.users:
+                raise GUIExceptionUserError('Could not find source user')
+            from_dir = os.path.join(self.users_root_directory, from_user)
+            to_dir = os.path.join(self.users_root_directory, user_name)
+            shutil.copytree(from_dir, to_dir)
+        else:
+            # New user
+            pass
+        self.users[user_name] = User(user_name, self.users_root_directory)
 
 class User(object):
-    def __init__(self, name, user_root_directory):
+    def __init__(self, name, users_root_directory):
         self.name = name
-        print(self.name)
-        self.user_directory = os.path.join(user_root_directory, self.name)
+        # print(self.name)
+        self.user_directory = os.path.join(users_root_directory, self.name)
         if not os.path.exists(self.user_directory):
             os.mkdir(self.user_directory)
 
@@ -26,6 +64,15 @@ class User(object):
         # Save process information like warning for file size etc.
         self.process = UserSettings(self.user_directory, 'process')
 
+        self.map_boundries = UserSettings(self.user_directory, 'map_boundries')
+
+        self.parameter_colormap = UserSettings(self.user_directory, 'parameter_colormap')
+
+        # layout includes matplotlib styles etc
+        self.layout = UserSettings(self.user_directory, 'layout')
+
+        self.options = UserSettings(self.user_directory, 'options')
+
 
 
 class UserSettings(object):
@@ -33,7 +80,6 @@ class UserSettings(object):
     Baseclass for user settings.
     """
     def __init__(self, directory, settings_type):
-        print('UserSettings')
         self.directory = directory
         self.settings_type = settings_type
         self.file_path = os.path.join(self.directory, '{}.json'.format(self.settings_type))
@@ -53,9 +99,7 @@ class UserSettings(object):
         Loads dict from json
         :return:
         """
-        print('file_path', self.file_path)
         if os.path.exists(self.file_path):
-            print('_load')
             with open(self.file_path) as fid:
                 self.data = json.load(fid)
 
@@ -67,13 +111,16 @@ class UserSettings(object):
         with open(self.file_path, 'w') as fid:
             json.dump(self.data, fid)
 
-    def get(self, key):
+    def get(self, key, if_missing=None):
         """
 
         :param key:
         :return:
         """
-        return self.data.get(key, None)
+        return self.data.get(key, if_missing)
+
+    def get_keys(self):
+        return self.data.keys()
 
     def setdefault(self, key, value):
         """
@@ -109,6 +156,11 @@ class UserSettings(object):
         :return:
         """
         return self.data
+
+    def remove(self, key):
+        if key in self.data:
+            self.data.pop(key)
+            self._save()
 
 
 class UserSettingsParameter(UserSettings):
@@ -148,4 +200,4 @@ class UserSettingsParameter(UserSettings):
         :param key:
         :return:
         """
-        return self.data[par].get(key, None)
+        return self.data.get(par, {}).get(key, None)

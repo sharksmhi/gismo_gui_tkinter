@@ -1,32 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 13 13:42:06 2017
+import tkinter as tk
+#
+# Copyright (c) 2018 SMHI, Swedish Meteorological and Hydrological Institute
+# License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
-@author: a001985
-"""
-try:
-    # Python 2.7
-    import Tkinter as tk 
-except:
-    # Python 3.0
-    import tkinter as tk
-import ttk
-
-
-
-from utils.settings import Settings
-
-# from utils.load_files import load_ferrybox_file
-from utils.boxen import Boxen, Temp
-
-from shd_tk.utils import grid_configure 
-from shd_tk import tkinter_widgets as tkw
-from shd_plot import plot_selector 
-from shd_gismo.gismo import PlatformSettings
-
-from gui.widgets import *
-from gui.communicate import *
-import logging
 """
 ================================================================================
 ================================================================================

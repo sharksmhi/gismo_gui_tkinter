@@ -79,7 +79,7 @@ class PageStart(tk.Frame):
 #                color = 'darkgreen'
 #                if r%2 and not c%2:
 #                    color = 'blue' 
-                print(r, c)
+#                 print(r, c)
                 self.frames[r][c] = tk.Frame(self) 
                 self.frames[r][c].grid(row=r, column=c, padx=padx, pady=pady, sticky='nsew')
 #                self.texts[r][c] = tk.Label(self.frames[r][c], text='{}:{}'.format(r, c))
@@ -104,7 +104,7 @@ class PageStart(tk.Frame):
         r=0
         c=0
         for page in sorted(self.button_texts): 
-            print(r, c)
+            # print(r, c)
             if page in pages:
                 text = self.button_texts[page]
                 color = self.button_colors[page] 
@@ -124,55 +124,7 @@ class PageStart(tk.Frame):
                 if c >= nr_columns:
                     c=0 
                     r+=1
-        
-        
-        
-        #-----------------------------------------------------------------------
-#        try:
-#            if gui.PageFerryboxRoute in pages:
-#                self.button_ferrybox_route = tk.Button(self, 
-#                            text='Ferrybox Route', 
-#                            command=lambda: self.controller.show_frame(gui.PageFerryboxRoute), 
-#                            width=width, height=height, font=font, bg='darkgreen')
-#        except:
-#            self.button_ferrybox_route = tk.Button(self, 
-#                        text='Ferrybox Route', 
-#                        command=None, 
-#                        width=width, height=height, font=font, bg='darkgreen')
-#            
-#            self.button_ferrybox_route.config(state='disabled')
-#            
-#        self.button_ferrybox_route.grid(row=r, column=c, padx=padx, pady=pady, sticky='sw')
-#        r+=1
-              
-        
-        
-#        r=0
-#        c+=1
-#        
-#        #-----------------------------------------------------------------------
-#        try:
-#            if gui.PageCTD in pages:
-#                self.button_ctd = tk.Button(self, 
-#                            text='CTD', 
-#                            command=lambda: self.controller.show_frame(gui.PageCTD), 
-#                            width=width, height=height, font=font, bg='pink') 
-#            self.button_ctd.grid(row=r, column=c, padx=padx, pady=pady, sticky='sw')
-#        except:
-#            pass
-##            print('CTD')
-##            self.button_ctd = tk.Button(self, 
-##                        text='CTD', 
-##                        command=None, 
-##                        width=width, height=height, font=font, bg='pink')
-##            
-##            self.button_ctd.config(state='disabled')
-#            
-##            self.button_ctd.grid(row=r, column=c, padx=padx, pady=pady, sticky='sw')
-#        r+=1
-#        
-#        r=0
-#        c+=1
+
 
     
     #===========================================================================

@@ -476,10 +476,10 @@ class AxisSettingsBaseWidget(ttk.Labelframe):
         if not self.plot_object:
             return 
         if self.axis in self.x_list:
-            print('self.axis', self.axis, self.x_list)
+            # print('self.axis', self.axis, self.x_list)
             self.plot_object.set_x_grid(ax='first', grid_on=self.boolvar_grid.get())
         elif self.axis in self.y_list:
-            print('self.axis', self.axis, self.y_list)
+            # print('self.axis', self.axis, self.y_list)
             self.plot_object.set_y_grid(ax='first', grid_on=self.boolvar_grid.get())
 
   
@@ -493,7 +493,7 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
     def __init__(self, 
                  parent, 
                  plot_object,
-                 callback=None, 
+                 callback=None,
                  axis='y', 
                  label='y-axis', 
                  prop_frame={}, 
@@ -597,6 +597,9 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
         self._callback()
 #            self._save_limits()
 #            self._set_limits_in_plot_object()
+
+    def get_limits(self):
+        return self.stringvar_min.get(), self.stringvar_max.get()
         
     #===========================================================================
     def _on_return_min_range(self, event):
@@ -669,7 +672,7 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
         
         
     #===========================================================================
-    def get_time_limits(self):
+    def get_limits(self):
         return self.time_widget_from.get_time_object(), self.time_widget_to.get_time_object()
         
     
@@ -1034,8 +1037,8 @@ class SaveWidgetHTML(ttk.LabelFrame):
 
         self.listbox_widget_parameters = tkw.ListboxSelectionWidget(self.frame_parameters,
                                                                     prop_frame={},
-                                                                    prop_items={'height': 5},
-                                                                    prop_selected={'height': 5},
+                                                                    prop_items={'height': 3},
+                                                                    prop_selected={'height': 3},
                                                                     items=[],
                                                                     selected_items=[],
                                                                     title_items='Available parameters',
@@ -1167,6 +1170,68 @@ class MovableText(object):
             self.fig.canvas.mpl_disconnect(event)
         self.events = {}
 
+
+class InformationPopup(object):
+    """
+    Handles information popups to user.
+    """
+    def __init__(self, controller):
+        self.controller = controller
+        self.user = self.controller.user
+
+    def show_information(self, text=''):
+
+        if not self.user.options.get('show_info_popups'):
+            return
+
+        padx = 5
+        pady = 5
+
+        self.popup_frame = tk.Toplevel(self.controller)
+
+        # Set text
+        # text = self._format_text(text)
+        self.label = tk.Label(self.popup_frame, text=text)
+        self.label.grid(row=0, column=0, columnspan=2, padx=padx, pady=pady)
+        self.label.bind('<Configure>', self._update_wrap)
+
+        button_ok = tk.Button(self.popup_frame, text='Great tip!\nKeep them coming!', command=self.popup_frame.destroy)
+        button_ok.grid(row=1, column=0, padx=padx, pady=pady)
+
+        button_ok_and_forget = tk.Button(self.popup_frame, text="Thanks,\nbut I don't need tips anymore!", command=self._ok_and_forget)
+        button_ok_and_forget.grid(row=1, column=1, padx=padx, pady=pady)
+
+        tkw.grid_configure(self.popup_frame, nr_columns=2, nr_rows=2)
+
+    def _ok_and_forget(self):
+        self.user.options.set('show_info_popups', False)
+        self.popup_frame.destroy()
+
+    def _update_wrap(self, event):
+        self.label.config(wraplength=self.popup_frame.winfo_width())
+
+    def _format_text(self, text):
+        nr_signs_per_row = 10
+        split_text = text.split()
+        text_lines = []
+        line = ''
+        for word in split_text:
+            line = '{} {}'.format(line, word)
+            if len(line) > nr_signs_per_row:
+                text_lines.append(line)
+                line = ''
+        if line:
+            text_lines.append(line)
+        return '\n'.join(text_lines)
+
+        # self.popup_frame = None
+        # self._create_popup_frame()
+        # self._show_information()
+
+    # def _create_popup_frame(self):
+    #     popup_frame = tk.Toplevel(self.controller)
+    #
+    # def _show_information(self):
 
 
 

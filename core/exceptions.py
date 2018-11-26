@@ -31,3 +31,9 @@ class GUIExceptionMissingAttribute(GUIException):
     """
     code = ''
     message = ''
+
+class GUIExceptionUserError(GUIException):
+    """
+    """
+    code = ''
+    message = ''

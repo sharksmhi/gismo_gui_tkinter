@@ -67,9 +67,14 @@ class Settings(dict):
                 key = split_line[0].strip()
                 group = split_line[1].strip()
                 value = split_line[2].strip()
+                dtype = None
+                if len(split_line) == 4:
+                    dtype = split_line[3].strip()
                 
                 if group == 'flags':
                     value = [v.strip() for v in value.split(',')]
+                if dtype:
+                    value = [v.strip() for v in value.split(';')]
                 
                 
                 
@@ -104,7 +109,6 @@ class Settings(dict):
                         if not self.root_directory:
                             raise GTBExceptionMissingAttribute('"root" keyword found in settings file but root_directory is not given')
                         value = value.replace(u'root/', self.root_directory.replace(u'\\',u'/') + u'/')
-                        print('===', value)
                     # shapefile
                     if group == u'shapefile':
                         coordinate_system = split_line[3].strip()

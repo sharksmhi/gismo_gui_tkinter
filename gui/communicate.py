@@ -8,9 +8,12 @@ import numpy as np
 
 import core
 
-
+import matplotlib.colors as mcolors
+import matplotlib.dates as dates
 import libs.sharkpylib.gismo as gismo
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
+
+from core.exceptions import *
 
 import logging 
 
@@ -19,12 +22,12 @@ import logging
 ================================================================================
 ================================================================================
 """ 
-def add_sample_data_to_timeseries_plot(plot_object=None,
-                                        session=None,
-                                        sample_file_id=None,
-                                        main_file_id=None,
-                                        compare_widget=None,
-                                        help_info_function=None):
+def add_compare_to_timeseries_plot(plot_object=None,
+                                    session=None,
+                                    sample_file_id=None,
+                                    main_file_id=None,
+                                    compare_widget=None,
+                                    help_info_function=None):
     """
     sample_object is the main GISMOfile. 
     gismo_object is the file where matching data will be extracted from 
@@ -40,12 +43,15 @@ def add_sample_data_to_timeseries_plot(plot_object=None,
 
     par = compare_widget.get_parameter()
 
-    match_data = session.get_match_data(main_file_id, sample_file_id, 'time', par)
+    match_data = session.get_match_data(main_file_id, sample_file_id, 'time', 'lat', 'lon', par)
     print('='*50)
     print('match_data')
     print(match_data)
+    if not len(np.where(~np.isnan(np.array(match_data[par])))):
+        help_info_function('No matching data!', fg='red')
+        return
 
-    plot_object.set_data(x=match_data['time'], y=match_data[par], line_id='matching data', marker='x', color='black', linestyle=None)
+    plot_object.set_data(x=match_data['time'], y=match_data[par], line_id='matching data', marker='x', color='black', linestyle='None')
 
     help_info_function('Reference data for parameter {} added!'.format(par))
 
@@ -53,6 +59,8 @@ def add_sample_data_to_timeseries_plot(plot_object=None,
     
     if help_info_function:
         help_info_function('Done!')
+
+    return match_data
         
 
 # """
@@ -156,7 +164,12 @@ def get_flag_widget(parent=None,
 
     color_list = []
     markersize_list = []
-    print(user_object.flag_color.data)
+
+    all_colors = ['blue', 'red', 'darkgreen', 'yellow', 'magenta', 'cyan', 'black', 'gray']
+    all_colors = list(mcolors.BASE_COLORS) + list(mcolors.TABLEAU_COLORS) + list(mcolors.CSS4_COLORS)
+    all_colors = sorted(all_colors)
+
+
     for f in flags:
         f = str(f)
         if f in '48':
@@ -165,11 +178,10 @@ def get_flag_widget(parent=None,
             color_list.append(user_object.flag_color.setdefault(f, 'black'))
 
         markersize_list.append(user_object.flag_markersize.setdefault(f, 6))
-    print('color_list', color_list)
     flag_widget = tkw.FlagWidget(parent, 
                                   flags=flags, 
                                   descriptions=descriptions, 
-                                  colors=['blue', 'red', 'darkgreen', 'yellow', 'magenta', 'cyan', 'black', 'gray'],
+                                  colors=all_colors,
                                   default_colors=color_list,
                                   markersize=markersize_list,
                                   include_marker_size=include_marker_size, 
@@ -197,10 +209,17 @@ def flag_data_time_series(flag_widget=None,
     selection = flag_widget.get_selection()
     flag_nr = selection.flag
 
-    time_values = plot_object.get_marked_x_values()
+    time_start = dates.num2date(plot_object.get_mark_from_value())
+    time_end = dates.num2date(plot_object.get_mark_to_value())
+
+    import pandas as pd
+    time_start = pd.Timestamp.tz_localize(pd.to_datetime(time_start), None)
+    time_end = pd.Timestamp.tz_localize(pd.to_datetime(time_end), None)
+
+    # time_values = plot_object.get_marked_x_values()
     # index = plot_object.get_marked_index()
-    print('time_values[0]', time_values[0])
-    gismo_object.flag_data(flag_nr, par, time=time_values)
+    # print('time_values[0]', time_values[0])
+    gismo_object.flag_data(flag_nr, par, time_start=time_start, time_end=time_end)
     # gismo_object.flag_parameter_at_index(par=par,
     #                                      index=index,
     #                                      qflag=flag_nr)
@@ -210,7 +229,7 @@ def flag_data_time_series(flag_widget=None,
         print('par', par)
         for sub_par in dependent_list:
             print('sub_par', sub_par)
-            gismo_object.flag_data(flag_nr, sub_par, time=time_values)
+            gismo_object.flag_data(flag_nr, sub_par, time_start=time_start, time_end=time_end)
             # gismo_object.flag_parameter_at_index(par=sub_par,
             #                                      index=index,
             #                                      qflag=flag_nr)
@@ -660,6 +679,9 @@ def update_plot_limits_from_settings(plot_object=None,
 
     min_value = user_object.range.get(par, 'min')
     max_value = user_object.range.get(par, 'max')
+
+    if min_value is None:
+        return
     
     if axis in ['x', 't']:
 #        xmin = settings_object['ranges'][par]['xmin'] 
@@ -768,11 +790,13 @@ def update_limits_in_axis_float_widget(user_object=None,
         #                                    par=par,
         #                                    axis=axis)
     if min_value:
+        # min_value = user_object.range.setdefault(par, 'min', float(min_value))
+        # max_value = user_object.range.setdefault(par, 'max', float(max_value))
+
         axis_float_widget.set_min_value(str(min_value))
         axis_float_widget.set_max_value(str(max_value))
 
-    user_object.range.setdefault(par, 'min', float(min_value))
-    user_object.range.setdefault(par, 'max', float(max_value))
+
 
             
 """
@@ -875,8 +899,8 @@ def save_limits_from_plot_object(plot_object=None,
     elif axis in ['y', 'z']:
         min_value, max_value = plot_object.get_ylim()
 
-    user_object.range.setdefault(par, 'min', float(min_value))
-    user_object.range.setdefault(par, 'max', float(max_value))
+    user_object.range.set(par, 'min', float(min_value))
+    user_object.range.set(par, 'max', float(max_value))
 
 
     # if par not in settings_object['ranges']:

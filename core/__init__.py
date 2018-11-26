@@ -7,4 +7,8 @@ from .paths import Paths
 
 from .exceptions import *
 
-from .user import User
+from .user import UserManager
+
+from .mappings import Colormaps
+
+from . import texts

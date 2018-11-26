@@ -7,12 +7,11 @@
 import tkinter as tk 
 from tkinter import ttk
 from tkinter import filedialog
-#    from tkinter import filedialog
-#    from tkinter import messagebox 
 
 import os
 import sys
 
+import matplotlib.pyplot as plt
 
 import gui
 import core
@@ -23,6 +22,7 @@ from libs.sharkpylib import gismo
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 from libs.sharkpylib.gismo.exceptions import *
+from core.exceptions import *
 
 import threading
 import logging
@@ -34,6 +34,7 @@ all_pages.add(gui.PageStart)
 #============================================================================
 # Timeseries pages
 all_pages.add(gui.PageTimeseries)
+all_pages.add(gui.PageUser)
 #try:
 #    all_pages.add(gui.PageFerrybox)
 ##     logging.info('PageFerrybox imported!')
@@ -81,7 +82,6 @@ class App(tk.Tk):
                  users_directory='',
                  root_directory='',
                  log_directory='',
-                 input_directory='',
                  default_settings_file_path='',
                  sampling_types_factory=None,
                  qc_routines_factory=None,
@@ -94,7 +94,7 @@ class App(tk.Tk):
 
         self.withdraw()
 
-        if not all([user, users_directory, root_directory, log_directory, input_directory, sampling_types_factory, qc_routines_factory]):
+        if not all([users_directory, root_directory, log_directory, sampling_types_factory, qc_routines_factory]):
             raise AttributeError
 
         # Load settings and constants (singletons)
@@ -102,13 +102,6 @@ class App(tk.Tk):
         self.root_directory = root_directory
         self.users_directory = users_directory
         self.log_directory = log_directory
-        self.input_directory = input_directory
-
-        # Add user
-        self.users_directory = os.path.join(self.root_directory, 'users')
-        if not os.path.exists(self.users_directory):
-            os.mkdir(self.users_directory)
-        self.user = core.User(user, self.users_directory)
 
         # Load paths
         self.paths = core.Paths(self.app_directory)
@@ -124,12 +117,21 @@ class App(tk.Tk):
 
         self.settings = core.Settings(default_settings_file_path=default_settings_file_path,
                                       root_directory=self.root_directory)
+
+        # Load user
+        self.user_manager = core.UserManager(os.path.join(self.root_directory, 'users'))
+        startup_user = self.settings.get('user', {}).get('Startup user', 'default')
+        self.user_manager.set_user(startup_user, create_if_missing=True)
+        self.user = self.user_manager.user
+        self.info_popup = gui.InformationPopup(self)
+        plt.style.use(self.user.layout.setdefault('plotstyle', self.user.layout.setdefault('plotstyle', self.settings['default']['plotstyle'])))
+
         self.boxen = Boxen(open_directory=self.settings['directory']['Input directory'])
         # self.boxen = core.Boxen(self, root_directory=self.root_directory)
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
                                     log_directory=self.log_directory,
-                                    user=self.user.name,
+                                    user=user,
                                     sampling_types_factory=sampling_types_factory,
                                     qc_routines_factory=qc_routines_factory,
                                     save_pkl=False)
@@ -141,24 +143,24 @@ class App(tk.Tk):
         # self.default_platform_settings = gismo.sampling_types.SamplingTypeSettings(self.settings['directory']['Default ferrybox settings'],
         #                                                                            root_directory=self.root_directory)
         
-        screen_padx = self.settings[u'general'][u'Main window indent x']
-        screen_pady = self.settings[u'general'][u'Main window indent y']
+        screen_padx = self.settings['general']['Main window indent x']
+        screen_pady = self.settings['general']['Main window indent y']
         
 
         # Override "close window (x)". 
         # Override "close window (x)".
         # If this is not implemented the program is not properly closed.
-        self.protocol(u'WM_DELETE_WINDOW', self.quit_toolbox)
+        self.protocol('WM_DELETE_WINDOW', self.quit_toolbox)
         
         # Set geometry, title etc.
 #        self.geometry(u'%sx%s+0+0' % (self.winfo_screenwidth(), 
 #                                     self.winfo_screenheight()))
-        self.geometry(u'%sx%s+0+0' % (self.winfo_screenwidth()-screen_padx, 
+        self.geometry('%sx%s+0+0' % (self.winfo_screenwidth()-screen_padx,
                                      self.winfo_screenheight()-screen_pady))
 #         tk.Tk.iconbitmap(self, default=u'D:/Utveckling/w_sharktoolbox/data/logo.ico')
         # TODO: Icon does not work
         self._create_titles()
-        tk.Tk.wm_title(self, u'GISMO Toolbox')
+        tk.Tk.wm_title(self, 'GISMO Toolbox, user: {}'.format(self.user.name))
         
         self.all_ok = True
         
@@ -166,6 +168,7 @@ class App(tk.Tk):
         self.previous_page = None
         self.admin_mode = False
         self.progress_running = False
+        self.progress_running_toplevel = False
 
         self.latest_loaded_sampling_type = ''
         
@@ -181,27 +184,19 @@ class App(tk.Tk):
         
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
-        self.show_frame(gui.PageTimeseries)
+        self.show_frame(gui.PageStart)
+        # self.show_frame(gui.PageUser)
+        # self.show_frame(gui.PageTimeseries)
 
-#        self.show_frame(eval('gui.' + self.settings['general']['Start page']))
         self.update()
         self.deiconify()
 
     #==========================================================================
     def _set_frame(self):
-#        frame = tk.Frame(self, bg='blue')
-#        frame.grid(row=0, column=0, sticky="nsew")
-#        self.grid_rowconfigure(0, weight=1)
-#        self.grid_columnconfigure(0, weight=1)
-        #----------------------------------------------------------------------
-        # Create three main frames
-#        self.frame_top = tk.LabelFrame(self, bg='red')
-#        self.frame_mid = tk.LabelFrame(self, bg='cyan')
-#        self.frame_bot = tk.LabelFrame(self, bg='magenta')
         self.frame_top = tk.Frame(self)
         self.frame_mid = tk.Frame(self)
         self.frame_bot = tk.Frame(self)
-         
+
         
         # Grid
         self.frame_top.grid(row=0, column=0, sticky="nsew")
@@ -209,11 +204,7 @@ class App(tk.Tk):
         self.frame_bot.grid(row=2, column=0, sticky="nsew")
         
         # Gridconfigure 
-        tkw.grid_configure(self, nr_rows=3, r0=50, r1=10, r2=1)
-#        self.grid_rowconfigure(0, weight=7)
-#        self.grid_rowconfigure(1, weight=5)
-#        self.grid_rowconfigure(2, weight=1)
-#        self.grid_columnconfigure(0, weight=1)
+        tkw.grid_configure(self, nr_rows=3, r0=100, r1=5, r2=1)
         
         #----------------------------------------------------------------------
         # Frame top
@@ -221,9 +212,7 @@ class App(tk.Tk):
         self.container = tk.Frame(self.frame_top)
         self.container.grid(row=0, column=0, sticky="nsew") 
         tkw.grid_configure(self.frame_top)
-        
-#        self.frame_top.grid_rowconfigure(0, weight=1)
-#        self.frame_top.grid_columnconfigure(0, weight=1)
+
         
         #----------------------------------------------------------------------
         # Frame mid
@@ -236,9 +225,6 @@ class App(tk.Tk):
         
         # Gridconfigure 
         tkw.grid_configure(self.frame_mid, nr_columns=2)
-#        self.frame_mid.grid_rowconfigure(0, weight=1)
-#        self.frame_mid.grid_columnconfigure(0, weight=1)
-#        self.frame_mid.grid_columnconfigure(1, weight=1)
         
         #----------------------------------------------------------------------
         # Frame bot
@@ -266,21 +252,45 @@ class App(tk.Tk):
         tkw.grid_configure(self.frame_bot, nr_columns=3, c0=20, c2=4)
 
     def run_progress(self, run_function, message=''):
+
+        def run_thread():
+            self.progress_widget.run_progress(run_function, message=message)
+
         if self.progress_running:
-            print('Progress is running')
+            gui.show_information('Progress is running', 'A progress is running, please wait until it is finished!')
             return
         self.progress_running = True
-        run_thread = lambda: self.progress_widget.run_progress(run_function, message=message)
+        # run_thread = lambda: self.progress_widget.run_progress(run_function, message=message)
+        threading.Thread(target=run_thread).start()
+        self.progress_running = False
+
+    def run_progress_in_toplevel(self, run_function, message=''):
+        """
+        Rins progress in a toplevel window.
+        :param run_function:
+        :param message:
+        :return:
+        """
+        def run_thread():
+            self.frame_toplevel_progress = tk.Toplevel(self)
+            self.progress_widget_toplevel = tkw.ProgressbarWidget(self.frame_toplevel_progress, sticky='nsew', in_rows=True)
+            self.frame_toplevel_progress.update_idletasks()
+            self.progress_widget_toplevel.update_idletasks()
+            print('running')
+            self.progress_widget.run_progress(run_function, message=message)
+            self.frame_toplevel_progress.destroy()
+
+        if self.progress_running_toplevel:
+            gui.show_information('Progress is running', 'A progress is running, please wait until it is finished!')
+            return
+        self.progress_running = True
+        # run_thread = lambda: self.progress_widget.run_progress(run_function, message=message)
         threading.Thread(target=run_thread).start()
         self.progress_running = False
 
     #===========================================================================
     def startup_pages(self):
         # Tuple that store all pages
-#         all_pages = (PageStart, 
-#                      PageCTD, 
-#                      PageFerryboxRoute, 
-#                      PageFerrybox)
         
         self.pages_started = dict((page, False) for page in all_pages)
         
@@ -338,22 +348,26 @@ class App(tk.Tk):
         frame_load.grid(row=1, column=2, sticky='nsew', padx=padx, pady=pady)
 
         # Gridconfigure 
-        tkw.grid_configure(frame, nr_rows=2, nr_columns=3)
+        tkw.grid_configure(frame, nr_rows=2, nr_columns=3, r0=50)
 #        frame.grid_rowconfigure(0, weight=1)
 #        frame.grid_rowconfigure(1, weight=1)
 #        frame.grid_rowconfigure(2, weight=1)
 #        frame.grid_columnconfigure(0, weight=1)
         
         #----------------------------------------------------------------------
-        # Data frame 
-        self.button_get_ferrybox_data_file = ttk.Button(frame_data, text='Ferrybox',
-                                                        command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
-        self.button_get_fixed_platform_data_file = ttk.Button(frame_data, text='Fixed platform',
-                                                              command=lambda: self._get_data_file_path('Bouy CMEMS'))
-        self.button_get_ctd_data_file = ttk.Button(frame_data, text='CTD-profile',
-                                                   command=lambda: self._get_data_file_path('SHARK CTD'))
-        self.button_get_sampling_file = ttk.Button(frame_data, text='Sampling data',
-                                                   command=lambda: self._get_data_file_path('SHARK PhysicalChemical'))
+        # Data frame
+
+        self.button_get_ferrybox_data_file = tk.Button(frame_data, text='Ferrybox',
+                                                       command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
+        self.button_get_fixed_platform_data_file = tk.Button(frame_data, text='Fixed platform',
+                                                             command=lambda: self._get_data_file_path('Bouy CMEMS'))
+        self.button_get_ctd_data_file = tk.Button(frame_data, text='CTD-profile',
+                                                  command=lambda: self._get_data_file_path('SHARK CTD'))
+        self.button_get_sampling_file = tk.Button(frame_data, text='Sampling data',
+                                                  command=lambda: self._get_data_file_path('SHARK PhysicalChemical'))
+
+        tkw.disable_widgets(self.button_get_fixed_platform_data_file,
+                            self.button_get_ctd_data_file)
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -372,13 +386,7 @@ class App(tk.Tk):
         
         # Gridconfigure 
         tkw.grid_configure(frame_data, nr_rows=2, nr_columns=4)
-#        frame_data.grid_rowconfigure(0, weight=1)
-#        frame_data.grid_rowconfigure(1, weight=1)
-#        frame_data.grid_columnconfigure(0, weight=1)
-#        frame_data.grid_columnconfigure(1, weight=1)
-#        frame_data.grid_columnconfigure(2, weight=1)
-        
-        
+
         #----------------------------------------------------------------------
         # Settings frame
         self.combobox_widget_settings_file = tkw.ComboboxWidget(frame_settings,
@@ -388,50 +396,32 @@ class App(tk.Tk):
                                                                 column=0,
                                                                 columnspan=1,
                                                                 row=0,
-                                                                sticky='w')
+                                                                sticky='nsew')
         self._update_settings_combobox_widget()
 
         self.button_import_settings_file = ttk.Button(frame_settings, text='Import settings file', command=self._import_settings_file)
-        
-        # self.stringvar_settings_file = tk.StringVar()
-        # self.entry_settings_file = tk.Entry(frame_settings, textvariable=self.stringvar_settings_file, state='disabled')
-        
-        #Grid 
-        self.button_import_settings_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='w')
-        # self.entry_settings_file.grid(row=1, column=0, padx=padx, pady=pady, sticky='nsew')
-        
-        # Gridconfigure 
+        self.button_import_settings_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='nsew')
         tkw.grid_configure(frame_settings, nr_rows=1, nr_columns=2)
-#        frame_settings.grid_rowconfigure(0, weight=1)
-#        frame_settings.grid_rowconfigure(1, weight=1)
-#        frame_settings.grid_columnconfigure(0, weight=1)
-        
-        
-        
+
         #----------------------------------------------------------------------
         # Sampling type frame
         self.combobox_widget_sampling_type = tkw.ComboboxWidget(frame_sampling_type, 
                                                                 items=sorted(self.session.get_sampling_types()),
                                                                 title='',
-                                                                prop_combobox={'width':20},
+                                                                prop_combobox={'width': 20},
                                                                 column=0, 
                                                                 columnspan=1, 
                                                                 row=0, 
-                                                                sticky='w')
+                                                                sticky='nsew')
 
         # Gridconfigure
         tkw.grid_configure(frame_sampling_type)
 
         # Load file button
-        self.button_load_file = tk.Button(frame_load, text='Load file', command=self._load_file, bg='darkgreen', width=30, height=5)
-        self.button_load_file.grid(row=0, column=1, padx=padx, pady=pady, sticky='se')
+        self.button_load_file = tk.Button(frame_load, text='Load file', command=self._load_file, bg='lightgreen', font=(30))
+        self.button_load_file.grid(row=0, column=0, padx=padx, pady=pady, sticky='nsew')
         self.button_load_file.configure(state='disabled')
-        
-        # Gridconfigure 
         tkw.grid_configure(frame_load)
-#        frame_sampling_type.grid_rowconfigure(0, weight=1)
-#        frame_sampling_type.grid_columnconfigure(0, weight=1)
-#        frame_sampling_type.grid_columnconfigure(1, weight=1)
 
     def _update_settings_combobox_widget(self):
         self.combobox_widget_settings_file.update_items(self.settings_files.get_list())
@@ -447,9 +437,10 @@ class App(tk.Tk):
 #                'height': 5}
 #        
 #        r = 0 
-        
+        prop_listbox = {'height': 4}
         self.listbox_widget_loaded_files = tkw.ListboxWidget(frame, 
-                                                             include_delete_button='Remove source')
+                                                             include_delete_button='Remove source',
+                                                             prop_listbox=prop_listbox)
 #        self.listbox_widget_loaded_files = tkw.ListboxSelectionWidget(frame, 
 #                                                                      sort_selected=True, 
 #                                                                      vertical=True, 
@@ -496,6 +487,7 @@ class App(tk.Tk):
                 self.combobox_widget_settings_file.set_value(user_settings_file)
 
             self.button_load_file.configure(state='normal')
+            self.info_popup.show_information(core.texts.data_file_selected(username=self.user.name))
         else:
             self.button_load_file.configure(state='disabled')
             
@@ -522,34 +514,69 @@ class App(tk.Tk):
         
         if not all([data_file_path, settings_file_path]): 
             self.update_help_information('No file selected!', fg='red')
-            return 
-        
-        
+            return
+
         # Load file
         try:
-            self.update_help_information('Loading file...please wait...', fg='red')
-            all_ok = self.session.load_file(sampling_type=sampling_type,
-                                            file_path=data_file_path,
-                                            settings_file_path=settings_file_path,
-                                            reload=False)
+            def load_file():
+                self.update_help_information('')
+                self.button_load_file.configure(state='disabled')
+                self.session.load_file(sampling_type=sampling_type,
+                                       file_path=data_file_path,
+                                       settings_file_path=settings_file_path,
+                                       reload=False)
+                self.button_load_file.configure(state='normal')
+
+                self._update_loaded_files_widget()
+
+                self.update_all()
+
+                # Update user settings
+                if self.latest_loaded_sampling_type:
+                    self.user.settingsfile.set(self.latest_loaded_sampling_type,
+                                               self.combobox_widget_settings_file.get_value())
+
+                # Remove data file text
+                self.stringvar_data_file.set('')
+
+                self.update_help_information('File loaded! Please continue by selecting a data file under Options.')
+
+
+            self.run_progress(load_file, message='Loading file...please wait...')
 
 
         except GISMOExceptionMissingPath as e:
-            gui.show_information('Invalid path', 'The path "{}" given in i settings file "{} can not be found'.format(e.message,
-                                                                                                                      settings_file_path))
+            gui.show_information('Invalid path',
+                                 'The path "{}" given in i settings file "{} can not be found'.format(e.message,
+                                                                                                      settings_file_path))
             self.update_help_information('Please try again with a different settings file.')
-            return
 
 
-        self._update_loaded_files_widget()
-
-        self.update_all()
-
-        # Update user settings
-        if self.latest_loaded_sampling_type:
-            self.user.settingsfile.set(self.latest_loaded_sampling_type, self.combobox_widget_settings_file.get_value())
-
-        self.update_help_information('File loaded! Please continue by selecting a parameter.')
+            # # Load file
+            # try:
+            #     self.update_help_information('Loading file...please wait...', fg='red')
+            #     all_ok = self.session.load_file(sampling_type=sampling_type,
+            #                                     file_path=data_file_path,
+            #                                     settings_file_path=settings_file_path,
+            #                                     reload=False)
+            #
+            # except GISMOExceptionMissingPath as e:
+            #     gui.show_information('Invalid path',
+            #                          'The path "{}" given in i settings file "{} can not be found'.format(e.message,
+            #                                                                                               settings_file_path))
+            #     self.update_help_information('Please try again with a different settings file.')
+            #     return
+            #
+            # self._update_loaded_files_widget()
+            #
+            # self.update_all()
+            #
+            # # Update user settings
+            # if self.latest_loaded_sampling_type:
+            #     self.user.settingsfile.set(self.latest_loaded_sampling_type,
+            #                                self.combobox_widget_settings_file.get_value())
+            #
+            # self.update_help_information('File loaded! Please continue by selecting a parameter.')
 
     def _update_loaded_files_widget(self):
         loaded_files = [] 
@@ -664,58 +691,140 @@ class App(tk.Tk):
         """
         Method sets up the menu bar at the top och the Window.
         """
-        menubar = tk.Menu(self)
+        self.menubar = tk.Menu(self)
         
         #-----------------------------------------------------------------------
         # File menu
-        file_menu = tk.Menu(menubar, tearoff=0)
-        file_menu.add_command(label=u'Home', 
-                              command=lambda: self.show_frame(gui.PageStart))
-        file_menu.add_separator()
-        file_menu.add_command(label=u'Quit', command=self.quit_toolbox)
-        menubar.add_cascade(label=u'File', menu=file_menu)
+        self.file_menu = tk.Menu(self.menubar, tearoff=0)
+        self.file_menu.add_command(label=u'Home',
+                                   command=lambda: self.show_frame(gui.PageStart))
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label=u'Quit', command=self.quit_toolbox)
+        self.menubar.add_cascade(label=u'File', menu=self.file_menu)
         
         
         #-----------------------------------------------------------------------
-        # Page menu
-        goto_menu = tk.Menu(menubar, tearoff=0)
-        print('sys.modules', sys.modules)
+        # Goto menu
+        self.goto_menu = tk.Menu(self.menubar, tearoff=0)
         #-----------------------------------------------------------------------
-        if 'gui.page_ferrybox' in sys.modules:
-            goto_menu.add_command(label=u'Ferrybox', 
-                                      command=lambda: self.show_frame(gui.PageFerrybox))
-        
-        #-----------------------------------------------------------------------
-        if 'gui.page_ferrybox_route' in sys.modules:
-            goto_menu.add_command(label=u'Ferrybox route', 
-                                  command=lambda: self.show_frame(gui.PageFerryboxRoute))
-        
-        #-----------------------------------------------------------------------
-        if 'gui.page_ctd' in sys.modules:
-            goto_menu.add_command(label='CTD', 
-                                  command=lambda: self.show_frame(gui.PageCTD))
- 
-        
-        menubar.add_cascade(label=u'Goto', menu=goto_menu)
-        
 
-        #-----------------------------------------------------------------------
-        # core.Settings menu
-#         settings_menu = tk.Menu(menubar, tearoff=0)
-#         settings_menu.add_command(label=u'Toolbox settings', 
-#                                   command=lambda: self.show_frame(Pagecore.Settings))
+        if 'gui.page_timeseries' in sys.modules:
+            self.goto_menu.add_command(label='Ferrybox/Timeseries',
+                                      command=lambda: self.show_frame(gui.PageTimeseries))
 
-        
-        
+        self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
+
+        # -----------------------------------------------------------------------
+        # Users menu
+        self.user_menu = tk.Menu(self.menubar, tearoff=0)
+
+        self._update_menubar_users()
+
+        self.menubar.add_cascade(label='Users', menu=self.user_menu)
+
         #-----------------------------------------------------------------------
         # Help menu
-        help_menu = tk.Menu(menubar, tearoff=0)
-        help_menu.add_command(label=u'About')
-        menubar.add_cascade(label=u'Help', menu=help_menu)
+        self.help_menu = tk.Menu(self.menubar, tearoff=0)
+        self.help_menu.add_command(label='About')
+        self.menubar.add_cascade(label='Help', menu=self.help_menu)
         
         #-----------------------------------------------------------------------
         # Insert menu
-        self.config(menu=menubar)
+        self.config(menu=self.menubar)
+
+    def _update_menubar_users(self):
+        # delete old entries
+        for k in range(100):
+            try:
+                self.user_menu.delete(0)
+            except:
+                break
+        # Add items
+
+        # User settings
+        self.user_menu.add_command(label='User settings',
+                                   command=lambda: self.show_frame(gui.PageUser))
+        self.user_menu.add_separator()
+
+        # All users
+        for user in self.user_manager.get_user_list():
+            self.user_menu.add_command(label='Change to user: {}'.format(user),
+                                       command=lambda x=user: self._change_user(x))
+        self.user_menu.add_separator()
+
+        # New user
+        self.user_menu.add_command(label='Create new user',
+                                   command=self._create_new_user)
+
+        # Import user
+        self.user_menu.add_command(label='Import user',
+                                   command=lambda: self.show_frame(gui.PageUser))
+
+
+    def _create_new_user(self):
+
+        def _create_user():
+            source_user = widget_source_user.get_value().strip()
+            new_user_name = widget_new_user_name.get_value().strip()
+            if not new_user_name:
+                gui.show_information('Create user', 'No user name given!')
+                return
+            if not source_user:
+                source_user = None
+            try:
+                self.user_manager.add_user(new_user_name, source_user)
+                if intvar_load_user.get():
+                    self._change_user(new_user_name)
+                self._update_menubar_users()
+            except GUIExceptionUserError as e:
+                gui.show_error('Creating user', '{}\nUser not created. Try again!'.format(e.message))
+            popup_frame.destroy()
+
+        def _cancel():
+            popup_frame.destroy()
+
+        popup_frame = tk.Toplevel(self)
+        current_user_list = [''] + self.user_manager.get_user_list()
+
+        grid = dict(sticky='w',
+                    padx=5,
+                    pady=5)
+
+        widget_source_user = tkw.ComboboxWidget(popup_frame, title='Create copy of user', items=current_user_list, **grid)
+        widget_new_user_name = tkw.EntryWidget(popup_frame, row=1, **grid)
+
+        intvar_load_user = tk.IntVar()
+        widget_checkbutton_load_user = tk.Checkbutton(popup_frame, text="Load new user", variable=intvar_load_user)
+        widget_checkbutton_load_user.grid(row=1, column=1, **grid)
+        intvar_load_user.set(1)
+
+        widget_button_done = tk.Button(popup_frame, text='Create user', command=_create_user)
+        widget_button_done.grid(row=2, column=0, **grid)
+        widget_button_done = tk.Button(popup_frame, text='Cancel', command=_cancel)
+        widget_button_done.grid(row=2, column=1, **grid)
+        tkw.grid_configure(popup_frame, nr_rows=3, nr_columns=2)
+
+    def _import_user(self):
+        pass
+
+    def _change_user(self, user_name):
+        if user_name == self.user.name:
+            return
+        self.user_manager.set_user(user_name)
+        self.user = self.user_manager.user
+        self.info_popup = gui.InformationPopup(self.user)
+
+        tk.Tk.wm_title(self, 'GISMO Toolbox, user: {}'.format(self.user.name))
+
+        # Save startup user in settings
+        self.settings.change_setting('user', 'Startup user', user_name)
+        self.settings.save_settings()
+
+        # Make updates
+        self.make_user_updats()
+
+    def make_user_updats(self):
+        self.update_all()
 
 
     #===========================================================================
@@ -730,14 +839,14 @@ class App(tk.Tk):
 
         load_page = True
         frame = self.frames[page]
-        self.withdraw()
         title = self._get_title(page)
+        # self.withdraw()
         if not self.pages_started[page]:
+            # self.run_progress_in_toplevel(frame.startup, 'Opening page, please wait...')
             frame.startup()
             self.pages_started[page] = True
-
-
         frame.update_page()
+        # self.deiconify()
 #             try:
 #                 frame.update()
 #             except:
@@ -749,7 +858,6 @@ class App(tk.Tk):
             tk.Tk.wm_title(self, u'GISMO Toolbox: %s' % title)
             self.previous_page = self.active_page
             self.active_page = page
-            
             # Check page history
             if page in self.page_history:
                 self.page_history.pop()
@@ -762,9 +870,63 @@ class App(tk.Tk):
                 
         except:
             pass
-
         self.update()
+
+
+    def _show_frame(self, page):
+        self.withdraw()
+        # self._show_frame(page)
+        self.run_progress_in_toplevel(lambda x=page: self._show_frame(x), 'Opening page, please wait...')
         self.deiconify()
+
+
+#     def show_frame(self, page):
+#         """
+#         This method brings the given Page to the top of the GUI.
+#         Before "raise" call frame startup method.
+#         This is so that the Page only loads ones.
+#         """
+# #         if page == PageAdmin and not self.admin_mode:
+# #             page = PagePassword
+#
+#         load_page = True
+#         frame = self.frames[page]
+#
+#         self.withdraw()
+#         title = self._get_title(page)
+#         if not self.pages_started[page]:
+#             frame.startup()
+#             self.pages_started[page] = True
+#
+#
+#         frame.update_page()
+# #             try:
+# #                 frame.update()
+# #             except:
+# #                 Log().information(u'%s: Could not update page.' % title)
+#
+#         #-----------------------------------------------------------------------
+#         if load_page:
+#             frame.tkraise()
+#             tk.Tk.wm_title(self, u'GISMO Toolbox: %s' % title)
+#             self.previous_page = self.active_page
+#             self.active_page = page
+#
+#             # Check page history
+#             if page in self.page_history:
+#                 self.page_history.pop()
+#                 self.page_history.append(page)
+#
+#
+#         try:
+#             if self.active_page == gui.PageCTD:
+#                 self.notebook_load.select_frame('CTD files')
+#
+#         except:
+#             pass
+#
+#         self.update()
+#         self.deiconify()
 
     #===========================================================================
     def goto_previous_page(self, event):
@@ -886,18 +1048,19 @@ def main():
     """
     root_directory = os.path.dirname(os.path.abspath(__file__))
     users_directory = os.path.join(root_directory, 'users')
-    input_directory = os.path.join(root_directory, 'input')
     log_directory = os.path.join(root_directory, 'log')
     default_settings_file_path = os.path.join(root_directory, 'system/settings.ini')
+
+    if not os.path.exists(log_directory):
+        os.mkdir(log_directory)
 
     sampling_types_factory = gismo.sampling_types.PluginFactory()
     qc_routines_factory = gismo.qc_routines.PluginFactory()
 
-    app = App(user='default',
+    app = App(user='default', # User here is the for example the computer name. Used only in gismo session.
               root_directory=root_directory,
               users_directory=users_directory,
               log_directory=log_directory,
-              input_directory=input_directory,
               default_settings_file_path=default_settings_file_path,
               sampling_types_factory=sampling_types_factory,
               qc_routines_factory=qc_routines_factory)
