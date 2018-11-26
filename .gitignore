@@ -13,4 +13,6 @@
 *.ipynb
 
 log/*
-temp/*
+temp/* 
+users/* 
+exports/*
