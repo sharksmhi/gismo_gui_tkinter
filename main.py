@@ -33,32 +33,10 @@ all_pages.add(gui.PageStart)
 
 #============================================================================
 # Timeseries pages
-all_pages.add(gui.PageTimeseries)
+all_pages.add(gui.PageFerrybox)
+all_pages.add(gui.PageFixedPlatforms)
 all_pages.add(gui.PageUser)
-#try:
-#    all_pages.add(gui.PageFerrybox)
-##     logging.info('PageFerrybox imported!')
-#except:
-#    pass
-##     logging.info('PageFerrybox not imported!')
-#
-##----------------------------------------------------------------------------
-#try:
-#    all_pages.add(gui.PageFerryboxRoute)
-##     logging.info('PageFerryboxRoute imported!')
-#except:
-#    pass
-##     logging.info('PageFerryboxRoute not imported!')
-#
-#
-##============================================================================
-## CTD pages
-#try:
-#    all_pages.add(gui.PageCTD)
-##     logging.info('PageCTD imported!')
-#except:
-#    pass
-#     logging.info('PageCTD not imported!')
+
 
 #============================================================================
 
@@ -160,8 +138,7 @@ class App(tk.Tk):
 #         tk.Tk.iconbitmap(self, default=u'D:/Utveckling/w_sharktoolbox/data/logo.ico')
         # TODO: Icon does not work
         self._create_titles()
-        tk.Tk.wm_title(self, 'GISMO Toolbox, user: {}'.format(self.user.name))
-        
+
         self.all_ok = True
         
         self.active_page = None
@@ -186,7 +163,7 @@ class App(tk.Tk):
         self.page_history = [gui.PageStart]
         self.show_frame(gui.PageStart)
         # self.show_frame(gui.PageUser)
-        # self.show_frame(gui.PageTimeseries)
+        # self.show_frame(gui.PageFerrybox)
 
         self.update()
         self.deiconify()
@@ -357,17 +334,16 @@ class App(tk.Tk):
         #----------------------------------------------------------------------
         # Data frame
 
-        self.button_get_ferrybox_data_file = tk.Button(frame_data, text='Ferrybox',
+        self.button_get_ferrybox_data_file = tk.Button(frame_data, text='Ferrybox CMEMS',
                                                        command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
-        self.button_get_fixed_platform_data_file = tk.Button(frame_data, text='Fixed platform',
-                                                             command=lambda: self._get_data_file_path('Bouy CMEMS'))
+        self.button_get_fixed_platform_data_file = tk.Button(frame_data, text='Fixed platform CMEMS',
+                                                             command=lambda: self._get_data_file_path('Fixed platforms CMEMS'))
         self.button_get_ctd_data_file = tk.Button(frame_data, text='CTD-profile',
-                                                  command=lambda: self._get_data_file_path('SHARK CTD'))
+                                                  command=lambda: self._get_data_file_path('CTD SHARK'))
         self.button_get_sampling_file = tk.Button(frame_data, text='Sampling data',
-                                                  command=lambda: self._get_data_file_path('SHARK PhysicalChemical'))
+                                                  command=lambda: self._get_data_file_path('PhysicalChemical SHARK'))
 
-        tkw.disable_widgets(self.button_get_fixed_platform_data_file,
-                            self.button_get_ctd_data_file)
+        tkw.disable_widgets(self.button_get_ctd_data_file)
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -452,13 +428,7 @@ class App(tk.Tk):
 
         # self.boxen.loaded_files_widget = listbox_widget_loaded_files
 
-    # ===========================================================================
-    def _get_open_directory(self):
-        if self.boxen.open_directory:
-            open_directory = self.boxen.open_directory
-        else:
-            open_directory = self.settings[u'directory'][u'Input directory']
-        return open_directory
+
 
     #===========================================================================
     def _get_data_file_path(self, sampling_type):
@@ -469,16 +439,22 @@ class App(tk.Tk):
             
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
                                                filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
+
                                                  
         if file_path:
+            self._set_open_directory(file_path)
             old_sampling_type = self.combobox_widget_sampling_type.get_value() 
             self.combobox_widget_sampling_type.set_value(sampling_type)
             self.stringvar_data_file.set(file_path)
             
             # Check settings file path
             settings_file_path = self.combobox_widget_settings_file.get_value()
-            if not settings_file_path and sampling_type != old_sampling_type:
-                self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
+            # if not settings_file_path and sampling_type != old_sampling_type:
+            print('sampling_type', sampling_type)
+            print(self.settings['directory']['Default {} settings'.format(sampling_type)])
+            print('-')
+            print(self.combobox_widget_settings_file.items)
+            self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
 
             # User settings
             self.latest_loaded_sampling_type = sampling_type
@@ -498,11 +474,20 @@ class App(tk.Tk):
             
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
                                                 filetypes=[('GISMO Settings file','*.ini')])
+        self._set_open_directory(file_path)
 
         self.settings_files.import_file(file_path)
         self._update_settings_combobox_widget()
-            
-            
+
+    def _get_open_directory(self):
+        return self.user.path.setdefault('open_directory', self.settings['directory']['Input directory'])
+
+    def _set_open_directory(self, directory):
+        if os.path.isfile(directory):
+            directory = os.path.dirname(directory)
+        self.user.path.set('open_directory', directory)
+
+
     #===========================================================================
     def _load_file(self):
         self.reset_help_information()
@@ -539,7 +524,7 @@ class App(tk.Tk):
                 # Remove data file text
                 self.stringvar_data_file.set('')
 
-                self.update_help_information('File loaded! Please continue by selecting a data file under Options.')
+                self.update_help_information('File loaded! Please continue.')
 
 
             self.run_progress(load_file, message='Loading file...please wait...')
@@ -581,8 +566,8 @@ class App(tk.Tk):
     def _update_loaded_files_widget(self):
         loaded_files = [] 
         for sampling_type in self.session.get_sampling_types():
-            for st in self.session.get_file_id_list(sampling_type): 
-                loaded_files.append('{}: {}'.format(sampling_type, st))
+            for file_id in self.session.get_file_id_list(sampling_type):
+                loaded_files.append('{}: {}'.format(sampling_type, file_id))
         self.listbox_widget_loaded_files.update_items(loaded_files)
 
 
@@ -622,7 +607,7 @@ class App(tk.Tk):
         
         # Pages
         self.bind("<Control-f>", lambda event: self.show_frame(gui.PageFerrybox))
-        self.bind("<Control-r>", lambda event: self.show_frame(gui.PageFerryboxRoute))
+        self.bind("<Control-b>", lambda event: self.show_frame(gui.PageFixedPlatforms))
 
     
     
@@ -708,9 +693,12 @@ class App(tk.Tk):
         self.goto_menu = tk.Menu(self.menubar, tearoff=0)
         #-----------------------------------------------------------------------
 
-        if 'gui.page_timeseries' in sys.modules:
-            self.goto_menu.add_command(label='Ferrybox/Timeseries',
-                                      command=lambda: self.show_frame(gui.PageTimeseries))
+        if 'gui.page_ferrybox' in sys.modules:
+            self.goto_menu.add_command(label='Ferrybox',
+                                       command=lambda: self.show_frame(gui.PageFerrybox))
+        if 'gui.page_fixed_platforms' in sys.modules:
+            self.goto_menu.add_command(label='Fixed platforms',
+                                      command=lambda: self.show_frame(gui.PageFixedPlatforms))
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 
@@ -757,8 +745,8 @@ class App(tk.Tk):
                                    command=self._create_new_user)
 
         # Import user
-        self.user_menu.add_command(label='Import user',
-                                   command=lambda: self.show_frame(gui.PageUser))
+        # self.user_menu.add_command(label='Import user',
+        #                            command=None)
 
 
     def _create_new_user(self):
@@ -812,7 +800,7 @@ class App(tk.Tk):
             return
         self.user_manager.set_user(user_name)
         self.user = self.user_manager.user
-        self.info_popup = gui.InformationPopup(self.user)
+        self.info_popup = gui.InformationPopup(self)
 
         tk.Tk.wm_title(self, 'GISMO Toolbox, user: {}'.format(self.user.name))
 
@@ -825,6 +813,9 @@ class App(tk.Tk):
 
     def make_user_updats(self):
         self.update_all()
+
+    def _update_program_title(self):
+        tk.Tk.wm_title(self, 'GISMOtoolbox (user: {}) :: {}'.format(self.user.name, self._get_title(self.active_page)))
 
 
     #===========================================================================
@@ -839,12 +830,12 @@ class App(tk.Tk):
 
         load_page = True
         frame = self.frames[page]
-        title = self._get_title(page)
         # self.withdraw()
         if not self.pages_started[page]:
             # self.run_progress_in_toplevel(frame.startup, 'Opening page, please wait...')
             frame.startup()
             self.pages_started[page] = True
+        print('CALL UPDATE PAGE', frame)
         frame.update_page()
         # self.deiconify()
 #             try:
@@ -855,9 +846,9 @@ class App(tk.Tk):
         #-----------------------------------------------------------------------
         if load_page:
             frame.tkraise()
-            tk.Tk.wm_title(self, u'GISMO Toolbox: %s' % title)
             self.previous_page = self.active_page
             self.active_page = page
+            self._update_program_title()
             # Check page history
             if page in self.page_history:
                 self.page_history.pop()
@@ -975,7 +966,7 @@ class App(tk.Tk):
         if page in self.titles:
             return self.titles[page]
         else:
-            return u''
+            return ''
     
     #===========================================================================
     def _create_titles(self):
@@ -987,7 +978,7 @@ class App(tk.Tk):
             pass
         
         try:
-            self.titles[gui.PageFerryboxRoute] = 'Ferrybox route'
+            self.titles[gui.PageFixedPlatforms] = 'Buoy'
         except:
             pass
         

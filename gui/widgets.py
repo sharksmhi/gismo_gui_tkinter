@@ -1181,13 +1181,15 @@ class InformationPopup(object):
 
     def show_information(self, text=''):
 
-        if not self.user.options.get('show_info_popups'):
+        if not self.user.options.setdefault('show_info_popups', True):
             return
 
         padx = 5
         pady = 5
 
         self.popup_frame = tk.Toplevel(self.controller)
+        x = self.controller.winfo_x()
+        y = self.controller.winfo_y()
 
         # Set text
         # text = self._format_text(text)
@@ -1195,7 +1197,7 @@ class InformationPopup(object):
         self.label.grid(row=0, column=0, columnspan=2, padx=padx, pady=pady)
         self.label.bind('<Configure>', self._update_wrap)
 
-        button_ok = tk.Button(self.popup_frame, text='Great tip!\nKeep them coming!', command=self.popup_frame.destroy)
+        button_ok = tk.Button(self.popup_frame, text='Great tip!\nKeep them coming!', command=self._ok)
         button_ok.grid(row=1, column=0, padx=padx, pady=pady)
 
         button_ok_and_forget = tk.Button(self.popup_frame, text="Thanks,\nbut I don't need tips anymore!", command=self._ok_and_forget)
@@ -1203,9 +1205,26 @@ class InformationPopup(object):
 
         tkw.grid_configure(self.popup_frame, nr_columns=2, nr_rows=2)
 
+        self.popup_frame.update_idletasks()
+
+        root_dx = self.controller.winfo_width()
+        root_dy = self.controller.winfo_height()
+
+        dx = int(root_dx/3)
+        dy = int(root_dy/3)
+        w = self.popup_frame.winfo_width()
+        h = self.popup_frame.winfo_height()
+        self.popup_frame.geometry("%dx%d+%d+%d" % (w, h, x + dx, y + dy))
+        # self.controller.withdraw()
+
+    def _ok(self):
+        self.popup_frame.destroy()
+        # self.controller.deiconify()
+
     def _ok_and_forget(self):
         self.user.options.set('show_info_popups', False)
         self.popup_frame.destroy()
+        # self.controller.deiconify()
 
     def _update_wrap(self, event):
         self.label.config(wraplength=self.popup_frame.winfo_width())

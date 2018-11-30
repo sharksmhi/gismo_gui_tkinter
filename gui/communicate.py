@@ -167,7 +167,7 @@ def get_flag_widget(parent=None,
 
     all_colors = ['blue', 'red', 'darkgreen', 'yellow', 'magenta', 'cyan', 'black', 'gray']
     all_colors = list(mcolors.BASE_COLORS) + list(mcolors.TABLEAU_COLORS) + list(mcolors.CSS4_COLORS)
-    all_colors = sorted(all_colors)
+    all_colors = sorted([c for c in all_colors if not c.startswith('tab:')])
 
 
     for f in flags:
@@ -493,6 +493,11 @@ def update_time_series_plot(gismo_object=None,
 
     prop = {'linestyle': '', 
              'marker': None}
+
+    print('=== par {} ==='.format(par))
+    print(data['time'][0])
+    print(data[par][0])
+    print()
     plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', call_targets=call_targets, **prop)
 
     # if par in ['time', 'lat', 'lon']:
@@ -903,21 +908,55 @@ def save_limits_from_plot_object(plot_object=None,
     user_object.range.set(par, 'max', float(max_value))
 
 
-    # if par not in settings_object['ranges']:
-    #     settings_object['ranges'][par] = {}
-    #     use_plot_limits = True
-    #
-    # if use_plot_limits:
-    #     settings_object['ranges'][par]['min'] = float(min_value)
-    #     settings_object['ranges'][par]['max'] = float(max_value)
-    #
-    #
-    # else:
-    #     for key, value in zip(['min', 'max'], [min_value, max_value]):
-    #         if key not in settings_object['ranges'][par]:
-    #             settings_object['ranges'][par][key] = float(value)
-    #         elif settings_object['ranges'][par][key] == None:
-    #             settings_object['ranges'][par][key] = float(value)
-    #
-    #     print(par)
-    #     print(settings_object['ranges'][par])
+def plot_map_background_data(map_widget=None, session=None, user=None, current_file_id=None, **kwargs):
+    """
+    Plots "background" data to plot object. Background data is data not associated with current_file_id.
+
+    :param session:
+    :param current_file_id:
+    :return:
+    """
+    ferrybox_track_every = kwargs.get('ferrybox_track_every', 10)
+    ferrybox_track_color = user.map_prop.setdefault('ferrybox_track_color_background', 'gray')
+
+    fixed_platforms_color = user.map_prop.setdefault('fixed_platform_color_background', 'pink')
+    fixed_platforms_markersize = user.map_prop.setdefault('fixed_platform_markersize_background', 5)
+
+    physicalchemical_station_color = user.map_prop.setdefault('physicalchemical_color_background', 'lightgreen')
+    physicalchemical_markersize = user.map_prop.setdefault('physicalchemical_markersize_background', 5)
+
+    map_widget.delete_all_markers()
+    map_widget.delete_all_map_items()
+    for sampling_type in session.get_sampling_types():
+        for file_id in session.get_file_id_list(sampling_type):
+            if file_id == current_file_id:
+                continue
+            print('SAMPLING TYPE:', sampling_type, file_id)
+            if 'ferrybox' in sampling_type.lower():
+                zorder = 50
+                data = session.get_data(file_id, 'lat', 'lon')
+                map_widget.add_line(data['lat'][::ferrybox_track_every],
+                                    data['lon'][::ferrybox_track_every],
+                                    marker_id=file_id,
+                                    color=ferrybox_track_color,
+                                    zorder=zorder)
+            elif 'physicalchemical' in sampling_type.lower():
+                zorder = 51
+                data = session.get_data(file_id, 'lat', 'lon')
+                # Get unique positions
+                lat_lon = sorted(set(zip(data['lat'], data['lon'])))
+                lat_list, lon_list = zip(*lat_lon)
+                map_widget.add_markers(list(lat_list), list(lon_list), marker_id=file_id, linestyle='None', marker='D',
+                                       color=physicalchemical_station_color, markersize=fixed_platforms_markersize, zorder=zorder)
+
+            elif 'fixed platform' in sampling_type.lower():
+                zorder = 52
+                data = session.get_data(file_id, 'lat', 'lon')
+                lat = np.nanmean(data['lat'])
+                lon = np.nanmean(data['lon'])
+                print('lat', lat)
+                print('lon', lon)
+                map_widget.add_markers(lat, lon, marker_id=file_id, linestyle='None', marker='s',
+                                       color=fixed_platforms_color, markersize=physicalchemical_markersize, zorder=zorder)
+
+

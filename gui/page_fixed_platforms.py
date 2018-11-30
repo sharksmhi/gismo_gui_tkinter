@@ -8,6 +8,7 @@ import os
 import shutil
 import datetime
 import numpy as np
+import re
 import sys
 
 import tkinter as tk 
@@ -24,6 +25,7 @@ import core
 
 import libs.sharkpylib.gismo as gismo
 import libs.sharkpylib.plot.plot_selector as plot_selector
+import libs.sharkpylib.plot.contour_plot as contour_plot
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 import libs.sharkpylib.tklib.tkmap as tkmap
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -38,9 +40,8 @@ import logging
 ================================================================================
 ================================================================================
 """
-class PageTimeseries(tk.Frame):
+class PageFixedPlatforms(tk.Frame):
     """
-    Dummy page used as a base.
     """
     def __init__(self, parent, controller, **kwargs):
         tk.Frame.__init__(self, parent, **kwargs)
@@ -75,7 +76,8 @@ class PageTimeseries(tk.Frame):
         self.info_popup = gui.InformationPopup(self.controller)
 
         loaded_file_list = self.controller.get_loaded_files_list()
-        add_file_list = [item for item in loaded_file_list if 'PhysicalChemical' not in item]
+        add_file_list = [item for item in loaded_file_list if 'Fixed platform' in item]
+        # add_file_list = [item for item in loaded_file_list if 'PhysicalChemical' not in item]
 
         self.select_data_widget.update_items(add_file_list)
         self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
@@ -108,17 +110,34 @@ class PageTimeseries(tk.Frame):
     #===========================================================================
     def _set_frame_plot(self):
         """
-        Updated     20180822    by Magnus
         """
         frame = self.labelframe_plot
+        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Contour plot'])
+
+        tkw.grid_configure(frame)
+
+        self._set_notebook_time_plot()
+        self._set_notebook_contour_plot()
+
+    def _set_notebook_contour_plot(self):
+        frame = self.notebook_plot.frame_contour_plot
+
+        self.plot_object_contour = contour_plot.PlotContour()
+
+        self.plot_widget_contour = tkw.PlotFrame(frame,
+                                                 self.plot_object_contour,
+                                                 pack=False,
+                                                 include_toolbar=False)
+
+
+    def _set_notebook_time_plot(self):
+        frame = self.notebook_plot.frame_time_plot
 
         self.plot_object = plot_selector.Plot(sync_colors=True, 
                                               allow_two_axis=False, 
                                               orientation='horizontal', 
                                               figsize=(2, 2),
-                                              hover_target=self._on_plot_hover,
-#                                               figsize=None,
-#                                              figsize=(12, 7), 
+                                              hover_target=None,
                                               time_axis='x')
         margins = {'right': 0.03, 
                     'left': 0.06, 
@@ -130,55 +149,10 @@ class PageTimeseries(tk.Frame):
         # Target to plot object is called when set range is active.
         self.plot_object.add_range_target(self._callback_plot_range) 
 
-        self.plot_widget = tkw.PlotFrame(frame, 
+        self.plot_widget = tkw.PlotFrame(frame,
                                          self.plot_object, 
                                          pack=False,
                                          include_toolbar=False)
-        tkw.grid_configure(frame)
-
-        # Add toolbar
-        # self.toolbar = NavigationToolbar2Tk(self.canvas, self.frame_plot)
-        # self.toolbar.update()
-        # self.canvas._tkcanvas.pack()
-
-    def _on_plot_hover(self):
-        time_num = self.plot_object.hover_x
-        # print(time_num)
-        # return
-        if not time_num:
-            return
-        # datetime_object = datetime.datetime.fromordinal(int(time_num))
-        datetime_object = pd.Timestamp.tz_localize(pd.to_datetime(matplotlib.dates.num2date(time_num)), None)
-        # The time is rounded so we wont find the exakt time in data. Widen the search for data and pick closest point.
-        dt = pd.Timedelta(hours=1)
-        # dt = pd.to_timedelta(datetime.timedelta(days=1))
-        data = self.session.get_data(self.current_file_id, 'time', 'lat', 'lon',
-                                     filter_options={'time_start': datetime_object-dt,
-                                                     'time_end': datetime_object+dt})
-        if not len(data['time']):
-            self.map_widget_1.delete_marker(marker_id='position')
-            return
-
-        index = 0
-        closest_t = None
-        for i, t in enumerate(data['time']):
-            t = pd.to_datetime(t)
-            dt = abs(t - datetime_object)
-            if not closest_t:
-                closest_t = dt
-            else:
-                if dt < closest_t:
-                    closest_t = dt
-                    index = i
-
-        self.map_widget_1.add_markers(lat=data['lat'][index],
-                                      lon=data['lon'][index],
-                                      marker_id='position',
-                                      marker='o',
-                                      markersize=10,
-                                      color='red')
-
-
 
     #===========================================================================
     def _set_frame_options(self):
@@ -192,16 +166,19 @@ class PageTimeseries(tk.Frame):
         
         
         self.labelframe_data = tk.LabelFrame(frame, text='Data file')
-        self.labelframe_data.grid(row=0, column=0, **opt)
+        self.labelframe_data.grid(row=0, column=0, columnspan=2, **opt)
         
         self.labelframe_parameter = tk.LabelFrame(frame, text='Parameter')
         self.labelframe_parameter.grid(row=2, column=0, **opt)
+
+        self.labelframe_parameter_contour = tk.LabelFrame(frame, text='Contour plot')
+        self.labelframe_parameter_contour.grid(row=2, column=1, **opt)
         
         self.frame_notebook = tk.Frame(frame)
-        self.frame_notebook.grid(row=3, column=0, **opt)
+        self.frame_notebook.grid(row=3, column=0, columnspan=2, **opt)
 
         # tkw.grid_configure(frame, nr_rows=4, r0=4, r1=4, r3=5)
-        tkw.grid_configure(frame, nr_rows=4, r3=10)
+        tkw.grid_configure(frame, nr_rows=4, nr_columns=2, r3=10)
         
         
         pad = {'padx': 5, 
@@ -238,9 +215,21 @@ class PageTimeseries(tk.Frame):
                                                    row=0, 
                                                    pady=5, 
                                                    sticky='w')
-        self.stringvar_parameter_info = tk.StringVar()
-        tk.Label(self.labelframe_parameter, textvariable=self.stringvar_parameter_info)
-        tkw.grid_configure(self.labelframe_parameter, nr_rows=1)
+        tkw.grid_configure(self.labelframe_parameter)
+
+        # ----------------------------------------------------------------------
+        # Parameter contour plot
+        self.parameter_contour_plot_widget = tkw.ComboboxWidget(self.labelframe_parameter_contour,
+                                                               title='',
+                                                               row=0,
+                                                               pady=5,
+                                                               sticky='w')
+        self.button_plot_contour = tk.Button(self.labelframe_parameter_contour,
+                                             text='Update contour plot',
+                                             command=self._update_contour_plot)
+        self.button_plot_contour.grid(row=0, column=1, **pad)
+
+        tkw.grid_configure(self.labelframe_parameter_contour, nr_columns=2)
         
         #----------------------------------------------------------------------
         # Options notebook
@@ -257,9 +246,6 @@ class PageTimeseries(tk.Frame):
         self._set_notebook_frame_save()
         self._set_notebook_frame_map()
         self._set_notebook_frame_automatic_qc()
-        
-    def _set_parameter_info(self, text=''):
-        self.stringvar_parameter_info.set(text)
 
     def _set_notebook_frame_automatic_qc(self):
         frame = self.notebook_options.frame_automatic_qc
@@ -657,7 +643,7 @@ class PageTimeseries(tk.Frame):
         if nr_par > max_nr_par:
             ok_to_continue = tk.messagebox.askyesno('Export plots/maps',
                                                     'You have chosen to export {} parameters. '
-                                                    'This might take some time and MAY make the program crash. '
+                                                    'This might take some time and MAY cause the program to crash. '
                                                     'Do you wish to continue anyway? ')
             if not ok_to_continue:
                 self.controller.update_help_information('Export aborted by user.')
@@ -808,6 +794,18 @@ class PageTimeseries(tk.Frame):
 
         self.current_parameter = self.parameter_widget.selected_item
 
+        # Find all stations
+        # all_fixed_platforms_id = [self._get_file_id(item) for item in self.controller.listbox_widget_loaded_files.items if
+        #                           'fixed platform' in item.lower()]
+        # self.current_all_data = dict()
+        # for file_id in all_fixed_platforms_id:
+        #     if file_id == self.current_file_id:
+        #         data = self.session.get_data(file_id, 'lat', 'lon', self.current_parameter)
+        #     else:
+        #         data = self.session.get_data(file_id, 'lat', 'lon')
+        #     self.current_all_data[file_id] = data
+        #     self.current_all_data[file_id] = data
+
         if not self.current_parameter:
             return
 
@@ -817,7 +815,7 @@ class PageTimeseries(tk.Frame):
         self._update_plot(call_targets=False)
 
         # ...then set full range in plot without updating (not calling to update the tk.canvas).
-        self.plot_object.zoom_to_data(call_targets=False)
+        # self.plot_object.zoom_to_data(call_targets=False)
 
         self._update_plot_limits()
         #
@@ -939,6 +937,24 @@ class PageTimeseries(tk.Frame):
 
         logging.debug('page_timeseries._update_plot: End')
 
+    def _update_contour_plot(self, **kwargs):
+        contour_par = self.parameter_contour_plot_widget.get_value()
+        if contour_par not in self.current_contour_parameters:
+            gui.show_information('Could not plot contour for parameter "{}"'.format(contour_par))
+            return
+        par_list = self.current_contour_parameters[contour_par]
+
+        z = []
+        y = []
+        for par in par_list:
+            z.append(self.session.get_data(self.current_file_id, par)[par])
+            y.append(float(re.findall('_\d*', par)[0].strip('_')))
+
+        x = self.session.get_data(self.current_file_id, 'time')['time']
+        self.plot_object_contour.set_data(x, y, z, contour_plot=True)
+        self.plot_object_contour.add_legend()
+
+
 
 
     #===========================================================================
@@ -969,6 +985,8 @@ class PageTimeseries(tk.Frame):
         self.current_file_path = self.session.get_file_path(self.current_file_id)
         self.current_gismo_object = self.session.get_gismo_object(self.current_file_id)
 
+        self.stringvar_current_data_file.set(self.current_file_path)
+
     def _set_current_reference_file(self):
         """
         Sets the current reference file information. file_id and file_path are set.
@@ -980,6 +998,49 @@ class PageTimeseries(tk.Frame):
         self.current_ref_file_path = self.session.get_file_path(self.current_ref_file_id)
         self.current_ref_gismo_object = self.session.get_gismo_object(self.current_ref_file_id)
 
+    def _update_contour_parameters(self):
+        """
+        Creates the contour parameter list and updates the contour parameter widget.
+        :return:
+        """
+        par_list = self.session.get_parameter_list(self.current_file_id)
+        striped_pars = []
+        nr_list = []
+        print('='*50)
+        for par in par_list:
+            print(par, type(par))
+            striped_pars.append(re.sub('_\d*', '', par))
+            found = re.findall('_\d*', par)
+            if found:
+                nr_list.append(int(found[0].strip('_')))
+            else:
+                nr_list.append(0)
+
+        par_list = np.array(par_list)
+        striped_pars = np.array(striped_pars)
+        nr_list = np.array(nr_list)
+
+        self.current_contour_parameters = dict()
+        for spar in set(striped_pars):
+            if list(striped_pars).count(spar) > 1:
+                boolean = striped_pars == spar
+                par_dict = dict(zip(par_list[boolean], nr_list[boolean]))
+                sorted_par_list = [item[0] for item in sorted(par_dict.items(), key=lambda kv: kv[1], reverse=True)]
+                self.current_contour_parameters[spar] = sorted_par_list
+
+        #     self.current_contour_parameters[par] = sorted_par_listself.current_contour_parameters = dict()
+        # for par in set(striped_pars):
+        #     if list(striped_pars).count(par) > 1:
+        #         self.current_contour_parameters[par] = []
+        #
+        # for spar in self.current_contour_parameters:
+        #     boolean = striped_pars == spar
+        #     par_dict = dict(zip(striped_pars[boolean], nr_list[boolean]))
+        #     sorted_par_list = [item[0] for item in sorted(par_dict.items(), key=lambda kv: kv[1], reverse=True)]
+        #     self.current_contour_parameters[par] = sorted_par_list
+
+        self.parameter_contour_plot_widget.update_items(sorted(self.current_contour_parameters))
+
     #===========================================================================
     def _update_file(self):
         logging.debug('page_timeseries._update_file: Start')
@@ -987,7 +1048,7 @@ class PageTimeseries(tk.Frame):
 
         if not self.current_file_id:
             self.save_widget.set_file_path('')
-            self.stringvar_current_file.set('')
+            self.stringvar_current_data_file.set('')
             return
 
         self._reset_widgets()
@@ -997,7 +1058,10 @@ class PageTimeseries(tk.Frame):
         self._update_valid_time_range_in_time_axis()
 
         self._update_parameter_list()
+        self._update_contour_parameters()
         self._on_select_parameter()
+
+        self.plot_object.zoom_to_data(call_targets=True)
 
         self._update_frame_save_widget()
 
@@ -1027,7 +1091,6 @@ class PageTimeseries(tk.Frame):
             self.stringvar_current_data_file.set('')
             return
         self.save_widget.set_file_path(self.current_file_path)
-        self.stringvar_current_data_file.set(self.current_file_path)
 
     def _update_frame_reference_file(self):
         # Update reference file combobox. Should not include selected file.
@@ -1048,20 +1111,35 @@ class PageTimeseries(tk.Frame):
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
-            if 'ferrybox' in self.current_sampling_type.lower():
-                title = 'Ferrybox route'
+            if 'fixed platform' in self.current_sampling_type.lower():
+                title = 'Fixed platforms'
+
+                data = self.session.get_data(file_id, 'lat', 'lon', self.current_parameter)
+
+                print('TITLE', title)
+                lat_list = []
+                lon_list = []
+                for file_id in self.current_all_data:
+                    lat_list.append(np.nanmean(self.current_all_data[file_id]['lat']))
+                    lon_list.append(np.nanmean(self.current_all_data[file_id]['lon']))
+
+                map_widget.add_markers(lat_list, lon_list, marker_id='all_pos', linestyle='None', marker='o', color='black', markersize=10)
+
+                map_widget.set_title(title, position=[0.5, 1.05])
+                print(lat_list)
+
 
                 # Whole track as base
-                data = self.session.get_data(self.current_file_id, 'lat', 'lon')
-                map_widget.add_line(data['lat'], data['lon'], marker_id='track_base', color='black')
-
-                # Highlighted track
-                data = self.session.get_data(self.current_file_id, 'lat', 'lon',
-                                             filter_options={'time_start': kwargs.get('highlighted_time_start', None),
-                                                             'time_end': kwargs.get('highlighted_time_end', None)})
-                map_widget.add_line(data['lat'], data['lon'], marker_id='track_highlighted', color='blue')
-
-                map_widget.set_title('Ferrybox track', position=[0.5, 1.05])
+                # data = self.session.get_data(self.current_file_id, 'lat', 'lon')
+                # map_widget.add_line(data['lat'], data['lon'], marker_id='track_base', color='black')
+                #
+                # # Highlighted track
+                # data = self.session.get_data(self.current_file_id, 'lat', 'lon',
+                #                              filter_options={'time_start': kwargs.get('highlighted_time_start', None),
+                #                                              'time_end': kwargs.get('highlighted_time_end', None)})
+                # map_widget.add_line(data['lat'], data['lon'], marker_id='track_highlighted', color='blue')
+                #
+                # map_widget.set_title(title, position=[0.5, 1.05])
 
     def _update_map_2(self, *args, **kwargs):
         if args:

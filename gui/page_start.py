@@ -14,12 +14,12 @@ import logging
 pages = set()
 #============================================================================
 # Ferrybox pages
-try:
-    pages.add(gui.PageTimeseries)
-#     logging.info('PageFerrybox imported!')
-except:
-    pass
-#     logging.info('PageFerrybox not imported!')
+# try:
+#     pages.add(gui.PageTimeseries)
+# #     logging.info('PageFerrybox imported!')
+# except:
+#     pass
+# #     logging.info('PageFerrybox not imported!')
 
 #----------------------------------------------------------------------------
 #try:
@@ -97,21 +97,25 @@ class PageStart(tk.Frame):
         #----------------------------------------------------------------------
         
         # Buttons 
-        self.button = {} 
-        self.button_texts = {gui.PageTimeseries: 'Ferrybox and\nfixed platforms'}
-        self.button_colors = {gui.PageTimeseries:'sandybrown'}
+        self.button = {}
+
+        # self.button_texts = {gui.PageFerrybox: 'Ferrybox',
+        #                      gui.PageBuoy: 'Buoy'}
+        self.button_texts = {'Ferrybox': gui.PageFerrybox,
+                             'Fixed platforms': gui.PageFixedPlatforms}
+        self.button_colors = {gui.PageFerrybox: 'sandybrown',
+                              gui.PageFixedPlatforms: 'lightblue'}
         
         r=0
         c=0
-        for page in sorted(self.button_texts): 
-            # print(r, c)
-            if page in pages:
-                text = self.button_texts[page]
+        for text in sorted(self.button_texts):
+            page = self.button_texts[text]
+            try:
+                # text = self.button_texts[page]
                 color = self.button_colors[page] 
                 self.button[page] = tk.Button(self.frames[r][c], 
                                      text=text, 
-                                     command=lambda: self.controller.show_frame(page), 
-#                                     width=width, height=height, 
+                                     command=lambda x=page: self.controller.show_frame(x),
                                      font=font, 
                                      bg=color)
                 
@@ -122,8 +126,11 @@ class PageStart(tk.Frame):
                 self.frames[r][c].grid_columnconfigure(0, weight=1)
                 c+=1
                 if c >= nr_columns:
-                    c=0 
-                    r+=1
+                    c = 0
+                    r += 1
+                print('OK', text, page)
+            except:
+                pass
 
 
     

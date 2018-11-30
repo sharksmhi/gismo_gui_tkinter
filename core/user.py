@@ -73,6 +73,9 @@ class User(object):
 
         self.options = UserSettings(self.user_directory, 'options')
 
+        self.map_prop = UserSettings(self.user_directory, 'map_prop') 
+
+
 
 
 class UserSettings(object):

@@ -10,6 +10,7 @@ import core
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 """
 ================================================================================
@@ -28,6 +29,9 @@ class PageUser(tk.Frame):
         self.session = self.controller.session
         self.user_manager = self.controller.user_manager
         self.user = self.user_manager.user # Obs. Have to update un updata page if user is updated
+
+        all_colors = list(mcolors.BASE_COLORS) + list(mcolors.TABLEAU_COLORS) + list(mcolors.CSS4_COLORS)
+        self.color_list = sorted([c for c in all_colors if not c.startswith('tab:')])
 
     #===========================================================================
     def startup(self):
@@ -87,7 +91,7 @@ class PageUser(tk.Frame):
 
         tkw.grid_configure(self, nr_rows=3, nr_columns=3, r1=10)
     
-        self._set_frame_map_boundries()
+        self._set_frame_map()
         self._set_frame_color_maps()
         self._set_frame_plot_style()
         self._set_frame_options()
@@ -119,46 +123,61 @@ class PageUser(tk.Frame):
                                                                                                                  sticky='nw')
         tkw.grid_configure(frame, nr_rows=2)
 
-    def _set_frame_map_boundries(self):
-        labelframe = self.labelframe_map
-        frame = tk.Frame(labelframe)
-        frame.grid(row=0, column=0, sticky='nw')
-        tkw.grid_configure(labelframe)
+    def _set_frame_map(self):
 
+        def save_color(item):
+            color = self.combobox_map_color[item].get_value()
+            if color:
+                self.user.map_prop.set(item, color)
+                # self.combobox_map_color[item].set_background_color(color)
+
+        frame = self.labelframe_map
         padx = 5
         pady = 5
-        
+
+        frame_boundaries = tk.LabelFrame(frame, text='Boundaries')
+        frame_boundaries.grid(row=0, column=0, padx=padx, pady=pady, sticky='nw')
+        frame_properties = tk.LabelFrame(frame, text='Properties')
+        frame_properties.grid(row=1, column=0, padx=padx, pady=pady, sticky='nw')
+        tkw.grid_configure(frame, nr_rows=2)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Boundaries
         # Labels 
-        tk.Label(frame, text='Latitude MIN').grid(row=0, column=0, sticky='w', padx=padx, pady=pady)
-        tk.Label(frame, text='Latitude MAX').grid(row=1, column=0, sticky='w', padx=padx, pady=pady)
-        tk.Label(frame, text='Longitude MIN').grid(row=2, column=0, sticky='w', padx=padx, pady=pady)
-        tk.Label(frame, text='Longitude MAX').grid(row=3, column=0, sticky='w', padx=padx, pady=pady)  
+        tk.Label(frame_boundaries, text='Latitude MIN').grid(row=0, column=0, sticky='w', padx=padx, pady=pady)
+        tk.Label(frame_boundaries, text='Latitude MAX').grid(row=1, column=0, sticky='w', padx=padx, pady=pady)
+        tk.Label(frame_boundaries, text='Longitude MIN').grid(row=2, column=0, sticky='w', padx=padx, pady=pady)
+        tk.Label(frame_boundaries, text='Longitude MAX').grid(row=3, column=0, sticky='w', padx=padx, pady=pady)
         
         # Entries
         prop_entry = {'width': 10}
 
-        self.widget_lat_min = tkw.EntryWidget(frame, entry_type='float',
+        self.widget_lat_min = tkw.EntryWidget(frame_boundaries,
+                                              entry_type='float',
                                               entry_id='lat_min',
                                               prop_entry=prop_entry,
                                               callback_on_focus_out=self._on_change_map_boundries, row=0, column=1,
                                               sticky='w', padx=padx, pady=pady)
-        self.widget_lat_max = tkw.EntryWidget(frame, entry_type='float',
+        self.widget_lat_max = tkw.EntryWidget(frame_boundaries,
+                                              entry_type='float',
                                               entry_id='lat_max',
                                               prop_entry=prop_entry,
                                               callback_on_focus_out=self._on_change_map_boundries, row=1, column=1,
                                               sticky='w', padx=padx, pady=pady)
-        self.widget_lon_min = tkw.EntryWidget(frame, entry_type='float',
+        self.widget_lon_min = tkw.EntryWidget(frame_boundaries,
+                                              entry_type='float',
                                               entry_id='lon_min',
                                               prop_entry=prop_entry,
                                               callback_on_focus_out=self._on_change_map_boundries, row=2, column=1,
                                               sticky='w', padx=padx, pady=pady)
-        self.widget_lon_max = tkw.EntryWidget(frame, entry_type='float',
+        self.widget_lon_max = tkw.EntryWidget(frame_boundaries,
+                                              entry_type='float',
                                               entry_id='lon_max',
                                               prop_entry=prop_entry,
                                               callback_on_focus_out=self._on_change_map_boundries, row=3, column=1,
                                               sticky='w', padx=padx, pady=pady)
 
-        tk.Label(frame,
+        tk.Label(frame_boundaries,
                  text="""Hit RETURN to confirm.
                  
                  Note that you have to restart
@@ -168,7 +187,7 @@ class PageUser(tk.Frame):
                                          columnspan=2,
                                          pady=10,
                                          sticky='nw')
-        tkw.grid_configure(frame, nr_rows=4, nr_columns=2)
+        tkw.grid_configure(frame_boundaries, nr_rows=4, nr_columns=2)
 
         # Link entries
         self.widget_lat_min.south_entry = self.widget_lat_max
@@ -179,6 +198,44 @@ class PageUser(tk.Frame):
 
         # Map resolution
         self.widget_map_resolution = None
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Properties
+        # TODO: ferrybox_track_color_background
+        # TODO: fixed_platform_color_background
+        # TODO: fixed_platforms_markersize_background
+
+        # TODO: physicalchemical_color_background
+        # TODO: physicalchemical_markersize_background
+
+        map_color_list = ['ferrybox_track_color_background',
+                          'fixed_platform_color_background',
+                          'physicalchemical_color_background']
+
+        default_colors = dict(ferrybox_track_color_background='gray',
+                              fixed_platform_color_background='lighblue',
+                              physicalchemical_color_background='lightgreen')
+
+        self.combobox_map_color = {}
+        grid_items = dict(sticky='w')
+        r = 0
+        for item in map_color_list:
+            title = item.replace('_', ' ').capitalize()
+            default_color = self.user.map_prop.setdefault(item, default_colors.get(item, 'black'))
+            tk.Label(frame_properties, text=title).grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+            self.combobox_map_color[item] = tkw.ComboboxWidget(frame_properties,
+                                                               callback_target=lambda x=item: save_color(x),
+                                                               items=self.color_list,
+                                                               default_item=default_color,
+                                                               align='horizontal',
+                                                               grid_items=grid_items,
+                                                               row=r,
+                                                               column=1,
+                                                               padx=padx,
+                                                               pady=pady,
+                                                               sticky='e')
+            save_color(item)
+            r += 1
 
 
     def _set_map_boundries(self):
