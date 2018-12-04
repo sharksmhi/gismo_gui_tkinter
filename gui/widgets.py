@@ -591,8 +591,14 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
             min_value, max_value = self.plot_object.get_ylim(ax='first')
             
         if min_value and max_value:
-            self.stringvar_min.set(str(min_value)[:5])
-            self.stringvar_max.set(str(max_value)[:5])
+            if min_value < 10:
+                self.stringvar_min.set('{:.1f}'.format(min_value))
+            else:
+                self.stringvar_min.set(str(int(min_value)))
+            if max_value < 10:
+                self.stringvar_max.set('{:.1f}'.format(max_value))
+            else:
+                self.stringvar_max.set(str(int(max_value)))
         
         self._callback()
 #            self._save_limits()
@@ -885,7 +891,8 @@ class SaveWidget(ttk.LabelFrame):
                  label='',
                  prop_frame={},  
                  prop_entry={}, 
-                 callback=None, 
+                 callback=None,
+                 user=None,
                  **kwargs):
                      
         
@@ -904,8 +911,11 @@ class SaveWidget(ttk.LabelFrame):
         self.grid(**self.grid_frame)
         
         self.callback = callback
+        self.user = user
         
         self._set_frame()
+
+        self._set_directory()
         
     #===========================================================================
     def _set_frame(self):
@@ -924,6 +934,10 @@ class SaveWidget(ttk.LabelFrame):
         self.entry_directory = tk.Entry(frame, textvariable=self.stringvar_directory, **self.prop_entry)
         self.entry_directory.grid(row=r, column=c+1, padx=padx, pady=pady, sticky='nw')
         self.stringvar_directory.trace("w", lambda name, index, mode, sv=self.stringvar_directory: tkw.check_path_entry(sv))
+
+        ttk.Button(frame, text='Get directory', command=self._get_directory).grid(row=r, column=c + 2, columnspan=2, padx=padx,
+                                                                      pady=pady, sticky='se')
+
         r+=1
         
         tk.Label(frame, text='File name:').grid(row=r, column=c, padx=padx, pady=pady, sticky='nw')
@@ -933,16 +947,30 @@ class SaveWidget(ttk.LabelFrame):
         self.stringvar_file_name.trace("w", lambda name, index, mode, sv=self.stringvar_file_name: tkw.check_path_entry(sv))
         r+=1
         
-        ttk.Button(frame, text=u'Save', command=self._save_file).grid(row=r, column=c+1, columnspan=2, padx=padx, pady=pady, sticky='se')
+        ttk.Button(frame, text='Save', command=self._save_file).grid(row=r, column=c+1, columnspan=2, padx=padx, pady=pady, sticky='se')
         
         tkw.grid_configure(frame, nr_rows=r+1)
    
-    
+    def _get_directory(self):
+        directory = tk.filedialog.askdirectory()
+        if directory:
+            self.stringvar_directory.set(directory)
+
+    # ===========================================================================
+    def _set_directory(self):
+        if not self.user:
+            return
+        directory = self.user.path.setdefault('save_file_directory', '')
+        directory = directory.replace('\\', '/')
+        self.stringvar_directory.set(directory)
+
     #===========================================================================
     def _save_file(self):
         if self.callback:
             directory = self.stringvar_directory.get().strip() #.replace('\\', '/')
             file_name = self.stringvar_file_name.get().strip()
+            if self.user:
+                self.user.path.set('save_file_directory', directory)
             self.callback(directory, file_name)
     
     #===========================================================================
@@ -950,13 +978,12 @@ class SaveWidget(ttk.LabelFrame):
         if not file_path: # or os.path.exists(file_path):
             self.stringvar_directory.set('')
             self.stringvar_file_name.set('')
+            self._set_directory()
             return
         directory, file_name = os.path.split(file_path)
         directory = directory.replace('\\', '/')
         self.stringvar_directory.set(directory)
         self.stringvar_file_name.set(file_name)
-
-
 
 
 class SaveWidgetHTML(ttk.LabelFrame):
@@ -1085,7 +1112,7 @@ class SaveWidgetHTML(ttk.LabelFrame):
         directory = directory.replace('\\', '/')
         self.stringvar_directory.set(directory)
 
-    def update_parameters(self, parameter_list):
+    def update_parameters(self, parameter_list=[]):
         self.listbox_widget_parameters.update_items(parameter_list)
      
 """

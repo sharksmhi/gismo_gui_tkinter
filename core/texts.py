@@ -13,3 +13,14 @@ def data_file_selected(**kwargs):
            By changing the two options you also change the default settings. 
            """.format(user)
     return text
+
+
+
+
+
+
+def about():
+    text = """
+           GISMOtoolbox is a ...
+           """
+    return text

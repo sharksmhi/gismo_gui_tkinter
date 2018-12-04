@@ -481,6 +481,10 @@ def update_time_series_plot(gismo_object=None,
     # Clear old data from plot
     plot_object.reset_plot()
 
+    # Set labels
+    plot_object.set_x_label('Date/Time')
+    plot_object.set_y_label(par)
+
     # Check if data is available
     check_data = gismo_object.get_data(par)
     print(np.where(~np.isnan(check_data[par])))
@@ -929,11 +933,11 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
     map_widget.delete_all_map_items()
     for sampling_type in session.get_sampling_types():
         for file_id in session.get_file_id_list(sampling_type):
-            if file_id == current_file_id:
+            if not kwargs.get('exclude_current_file') and file_id == current_file_id:
                 continue
-            print('SAMPLING TYPE:', sampling_type, file_id)
+            # print('SAMPLING TYPE:', sampling_type, file_id)
             if 'ferrybox' in sampling_type.lower():
-                zorder = 50
+                zorder = 10
                 data = session.get_data(file_id, 'lat', 'lon')
                 map_widget.add_line(data['lat'][::ferrybox_track_every],
                                     data['lon'][::ferrybox_track_every],
@@ -941,7 +945,7 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
                                     color=ferrybox_track_color,
                                     zorder=zorder)
             elif 'physicalchemical' in sampling_type.lower():
-                zorder = 51
+                zorder = 11
                 data = session.get_data(file_id, 'lat', 'lon')
                 # Get unique positions
                 lat_lon = sorted(set(zip(data['lat'], data['lon'])))
@@ -950,12 +954,12 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
                                        color=physicalchemical_station_color, markersize=fixed_platforms_markersize, zorder=zorder)
 
             elif 'fixed platform' in sampling_type.lower():
-                zorder = 52
+                zorder = 12
                 data = session.get_data(file_id, 'lat', 'lon')
                 lat = np.nanmean(data['lat'])
                 lon = np.nanmean(data['lon'])
-                print('lat', lat)
-                print('lon', lon)
+                # print('lat', lat)
+                # print('lon', lon)
                 map_widget.add_markers(lat, lon, marker_id=file_id, linestyle='None', marker='s',
                                        color=fixed_platforms_color, markersize=physicalchemical_markersize, zorder=zorder)
 

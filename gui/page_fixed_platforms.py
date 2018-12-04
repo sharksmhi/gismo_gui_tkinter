@@ -57,8 +57,9 @@ class PageFixedPlatforms(tk.Frame):
 
         self.gismo_sampling_type_settings = None
 
-        self.current_ref_file_id = None
-        self.current_file_id = None
+        self.current_ref_file_id = ''
+        self.current_file_id = ''
+        self.current_sampling_type = ''
 
         self.toplevel_map_widget_1 = None
         self.toplevel_map_widget_2 = None
@@ -81,6 +82,10 @@ class PageFixedPlatforms(tk.Frame):
 
         self.select_data_widget.update_items(add_file_list)
         self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
+
+        self._check_on_remove_file()
+        # self._update_parameter_list()
+        # self._update_contour_parameters()
 
     #===========================================================================
     def _set_frame(self):
@@ -301,7 +306,7 @@ class PageFixedPlatforms(tk.Frame):
 
         boundaries = self._get_map_boundaries()
 
-        self.toplevel_map_widget_1 = tkmap.TkMap(self.toplevel_frame_map_1, boundaries=boundaries)
+        self.toplevel_map_widget_1 = tkmap.TkMap(self.toplevel_frame_map_1, boundaries=boundaries, toolbar=True)
         tkw.grid_configure(self.toplevel_frame_map_1)
         self._update_map_1(self.toplevel_map_widget_1)
 
@@ -318,7 +323,7 @@ class PageFixedPlatforms(tk.Frame):
 
         boundaries = self._get_map_boundaries()
 
-        self.toplevel_map_widget_2 = tkmap.TkMap(self.toplevel_frame_map_2, boundaries=boundaries)
+        self.toplevel_map_widget_2 = tkmap.TkMap(self.toplevel_frame_map_2, boundaries=boundaries, toolbar=True)
         tkw.grid_configure(self.toplevel_frame_map_2)
         self._update_map_2(self.toplevel_map_widget_2)
 
@@ -529,10 +534,18 @@ class PageFixedPlatforms(tk.Frame):
         frame = self.notebook_options.frame_dict['Save/Export']
         # frame = self.notebook_options.frame_save
 
-        self.save_widget = gui.SaveWidget(frame,
-                                          label='Save file',
-                                          callback=self._callback_save_file,
-                                          sticky='nw')
+        self.save_file_widget = gui.SaveWidget(frame,
+                                               label='Save file',
+                                               callback=self._callback_save_file,
+                                               user=self.user,
+                                               sticky='nw')
+
+        self.save_plot_widget = gui.SaveWidget(frame,
+                                               label='Save current plot',
+                                               callback=self._callback_save_current_plot,
+                                               user=self.user,
+                                               sticky='nw',
+                                               row=1)
 
         # Export html plot and map
         self.save_widget_html = gui.SaveWidgetHTML(frame,
@@ -541,15 +554,19 @@ class PageFixedPlatforms(tk.Frame):
                                                    default_directory=self.settings['directory']['Export directory'],
                                                    user=self.user,
                                                    sticky='nw',
-                                                   row=1)
+                                                   row=2)
 
-        tkw.grid_configure(frame, nr_rows=2)
+        tkw.grid_configure(frame, nr_rows=3)
 
 
     #===========================================================================
     def _callback_save_file(self, directory, file_name):
         if not self.current_file_id:
             gui.show_information('No file loaded', 'Cant save file, no file loaded.')
+            return
+        if not all([directory, file_name]):
+            gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
+            return
         file_path = os.path.realpath(self.current_gismo_object.file_path)
         output_file_path = os.path.realpath('/'.join([directory, file_name]))
 
@@ -564,12 +581,25 @@ class PageFixedPlatforms(tk.Frame):
                 return
 
         # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         output_file_path = directory + '/temp_%s' % file_name
         self.current_gismo_object.save_file(file_path=output_file_path, overwrite=True)
         os.remove(file_path)
         shutil.copy2(output_file_path, file_path)
         os.remove(output_file_path)
 
+    def _callback_save_current_plot(self, directory, file_name):
+        if not self.current_file_id:
+            gui.show_information('No file loaded', 'Cant save plot, no file loaded.')
+            return
+        if not all([directory, file_name]):
+            gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
+            return
+        output_file_path = os.path.realpath('/'.join([directory, file_name]))
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        self.plot_object.save_fig(output_file_path)
 
 
     def _callback_save_html(self):
@@ -743,7 +773,6 @@ class PageFixedPlatforms(tk.Frame):
             gui.update_range_selection_widget(plot_object=self.plot_object,
                                           range_selection_widget=self.xrange_selection_widget)
         logging.debug('page_timeseries._callback_plot_range: End')
-
 
     #===========================================================================
     def _update_parameter_list(self):
@@ -931,6 +960,11 @@ class PageFixedPlatforms(tk.Frame):
                                     help_info_function=self.controller.update_help_information,
                                     call_targets=kwargs.get('call_targets', True))
 
+        try:
+            self.plot_object.set_title(self.current_gismo_object.get_station_name())
+        except GISMOExceptionMethodNotImplemented:
+            pass
+
 #         self.xrange_selection_widget.reset_widget()
 #         self.yrange_selection_widget.reset_widget()
 #         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
@@ -1047,8 +1081,9 @@ class PageFixedPlatforms(tk.Frame):
         self._set_current_file()
 
         if not self.current_file_id:
-            self.save_widget.set_file_path('')
+            self.save_file_widget.set_file_path('')
             self.stringvar_current_data_file.set('')
+            self.save_plot_widget.set_file_path('')
             return
 
         self._reset_widgets()
@@ -1087,10 +1122,11 @@ class PageFixedPlatforms(tk.Frame):
 
     def _update_frame_save_widget(self):
         if not self.current_file_path:
-            self.save_widget.set_file_path()
+            self.save_file_widget.set_file_path()
             self.stringvar_current_data_file.set('')
+            self.save_plot_widget.set_file_path()
             return
-        self.save_widget.set_file_path(self.current_file_path)
+        self.save_file_widget.set_file_path(self.current_file_path)
 
     def _update_frame_reference_file(self):
         # Update reference file combobox. Should not include selected file.
@@ -1111,37 +1147,29 @@ class PageFixedPlatforms(tk.Frame):
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
-            if 'fixed platform' in self.current_sampling_type.lower():
-                title = 'Fixed platforms'
+            title = 'Fixed platforms'
 
-                data = self.session.get_data(file_id, 'lat', 'lon', self.current_parameter)
+            gui.plot_map_background_data(map_widget=map_widget,
+                                         session=self.session,
+                                         user=self.user,
+                                         current_file_id=self.current_file_id)
+            if not self.current_file_id:
+                return
 
-                print('TITLE', title)
-                lat_list = []
-                lon_list = []
-                for file_id in self.current_all_data:
-                    lat_list.append(np.nanmean(self.current_all_data[file_id]['lat']))
-                    lon_list.append(np.nanmean(self.current_all_data[file_id]['lon']))
+            if 'fixed platforms' not in self.current_sampling_type.lower():
+                return
 
-                map_widget.add_markers(lat_list, lon_list, marker_id='all_pos', linestyle='None', marker='o', color='black', markersize=10)
+            # Plot current file
+            data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter)
 
-                map_widget.set_title(title, position=[0.5, 1.05])
-                print(lat_list)
+            map_widget.add_markers(np.nanmean(data['lat']), np.nanmean(data['lon']), marker_id='all_pos', linestyle='None', marker='*', color='red', markersize=10, zorder=20)
+
+            map_widget.set_title(title, position=[0.5, 1.05])
 
 
-                # Whole track as base
-                # data = self.session.get_data(self.current_file_id, 'lat', 'lon')
-                # map_widget.add_line(data['lat'], data['lon'], marker_id='track_base', color='black')
-                #
-                # # Highlighted track
-                # data = self.session.get_data(self.current_file_id, 'lat', 'lon',
-                #                              filter_options={'time_start': kwargs.get('highlighted_time_start', None),
-                #                                              'time_end': kwargs.get('highlighted_time_end', None)})
-                # map_widget.add_line(data['lat'], data['lon'], marker_id='track_highlighted', color='blue')
-                #
-                # map_widget.set_title(title, position=[0.5, 1.05])
 
     def _update_map_2(self, *args, **kwargs):
+        return
         if args:
             map_list = args
         else:
@@ -1154,38 +1182,40 @@ class PageFixedPlatforms(tk.Frame):
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
-            if 'ferrybox' in self.current_sampling_type.lower():
-                # Set map 2
-                selected_flags = self.flag_widget.get_selection().selected_flags
-                data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter,
-                                             filter_options={'time_start': kwargs.get('highlighted_time_start', None),
-                                                             'time_end': kwargs.get('highlighted_time_end', None)},
-                                             mask_options={'include_flags': selected_flags})
+            if 'ferrybox' not in self.current_sampling_type.lower():
+                return
 
-                cmap_string = self.user.parameter_colormap.get(self.current_parameter)
-                cmap = self.colormaps.get(cmap_string)
+            # Set map 2
+            selected_flags = self.flag_widget.get_selection().selected_flags
+            data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter,
+                                         filter_options={'time_start': kwargs.get('highlighted_time_start', None),
+                                                         'time_end': kwargs.get('highlighted_time_end', None)},
+                                         mask_options={'include_flags': selected_flags})
 
-                vmin, vmax = self.yrange_widget.get_limits()
+            cmap_string = self.user.parameter_colormap.get(self.current_parameter)
+            cmap = self.colormaps.get(cmap_string)
 
-                marker_name = map_widget.add_scatter(lat=data['lat'], lon=data['lon'],
-                                                            values=data[self.current_parameter],
-                                                            marker_size=10,
-                                                            color_map=cmap,
-                                                            marker_type='o',
-                                                            marker_id='track',
-                                                            edge_color=None,
-                                                            zorder=10, vmin=vmin, vmax=vmax)
-                # self.map_widget_2.add_scatter(data['lat'], data['lon'], data[self.current_parameter], title=self.current_parameter)
-                map_widget.add_colorbar(marker_name,
-                                      title=self.session.get_unit(self.current_file_id, self.current_parameter),
-                                      orientation=u'vertical',
-                                      position=[0.93, 0.02, 0.05, 0.3],
-                                      tick_side=u'left',
-                                      format='%.1f')
-                                      # #                                       display_every=5,
-                                      # nr_ticks=self.stringvar_nr_ticks.get())
+            vmin, vmax = self.yrange_widget.get_limits()
 
-                map_widget.set_title(self.current_parameter, position=[0.5, 1.05])
+            marker_name = map_widget.add_scatter(lat=data['lat'], lon=data['lon'],
+                                                        values=data[self.current_parameter],
+                                                        marker_size=10,
+                                                        color_map=cmap,
+                                                        marker_type='o',
+                                                        marker_id='track',
+                                                        edge_color=None,
+                                                        zorder=10, vmin=vmin, vmax=vmax)
+            # self.map_widget_2.add_scatter(data['lat'], data['lon'], data[self.current_parameter], title=self.current_parameter)
+            map_widget.add_colorbar(marker_name,
+                                  title=self.session.get_unit(self.current_file_id, self.current_parameter),
+                                  orientation=u'vertical',
+                                  position=[0.93, 0.02, 0.05, 0.3],
+                                  tick_side=u'left',
+                                  format='%.1f')
+                                  # #                                       display_every=5,
+                                  # nr_ticks=self.stringvar_nr_ticks.get())
+
+            map_widget.set_title(self.current_parameter, position=[0.5, 1.05])
 
 
         
@@ -1208,3 +1238,11 @@ class PageFixedPlatforms(tk.Frame):
         logging.debug('page_timeseries._update_file_reference: End')
         
 
+    def _check_on_remove_file(self):
+        if not self.stringvar_current_data_file.get():
+            self.plot_object.reset_plot()
+            self._update_map_1()
+            self._update_map_2()
+            self.save_file_widget.set_file_path()  # Resets the plot
+            self.save_plot_widget.set_file_path()  # Resets the plot
+            self.save_widget_html.update_parameters([])

@@ -36,6 +36,7 @@ all_pages.add(gui.PageStart)
 all_pages.add(gui.PageFerrybox)
 all_pages.add(gui.PageFixedPlatforms)
 all_pages.add(gui.PageUser)
+all_pages.add(gui.PageAbout)
 
 
 #============================================================================
@@ -416,7 +417,8 @@ class App(tk.Tk):
         prop_listbox = {'height': 4}
         self.listbox_widget_loaded_files = tkw.ListboxWidget(frame, 
                                                              include_delete_button='Remove source',
-                                                             prop_listbox=prop_listbox)
+                                                             prop_listbox=prop_listbox,
+                                                             callback_delete_button=self._delete_source)
 #        self.listbox_widget_loaded_files = tkw.ListboxSelectionWidget(frame, 
 #                                                                      sort_selected=True, 
 #                                                                      vertical=True, 
@@ -428,6 +430,11 @@ class App(tk.Tk):
 
         # self.boxen.loaded_files_widget = listbox_widget_loaded_files
 
+    def _delete_source(self, file_id, *args, **kwargs):
+        file_id = file_id.split(':')[-1].strip()
+        print('_delete_source'.upper(), file_id)
+        self.session.remove_file(file_id)
+        self.update_all()
 
 
     #===========================================================================
@@ -698,7 +705,7 @@ class App(tk.Tk):
                                        command=lambda: self.show_frame(gui.PageFerrybox))
         if 'gui.page_fixed_platforms' in sys.modules:
             self.goto_menu.add_command(label='Fixed platforms',
-                                      command=lambda: self.show_frame(gui.PageFixedPlatforms))
+                                       command=lambda: self.show_frame(gui.PageFixedPlatforms))
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 
@@ -713,7 +720,8 @@ class App(tk.Tk):
         #-----------------------------------------------------------------------
         # Help menu
         self.help_menu = tk.Menu(self.menubar, tearoff=0)
-        self.help_menu.add_command(label='About')
+        self.help_menu.add_command(label='About',
+                                   command=lambda: self.show_frame(gui.PageAbout))
         self.menubar.add_cascade(label='Help', menu=self.help_menu)
         
         #-----------------------------------------------------------------------
@@ -1014,9 +1022,7 @@ class Boxen(object):
             self.open_directory = directory
 
 
-
-
-"""            
+""" 
 ================================================================================
 ================================================================================
 ================================================================================
