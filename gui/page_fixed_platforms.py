@@ -499,18 +499,23 @@ class PageFixedPlatforms(tk.Frame):
         self.compare_widget = gui.CompareWidget(frame,
                                                 session=self.controller.session,
                                                 user=self.user,
+                                                include_sampling_depth=True,
                                                 callback=self._callback_compare,
                                                 row=1,
                                                 **grid_opt)
         tkw.grid_configure(frame, nr_rows=2)
 
+
     def _update_compare_widget(self):
         self.compare_widget.update_parameter_list(self.current_ref_file_id)
+        station = self.current_gismo_object.get_station_name()
+        if station:
+            self.compare_widget.set_data(sampling_depth=self.user.sampling_depth.setdefault(station, '0'))
 
 
     #===========================================================================
     def _callback_compare(self):
-        logging.debug('page_timeseries._callback_compare: Start')
+        logging.debug('page_fixed_platforms._callback_compare: Start')
         try:
             match_data = gui.add_compare_to_timeseries_plot(plot_object=self.plot_object,
                                                             session=self.session,
@@ -522,13 +527,13 @@ class PageFixedPlatforms(tk.Frame):
             self.map_widget_1.add_scatter(match_data['lat'], match_data['lat'], marker_id='match_data')
         except GISMOExceptionInvalidOption as e:
             gui.show_warning('Invalid option', e)
-        except gismo.exceptions.GISMOExceptionInvalidInputArgument as e:
-            # Could be
-            if not self.stringvar_current_reference_file.get():
-                gui.show_warning('File not loaded', 'No reference file selected')
-            else:
-                gui.show_error('Internal error', 'Un unexpected error occurred. Please contact administration. ')
-        logging.debug('page_timeseries._callback_compare: End')
+        # except gismo.exceptions.GISMOExceptionInvalidInputArgument as e:
+        #     # Could be
+        #     if not self.stringvar_current_reference_file.get():
+        #         gui.show_warning('File not loaded', 'No reference file selected')
+        #     else:
+        #         gui.show_error('Internal error', 'An unexpected error occurred. Please contact administration. ')
+        # logging.debug('page_fixed_platforms._callback_compare: End')
 
     def _set_notebook_frame_save(self):
         frame = self.notebook_options.frame_dict['Save/Export']
@@ -735,7 +740,7 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _callback_axis_widgets(self):
-        logging.debug('page_timeseries._callback_axis_widgets: Start')
+        logging.debug('page_fixed_platforms._callback_axis_widgets: Start')
         # Update limits in settings_object from axis widget.
         self._save_limits_from_axis_widgets()
 
@@ -759,11 +764,11 @@ class PageFixedPlatforms(tk.Frame):
         self._update_map_2(highlighted_time_start=time_start, highlighted_time_end=time_end)
 
 
-        logging.debug('page_timeseries._callback_axis_widgets: End')
+        logging.debug('page_fixed_platforms._callback_axis_widgets: End')
 
     #===========================================================================
     def _callback_plot_range(self):
-        logging.debug('page_timeseries._callback_plot_range: Start')
+        logging.debug('page_fixed_platforms._callback_plot_range: Start')
         if not self.plot_object.mark_range_orientation:
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
@@ -772,11 +777,11 @@ class PageFixedPlatforms(tk.Frame):
         elif self.plot_object.mark_range_orientation == 'horizontal':
             gui.update_range_selection_widget(plot_object=self.plot_object,
                                           range_selection_widget=self.xrange_selection_widget)
-        logging.debug('page_timeseries._callback_plot_range: End')
+        logging.debug('page_fixed_platforms._callback_plot_range: End')
 
     #===========================================================================
     def _update_parameter_list(self):
-        logging.debug('page_timeseries._update_parameter_list: Start')
+        logging.debug('page_fixed_platforms._update_parameter_list: Start')
         exclude_parameters = ['time', 'lat', 'lon']
         parameter_list = [item for item in self.session.get_parameter_list(self.current_file_id) if item not in exclude_parameters]
 
@@ -785,7 +790,7 @@ class PageFixedPlatforms(tk.Frame):
                                            default_item=None)
 
         self._update_export_parameter_list()
-        logging.debug('page_timeseries._update_parameter_list: End')
+        logging.debug('page_fixed_platforms._update_parameter_list: End')
 
     def _update_export_parameter_list(self):
         # Parameters for exporting
@@ -804,7 +809,7 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _reset_widgets(self):
-        logging.debug('page_timeseries._reset_widgets: Start')
+        logging.debug('page_fixed_platforms._reset_widgets: Start')
         self.plot_object.reset_plot()
         self.parameter_widget.update_items()
 
@@ -813,11 +818,11 @@ class PageFixedPlatforms(tk.Frame):
         self.xrange_selection_widget.reset_widget()
         self.yrange_selection_widget.reset_widget()
 
-        logging.debug('page_timeseries._reset_widgets: End')
+        logging.debug('page_fixed_platforms._reset_widgets: End')
 
     #===========================================================================
     def _on_select_parameter(self):
-        logging.debug('page_timeseries._on_select_parameter: Start')
+        logging.debug('page_fixed_platforms._on_select_parameter: Start')
         # Reset plot
         self.plot_object.reset_plot()
 
@@ -862,11 +867,11 @@ class PageFixedPlatforms(tk.Frame):
         self.plot_object.call_targets()
 
 
-        logging.debug('page_timeseries._on_select_parameter: End')
+        logging.debug('page_fixed_platforms._on_select_parameter: End')
 
     #===========================================================================
     def _update_plot_limits(self):
-        logging.debug('page_timeseries._update_plot_limits: Start')
+        logging.debug('page_fixed_platforms._update_plot_limits: Start')
 
         gui.update_plot_limits_from_settings(plot_object=self.plot_object,
                                              user_object=self.controller.user,
@@ -879,7 +884,7 @@ class PageFixedPlatforms(tk.Frame):
                                              axis='y',
                                              par=self.current_parameter,
                                              call_targets_in_plot_object=False)
-        logging.debug('page_timeseries._update_plot_limits: End')
+        logging.debug('page_fixed_platforms._update_plot_limits: End')
 
     #===========================================================================
     def _save_limits_from_plot(self):
@@ -899,12 +904,12 @@ class PageFixedPlatforms(tk.Frame):
                                          par=self.current_parameter,
                                          axis='y',
                                          use_plot_limits=False)
-        logging.debug('page_timeseries._save_limits_from_plot: End')
+        logging.debug('page_fixed_platforms._save_limits_from_plot: End')
 
 
     #===========================================================================
     def _save_limits_from_axis_widgets(self):
-        logging.debug('page_timeseries._save_limits_from_axis_widgets: Start')
+        logging.debug('page_fixed_platforms._save_limits_from_axis_widgets: Start')
 
         gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
                                               axis_time_widget=self.xrange_widget,
@@ -913,11 +918,11 @@ class PageFixedPlatforms(tk.Frame):
         gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
                                                axis_float_widget=self.yrange_widget,
                                                par=self.current_parameter)
-        logging.debug('page_timeseries._save_limits_from_axis_widgets: End')
+        logging.debug('page_fixed_platforms._save_limits_from_axis_widgets: End')
 
     #===========================================================================
     def _update_axis_widgets(self):
-        logging.debug('page_timeseries._update_axis_widgets: Start')
+        logging.debug('page_fixed_platforms._update_axis_widgets: Start')
 
         gui.update_limits_in_axis_time_widget(user_object=self.controller.user,
                                               axis_time_widget=self.xrange_widget,
@@ -930,11 +935,11 @@ class PageFixedPlatforms(tk.Frame):
                                                plot_object=self.plot_object,
                                                par=self.current_parameter,
                                                axis='y')
-        logging.debug('page_timeseries._update_axis_widgets: End')
+        logging.debug('page_fixed_platforms._update_axis_widgets: End')
 
     #===========================================================================
     def _on_flag_widget_flag(self):
-        logging.debug('page_timeseries._on_flag_widget_flag: Start')
+        logging.debug('page_fixed_platforms._on_flag_widget_flag: Start')
         self.controller.update_help_information('Flagging data, please wait...')
         gui.flag_data_time_series(flag_widget=self.flag_widget,
                               gismo_object=self.current_gismo_object,
@@ -944,14 +949,14 @@ class PageFixedPlatforms(tk.Frame):
         self._update_plot()
 
         self.controller.update_help_information('Done!')
-        logging.debug('page_timeseries._on_flag_widget_flag: End')
+        logging.debug('page_fixed_platforms._on_flag_widget_flag: End')
 
     #===========================================================================
     def _update_plot(self, **kwargs):
         """
         Called by the parameter widget to update plot.
         """
-        logging.debug('page_timeseries._update_plot: Start')
+        logging.debug('page_fixed_platforms._update_plot: Start')
 
         gui.update_time_series_plot(gismo_object=self.current_gismo_object,
                                     par=self.current_parameter,
@@ -969,7 +974,7 @@ class PageFixedPlatforms(tk.Frame):
 #         self.yrange_selection_widget.reset_widget()
 #         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
 
-        logging.debug('page_timeseries._update_plot: End')
+        logging.debug('page_fixed_platforms._update_plot: End')
 
     def _update_contour_plot(self, **kwargs):
         contour_par = self.parameter_contour_plot_widget.get_value()
@@ -993,12 +998,12 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _on_flag_widget_change(self):
-        logging.debug('page_timeseries._on_flag_widget_change: Start')
+        logging.debug('page_fixed_platforms._on_flag_widget_change: Start')
         selection = self.flag_widget.get_selection()
         for k, flag in enumerate(selection.selected_flags):
             self.plot_object.set_prop(ax='first', line_id=flag, **selection.get_prop(flag))
         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
-        logging.debug('page_timeseries._on_flag_widget_change: End')
+        logging.debug('page_fixed_platforms._on_flag_widget_change: End')
 
     def _get_file_id(self, string):
         """
@@ -1077,7 +1082,7 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _update_file(self):
-        logging.debug('page_timeseries._update_file: Start')
+        logging.debug('page_fixed_platforms._update_file: Start')
         self._set_current_file()
 
         if not self.current_file_id:
@@ -1107,7 +1112,7 @@ class PageFixedPlatforms(tk.Frame):
         
         self._update_frame_automatic_qc()
 
-        logging.debug('page_timeseries._update_file: End')
+        logging.debug('page_fixed_platforms._update_file: End')
 
     def _update_frame_automatic_qc(self):
         self.widget_automatic_qc_options.deactivate_all()
@@ -1142,8 +1147,9 @@ class PageFixedPlatforms(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
+                print('NOT MAP_WIDGET 1')
                 continue
-
+            print('RUNNING')
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
@@ -1154,10 +1160,10 @@ class PageFixedPlatforms(tk.Frame):
                                          user=self.user,
                                          current_file_id=self.current_file_id)
             if not self.current_file_id:
-                return
+                continue
 
             if 'fixed platforms' not in self.current_sampling_type.lower():
-                return
+                continue
 
             # Plot current file
             data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter)
@@ -1167,9 +1173,7 @@ class PageFixedPlatforms(tk.Frame):
             map_widget.set_title(title, position=[0.5, 1.05])
 
 
-
     def _update_map_2(self, *args, **kwargs):
-        return
         if args:
             map_list = args
         else:
@@ -1177,13 +1181,14 @@ class PageFixedPlatforms(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
+                print('NOT MAP_WIDGET 2')
                 continue
 
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
             if 'ferrybox' not in self.current_sampling_type.lower():
-                return
+                continue
 
             # Set map 2
             selected_flags = self.flag_widget.get_selection().selected_flags
@@ -1221,7 +1226,7 @@ class PageFixedPlatforms(tk.Frame):
         
     #===========================================================================
     def _update_file_reference(self):
-        logging.debug('page_timeseries._update_file_reference: Start')
+        logging.debug('page_fixed_platforms._update_file_reference: Start')
         self._set_current_reference_file()
         
         if not self.current_ref_file_id:
@@ -1235,7 +1240,7 @@ class PageFixedPlatforms(tk.Frame):
 
         self._update_compare_widget()
 
-        logging.debug('page_timeseries._update_file_reference: End')
+        logging.debug('page_fixed_platforms._update_file_reference: End')
         
 
     def _check_on_remove_file(self):

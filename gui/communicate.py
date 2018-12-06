@@ -39,6 +39,7 @@ def add_compare_to_timeseries_plot(plot_object=None,
     diffs['hours'] = compare_widget.time
     diffs['dist'] = compare_widget.dist
     diffs['depth'] = compare_widget.depth
+    diffs['main_sampling_depth'] = compare_widget.sampling_depth
     session.match_files(main_file_id, sample_file_id, **diffs)
 
     par = compare_widget.get_parameter()

@@ -14,6 +14,7 @@ from tkinter import ttk
 from tkinter import messagebox
 
 import os
+import numpy as np
 #import shutil
 
 
@@ -598,7 +599,7 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
             if max_value < 10:
                 self.stringvar_max.set('{:.1f}'.format(max_value))
             else:
-                self.stringvar_max.set(str(int(max_value)))
+                self.stringvar_max.set(str((max_value)))dsfsa
         
         self._callback()
 #            self._save_limits()
@@ -772,6 +773,7 @@ class CompareWidget(tk.Frame):
                  parent,
                  session=None,
                  user=None,
+                 include_sampling_depth=False,
                  callback=None, 
                  prop_frame={},  
                  **kwargs):
@@ -780,6 +782,7 @@ class CompareWidget(tk.Frame):
         self.prop_frame.update(prop_frame)
         self.session = session
         self.user = user
+        self.include_sampling_depth = include_sampling_depth
         self.callback = callback
         
         self.grid_frame = {'padx': 5, 
@@ -792,6 +795,11 @@ class CompareWidget(tk.Frame):
         
         self.old_values = ''
         self.new_values = ''
+
+        self.time = None
+        self.dist = None
+        self.depth = None
+        self.sampling_depth = None
         
         self._set_frame()
 
@@ -808,6 +816,16 @@ class CompareWidget(tk.Frame):
         
         self.stringvar = {}
         self.entry = {}
+
+        if self.include_sampling_depth:
+            # Typically used when no depth is given for fixed platform
+            tk.Label(self, text='Sampling depth:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+            self.stringvar['sampling_depth'] = tk.StringVar()
+            self.entry['sampling_depth'] = tk.Entry(self, textvariable=self.stringvar['sampling_depth'], width=40)
+            self.entry['sampling_depth'].grid(row=r, column=c + 1, padx=padx, pady=pady, sticky='w')
+            self.stringvar['sampling_depth'].trace("w",
+                                         lambda name, index, mode, sv=self.stringvar['sampling_depth']: tkw.check_int_entry(sv))
+            r += 1
         
         tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
         self.stringvar['time'] = tk.StringVar()
@@ -845,6 +863,8 @@ class CompareWidget(tk.Frame):
         self.button_add_sample_values.grid(row=r, column=0, padx=padx, pady=(pady, pady), sticky='w')
         r+=1
 
+        tkw.grid_configure(self, nr_rows=r, nr_columns=2)
+
     def update_parameter_list(self, file_id):
         parameter_list = self.session.get_parameter_list(file_id)
         self.parameter_widget.update_items(parameter_list)
@@ -857,6 +877,8 @@ class CompareWidget(tk.Frame):
         self.time = float(self.stringvar['time'].get())
         self.dist = float(self.stringvar['dist'].get())
         self.depth = float(self.stringvar['depth'].get())
+        if self.include_sampling_depth:
+            self.sampling_depth = float(self.stringvar['sampling_depth'].get())
 #        self.modulus = int(self.stringvar['modulus'].get())
         
         self.new_values = ''.join([self.stringvar[item].get() for item in sorted(self.stringvar)])
@@ -1270,14 +1292,52 @@ class InformationPopup(object):
             text_lines.append(line)
         return '\n'.join(text_lines)
 
-        # self.popup_frame = None
-        # self._create_popup_frame()
-        # self._show_information()
+class EntryPopup(object):
+    """
+    Handles popop for a entry.
+    """
+    def __init__(self, controller, text=''):
+        self.controller = controller
+        self.user = self.controller.user
+        self.text = text
 
-    # def _create_popup_frame(self):
-    #     popup_frame = tk.Toplevel(self.controller)
-    #
-    # def _show_information(self):
+    def display(self):
+        padx = 5
+        pady = 5
+
+        self.popup_frame = tk.Toplevel(self.controller)
+        x = self.controller.winfo_x()
+        y = self.controller.winfo_y()
+
+        # Set text
+        self.label = tk.Label(self.popup_frame, text=self.text)
+        self.label.grid(row=0, column=0, columnspan=2, padx=padx, pady=pady)
+
+        self.entry = tkw.EntryWidget(self.popup_frame, entry_type='int')
+
+        button_ok = tk.Button(self.popup_frame, text='Ok', command=self._ok)
+        button_ok.grid(row=1, column=0, padx=padx, pady=pady)
+
+        tkw.grid_configure(self.popup_frame, nr_columns=2, nr_rows=2)
+
+        self.popup_frame.update_idletasks()
+
+        root_dx = self.controller.winfo_width()
+        root_dy = self.controller.winfo_height()
+
+        dx = int(root_dx/3)
+        dy = int(root_dy/3)
+        w = self.popup_frame.winfo_width()
+        h = self.popup_frame.winfo_height()
+        self.popup_frame.geometry("%dx%d+%d+%d" % (w, h, x + dx, y + dy))
+        # self.controller.withdraw()
+
+    def _ok(self):
+        if self.entry.get_value():
+            self.popup_frame.destroy()
+        # self.controller.deiconify()
+
+
 
 
 

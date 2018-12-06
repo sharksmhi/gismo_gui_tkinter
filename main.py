@@ -162,9 +162,10 @@ class App(tk.Tk):
         
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
-        self.show_frame(gui.PageStart)
+        # self.show_frame(gui.PageStart)
         # self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageFerrybox)
+        self.show_frame(gui.PageFixedPlatforms)
 
         self.update()
         self.deiconify()
@@ -233,6 +234,11 @@ class App(tk.Tk):
 
         def run_thread():
             self.progress_widget.run_progress(run_function, message=message)
+            # try:
+            #     self.progress_widget.run_progress(run_function, message=message)
+            # except Exception as e:
+            #     print(e)
+            #     raise
 
         if self.progress_running:
             gui.show_information('Progress is running', 'A progress is running, please wait until it is finished!')
@@ -315,18 +321,20 @@ class App(tk.Tk):
         frame_data = tk.LabelFrame(frame, text='Data file')
         frame_settings = tk.LabelFrame(frame, text='Settings file')
         frame_sampling_type = tk.LabelFrame(frame, text='Sampling type')
+        frame_platform_depth = tk.LabelFrame(frame, text='Platform depth')
         frame_load = tk.Frame(frame)
         
         # Grid 
         padx=5 
         pady=5
-        frame_data.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=padx, pady=pady)
+        frame_data.grid(row=0, column=0, columnspan=4, sticky='nsew', padx=padx, pady=pady)
         frame_settings.grid(row=1, column=0, sticky='nsew', padx=padx, pady=pady)
         frame_sampling_type.grid(row=1, column=1, sticky='nsew', padx=padx, pady=pady)
-        frame_load.grid(row=1, column=2, sticky='nsew', padx=padx, pady=pady)
+        frame_platform_depth.grid(row=1, column=2, sticky='nsew', padx=padx, pady=pady)
+        frame_load.grid(row=1, column=3, sticky='nsew', padx=padx, pady=pady)
 
         # Gridconfigure 
-        tkw.grid_configure(frame, nr_rows=2, nr_columns=3, r0=50)
+        tkw.grid_configure(frame, nr_rows=2, nr_columns=4, r0=50)
 #        frame.grid_rowconfigure(0, weight=1)
 #        frame.grid_rowconfigure(1, weight=1)
 #        frame.grid_rowconfigure(2, weight=1)
@@ -390,6 +398,14 @@ class App(tk.Tk):
                                                                 columnspan=1, 
                                                                 row=0, 
                                                                 sticky='nsew')
+
+        # Platform depth frame
+        self.entry_widget_platform_depth = tkw.EntryWidget(frame_platform_depth, entry_type='int',
+                                                           prop_entry=dict(width=5), row=0, column=0,
+                                                           padx=padx, pady=pady, sticky='nsew')
+        self.entry_widget_platform_depth.disable_widget()
+        tk.Label(frame_platform_depth, text='meters').grid(row=0, column=1, padx=padx, pady=pady, sticky='nsew')
+        tkw.grid_configure(frame_platform_depth)
 
         # Gridconfigure
         tkw.grid_configure(frame_sampling_type)
@@ -471,8 +487,17 @@ class App(tk.Tk):
 
             self.button_load_file.configure(state='normal')
             self.info_popup.show_information(core.texts.data_file_selected(username=self.user.name))
+
+            if 'fixed platform' in sampling_type.lower():
+                self.entry_widget_platform_depth.enable_widget()
+                temp_file_id = os.path.basename(file_path)[:10]
+                depth = self.user.sampling_depth.setdefault(temp_file_id, 1)
+                self.entry_widget_platform_depth.set_value(depth)
+            else:
+                self.entry_widget_platform_depth.disable_widget()
         else:
             self.button_load_file.configure(state='disabled')
+            self.entry_widget_platform_depth.disable_widget()
             
     #===========================================================================
     def _import_settings_file(self):
@@ -497,6 +522,36 @@ class App(tk.Tk):
 
     #===========================================================================
     def _load_file(self):
+
+        def load_file(**kwargs):
+            self.update_help_information('')
+            self.button_load_file.configure(state='disabled')
+
+            data_file_path = self.stringvar_data_file.get()
+            settings_file = self.combobox_widget_settings_file.get_value()
+            settings_file_path = self.settings_files.get_path(settings_file)
+            sampling_type = self.combobox_widget_sampling_type.get_value()
+
+            self.session.load_file(sampling_type=sampling_type,
+                                   data_file_path=data_file_path,
+                                   settings_file_path=settings_file_path,
+                                   reload=False,
+                                   **kwargs)
+
+            # Update user settings
+            if self.latest_loaded_sampling_type:
+                self.user.settingsfile.set(self.latest_loaded_sampling_type,
+                                           self.combobox_widget_settings_file.get_value())
+
+            # Remove data file text
+            self.stringvar_data_file.set('')
+
+            self._update_loaded_files_widget()
+            self.update_all()
+            self.button_load_file.configure(state='normal')
+
+            self.update_help_information('File loaded! Please continue.')
+
         self.reset_help_information()
         data_file_path = self.stringvar_data_file.get()
         settings_file = self.combobox_widget_settings_file.get_value()
@@ -510,38 +565,23 @@ class App(tk.Tk):
 
         # Load file
         try:
-            def load_file():
-                self.update_help_information('')
-                self.button_load_file.configure(state='disabled')
-                self.session.load_file(sampling_type=sampling_type,
-                                       file_path=data_file_path,
-                                       settings_file_path=settings_file_path,
-                                       reload=False)
-                self.button_load_file.configure(state='normal')
-
-                self._update_loaded_files_widget()
-
-                self.update_all()
-
-                # Update user settings
-                if self.latest_loaded_sampling_type:
-                    self.user.settingsfile.set(self.latest_loaded_sampling_type,
-                                               self.combobox_widget_settings_file.get_value())
-
-                # Remove data file text
-                self.stringvar_data_file.set('')
-
-                self.update_help_information('File loaded! Please continue.')
-
-
-            self.run_progress(load_file, message='Loading file...please wait...')
-
-
+            load_file()
+            # self.run_progress(load_file, message='Loading file...please wait...')
         except GISMOExceptionMissingPath as e:
             gui.show_information('Invalid path',
                                  'The path "{}" given in i settings file "{} can not be found'.format(e.message,
                                                                                                       settings_file_path))
             self.update_help_information('Please try again with a different settings file.')
+
+        except GISMOExceptionMissingInputArgument as e:
+            print(e.message, '#{}#'.format(e.message), type(e.message))
+            if 'depth' in e.message:
+                platform_depth = self.entry_widget_platform_depth.get_value()
+                if not platform_depth:
+                    gui.show_information('No depth found!', 'You need to provide platform depth for this sampling type!')
+                    return
+                load_file(depth=platform_depth)
+
 
 
             # # Load file
@@ -672,11 +712,14 @@ class App(tk.Tk):
     def update_all(self):
         
         for page_name, frame in self.frames.items():
-            try:
-                if self.pages_started[page_name]:
-                    frame.update_page()
-            except:
-                pass
+            if self.pages_started[page_name]:
+                print('page_name', page_name)
+                frame.update_page()
+            # try:
+            #     if self.pages_started[page_name]:
+            #         frame.update_page()
+            # except:
+            #     pass
     
     #===========================================================================
     def _set_menubar(self):

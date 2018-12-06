@@ -73,7 +73,10 @@ class User(object):
 
         self.options = UserSettings(self.user_directory, 'options')
 
-        self.map_prop = UserSettings(self.user_directory, 'map_prop') 
+        self.map_prop = UserSettings(self.user_directory, 'map_prop')
+
+        # Used for saving sampling depth.
+        self.sampling_depth = UserSettings(self.user_directory, 'sampling_depth')
 
 
 

@@ -544,7 +544,7 @@ class PageFerrybox(tk.Frame):
             if not self.stringvar_current_reference_file.get():
                 gui.show_warning('File not loaded', 'No reference file selected')
             else:
-                gui.show_error('Internal error', 'Un unexpected error occurred. Please contact administration. ')
+                gui.show_error('Internal error', 'An unexpected error occurred. Please contact administration. ')
         logging.debug('page_timeseries._callback_compare: End')
 
     def _set_notebook_frame_save(self):

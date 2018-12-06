@@ -50,6 +50,7 @@ from .widgets import show_information
 from .widgets import show_warning
 from .widgets import show_error
 from .widgets import InformationPopup
+from .widgets import EntryPopup
 
 
 #----------------------------------------------------------

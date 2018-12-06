@@ -64,7 +64,7 @@ class PageAbout(tk.Frame):
 
         tkw.grid_configure(frame)
 
-    def _set_frame_developed(self):
+    def _set_frame_cooperation(self):
         def _on_click_jerico_link(event):
             webbrowser.open_new(r'www.jerico-ri.eu')
         frame = self.labelframe_developed
@@ -83,7 +83,8 @@ class PageAbout(tk.Frame):
 
         tkw.grid_configure(frame, nr_rows=2)
 
-    def _set_frame_cooperation(self):
+
+    def _set_frame_developed(self):
         def _on_click_smhi_link(event):
             webbrowser.open_new(r'www.smhi.se')
         frame = self.labelframe_cooperation
