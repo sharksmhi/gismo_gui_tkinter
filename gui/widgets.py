@@ -599,7 +599,7 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
             if max_value < 10:
                 self.stringvar_max.set('{:.1f}'.format(max_value))
             else:
-                self.stringvar_max.set(str((max_value)))dsfsa
+                self.stringvar_max.set(str(np.ceil(max_value)))
         
         self._callback()
 #            self._save_limits()
