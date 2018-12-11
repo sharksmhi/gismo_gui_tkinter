@@ -393,7 +393,7 @@ class App(tk.Tk):
         self.combobox_widget_sampling_type = tkw.ComboboxWidget(frame_sampling_type, 
                                                                 items=sorted(self.session.get_sampling_types()),
                                                                 title='',
-                                                                prop_combobox={'width': 20},
+                                                                prop_combobox={'width': 30},
                                                                 column=0, 
                                                                 columnspan=1, 
                                                                 row=0, 
@@ -536,6 +536,7 @@ class App(tk.Tk):
                                    data_file_path=data_file_path,
                                    settings_file_path=settings_file_path,
                                    reload=False,
+                                   root_directory=self.root_directory,
                                    **kwargs)
 
             # Update user settings
@@ -574,7 +575,7 @@ class App(tk.Tk):
             self.update_help_information('Please try again with a different settings file.')
 
         except GISMOExceptionMissingInputArgument as e:
-            print(e.message, '#{}#'.format(e.message), type(e.message))
+            # print(e.message, '#{}#'.format(e.message), type(e.message))
             if 'depth' in e.message:
                 platform_depth = self.entry_widget_platform_depth.get_value()
                 if not platform_depth:

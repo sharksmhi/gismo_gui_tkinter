@@ -78,6 +78,7 @@ class User(object):
         # Used for saving sampling depth.
         self.sampling_depth = UserSettings(self.user_directory, 'sampling_depth')
 
+        self.plot_color = UserSettings(self.user_directory, 'plot_color')
 
 
 

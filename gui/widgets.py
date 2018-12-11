@@ -793,8 +793,9 @@ class CompareWidget(tk.Frame):
         tk.Frame.__init__(self, parent, **self.prop_frame)
         self.grid(**self.grid_frame)
         
-        self.old_values = ''
-        self.new_values = ''
+        self.old_values = []
+        self.new_values = []
+        self.values_are_updated = True
 
         self.time = None
         self.dist = None
@@ -813,55 +814,78 @@ class CompareWidget(tk.Frame):
         pady=5
         r=0
         c=0
-        
-        self.stringvar = {}
+
         self.entry = {}
 
-        if self.include_sampling_depth:
-            # Typically used when no depth is given for fixed platform
-            tk.Label(self, text='Sampling depth:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-            self.stringvar['sampling_depth'] = tk.StringVar()
-            self.entry['sampling_depth'] = tk.Entry(self, textvariable=self.stringvar['sampling_depth'], width=40)
-            self.entry['sampling_depth'].grid(row=r, column=c + 1, padx=padx, pady=pady, sticky='w')
-            self.stringvar['sampling_depth'].trace("w",
-                                         lambda name, index, mode, sv=self.stringvar['sampling_depth']: tkw.check_int_entry(sv))
-            r += 1
-        
-        tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.stringvar['time'] = tk.StringVar()
-        self.entry['time'] = tk.Entry(self, textvariable=self.stringvar['time'], width=40)
-        self.entry['time'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        self.stringvar['time'].trace("w", lambda name, index, mode, sv=self.stringvar['time']: tkw.check_int_entry(sv))
-        r+=1
-        
-        tk.Label(self, text='Max distance [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.stringvar['dist'] = tk.StringVar()
-        self.entry['dist'] = tk.Entry(self, textvariable=self.stringvar['dist'], width=40)
-        self.entry['dist'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        self.stringvar['dist'].trace("w", lambda name, index, mode, sv=self.stringvar['dist']: tkw.check_int_entry(sv))
-        r+=1
-        
-        tk.Label(self, text='Max depth diff [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.stringvar['depth'] = tk.StringVar()
-        self.entry['depth'] = tk.Entry(self, textvariable=self.stringvar['depth'], width=40)
-        self.entry['depth'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        self.stringvar['depth'].trace("w", lambda name, index, mode, sv=self.stringvar['depth']: tkw.check_int_entry(sv))
-        r+=1
+        # if self.include_sampling_depth:
+        #     # Typically used when no depth is given for fixed platform
+        #     tk.Label(self, text='Sampling depth:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        #     self.stringvar['sampling_depth'] = tk.StringVar()
+        #     self.entry['sampling_depth'] = tk.Entry(self, textvariable=self.stringvar['sampling_depth'], width=40)
+        #     self.entry['sampling_depth'].grid(row=r, column=c + 1, padx=padx, pady=pady, sticky='w')
+        #     self.stringvar['sampling_depth'].trace("w",
+        #                                  lambda name, index, mode, sv=self.stringvar['sampling_depth']: tkw.check_int_entry(sv))
+        #     r += 1
+        #
 
+        prop_entry = dict(width=10)
+        tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        self.entry['time'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+                                              entry_type='int', row=r,
+                                              column=c + 1, padx=padx, pady=pady, sticky='w')
+
+        r += 1
+        tk.Label(self, text='Max distance [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        self.entry['dist'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+                                              entry_type='int', row=r,
+                                              column=c + 1, padx=padx, pady=pady, sticky='w')
+
+        r += 1
+        tk.Label(self, text='Max depth diff [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        self.entry['depth'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+                                              entry_type='int', row=r,
+                                              column=c + 1, padx=padx, pady=pady, sticky='w')
+
+        # Link entries
+        self.entry['time'].south_entry = self.entry['dist']
+        self.entry['dist'].south_entry = self.entry['depth']
+        self.entry['depth'].south_entry = self.entry['time']
+
+        # tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        # self.stringvar['time'] = tk.StringVar()
+        # self.entry['time'] = tk.Entry(self, textvariable=self.stringvar['time'], width=40)
+        # self.entry['time'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
+        # self.stringvar['time'].trace("w", lambda name, index, mode, sv=self.stringvar['time']: tkw.check_int_entry(sv))
+        # r+=1
+        #
+        # tk.Label(self, text='Max distance [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        # self.stringvar['dist'] = tk.StringVar()
+        # self.entry['dist'] = tk.Entry(self, textvariable=self.stringvar['dist'], width=40)
+        # self.entry['dist'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
+        # self.stringvar['dist'].trace("w", lambda name, index, mode, sv=self.stringvar['dist']: tkw.check_int_entry(sv))
+        # r+=1
+        #
+        # tk.Label(self, text='Max depth diff [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
+        # self.entry['depth'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save, entry_type='int', row=r,
+        #                                       column=c+1, padx=padx, pady=pady, sticky='w')
+        #
+        #
+        # self.stringvar['depth'] = tk.StringVar()
+        # self.entry['depth'] = tk.Entry(self, textvariable=self.stringvar['depth'], width=40)
+        # self.entry['depth'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
+        # self.stringvar['depth'].trace("w", lambda name, index, mode, sv=self.stringvar['depth']: tkw.check_int_entry(sv))
+        # r+=1
+
+        r += 1
         self.parameter_widget = tkw.ComboboxWidget(self,
                                                    title='Parameter',
-                                                   callback_target=[],
+                                                   callback_target=self._save,
                                                    row=r,
                                                    column=0,
                                                    pady=5,
                                                    sticky='w')
         r += 1
 
-        self.button_add_sample_values = tk.Button(self, 
-                                                    text=u'Add sample data',
-                                                    command=self._on_add_sample_data)
-        self.button_add_sample_values.grid(row=r, column=0, padx=padx, pady=(pady, pady), sticky='w')
-        r+=1
 
         tkw.grid_configure(self, nr_rows=r, nr_columns=2)
 
@@ -873,15 +897,15 @@ class CompareWidget(tk.Frame):
         return self.parameter_widget.get_value()
 
     #===========================================================================
-    def _on_add_sample_data(self):
-        self.time = float(self.stringvar['time'].get())
-        self.dist = float(self.stringvar['dist'].get())
-        self.depth = float(self.stringvar['depth'].get())
-        if self.include_sampling_depth:
-            self.sampling_depth = float(self.stringvar['sampling_depth'].get())
+    def _save(self, entry=None):
+        self.time = float(self.entry['time'].get_value())
+        self.dist = float(self.entry['dist'].get_value())
+        self.depth = float(self.entry['depth'].get_value())
+        # if self.include_sampling_depth:
+        #     self.sampling_depth = float(self.stringvar['sampling_depth'].get())
 #        self.modulus = int(self.stringvar['modulus'].get())
-        
-        self.new_values = ''.join([self.stringvar[item].get() for item in sorted(self.stringvar)])
+        self.new_values = [self.time, self.dist, self.depth]
+        # self.new_values = ''.join([self.stringvar[item].get() for item in sorted(self.stringvar)])
         if self.new_values != self.old_values:
             self.values_are_updated = True
         else:
@@ -892,15 +916,13 @@ class CompareWidget(tk.Frame):
         self.user.match.set('hours', str(self.time))
         self.user.match.set('dist', str(self.dist))
         self.user.match.set('depth', str(self.depth))
-        
-        if self.callback:
-            self.callback()
     
     #===========================================================================
     def set_data(self, **kwargs):
         for key, value in kwargs.items():
-            if key in self.stringvar:
-                self.stringvar[key].set(str(int(float(value))))
+            if key in self.entry:
+                self.entry[key].set_value(str(int(float(value))))
+        self._save()
         
 """
 ================================================================================
@@ -912,7 +934,7 @@ class SaveWidget(ttk.LabelFrame):
                  parent,
                  label='',
                  prop_frame={},  
-                 prop_entry={}, 
+                 prop_entry={},
                  callback=None,
                  user=None,
                  **kwargs):
@@ -957,21 +979,22 @@ class SaveWidget(ttk.LabelFrame):
         self.entry_directory.grid(row=r, column=c+1, padx=padx, pady=pady, sticky='nw')
         self.stringvar_directory.trace("w", lambda name, index, mode, sv=self.stringvar_directory: tkw.check_path_entry(sv))
 
-        ttk.Button(frame, text='Get directory', command=self._get_directory).grid(row=r, column=c + 2, columnspan=2, padx=padx,
-                                                                      pady=pady, sticky='se')
-
+        ttk.Button(frame, text='Get directory', command=self._get_directory).grid(row=r, column=c + 2, columnspan=2,
+                                                                                  padx=padx,
+                                                                                  pady=pady, sticky='se')
         r+=1
-        
+
         tk.Label(frame, text='File name:').grid(row=r, column=c, padx=padx, pady=pady, sticky='nw')
         self.stringvar_file_name = tk.StringVar()
         self.entry_file_name = tk.Entry(frame, textvariable=self.stringvar_file_name, **self.prop_entry)
         self.entry_file_name.grid(row=r, column=c+1, padx=padx, pady=pady, sticky='nw')
         self.stringvar_file_name.trace("w", lambda name, index, mode, sv=self.stringvar_file_name: tkw.check_path_entry(sv))
         r+=1
-        
+
         ttk.Button(frame, text='Save', command=self._save_file).grid(row=r, column=c+1, columnspan=2, padx=padx, pady=pady, sticky='se')
-        
-        tkw.grid_configure(frame, nr_rows=r+1)
+        r += 1
+
+        tkw.grid_configure(frame, nr_rows=r)
    
     def _get_directory(self):
         directory = tk.filedialog.askdirectory()

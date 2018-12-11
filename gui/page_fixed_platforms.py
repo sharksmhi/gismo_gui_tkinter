@@ -117,12 +117,14 @@ class PageFixedPlatforms(tk.Frame):
         """
         """
         frame = self.labelframe_plot
-        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Contour plot'])
+#        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Contour plot'])
+        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Correlation plot'])
 
         tkw.grid_configure(frame)
 
         self._set_notebook_time_plot()
-        self._set_notebook_contour_plot()
+        self._set_notebook_compare_plot()
+#        self._set_notebook_contour_plot()
 
     def _set_notebook_contour_plot(self):
         frame = self.notebook_plot.frame_contour_plot
@@ -145,9 +147,9 @@ class PageFixedPlatforms(tk.Frame):
                                               hover_target=None,
                                               time_axis='x')
         margins = {'right': 0.03, 
-                    'left': 0.06, 
-                    'top': 0.04, 
-                    'bottom': 0.03}
+                   'left': 0.06,
+                   'top': 0.04,
+                   'bottom': 0.03}
 
         self.plot_object.add_first_ax(margins=margins)
 
@@ -158,6 +160,29 @@ class PageFixedPlatforms(tk.Frame):
                                          self.plot_object, 
                                          pack=False,
                                          include_toolbar=False)
+
+    def _set_notebook_compare_plot(self):
+        frame = self.notebook_plot.frame_correlation_plot
+
+        self.plot_object_compare = plot_selector.Plot(sync_colors=True,
+                                                      allow_two_axis=False,
+                                                      orientation='horizontal',
+                                                      figsize=(2, 2),
+                                                      hover_target=None)
+        margins = {'right': 0.06,
+                   'left': 0.06,
+                   'top': 0.06,
+                   'bottom': 0.10}
+
+        self.plot_object_compare.add_first_ax(margins=margins)
+
+        # Target to plot object is called when set range is active.
+        # self.plot_object_compare.add_range_target(self._callback_plot_range)
+
+        self.plot_widget_compare = tkw.PlotFrame(frame,
+                                                 self.plot_object_compare,
+                                                 pack=False,
+                                                 include_toolbar=False)
 
     #===========================================================================
     def _set_frame_options(self):
@@ -176,14 +201,14 @@ class PageFixedPlatforms(tk.Frame):
         self.labelframe_parameter = tk.LabelFrame(frame, text='Parameter')
         self.labelframe_parameter.grid(row=2, column=0, **opt)
 
-        self.labelframe_parameter_contour = tk.LabelFrame(frame, text='Contour plot')
-        self.labelframe_parameter_contour.grid(row=2, column=1, **opt)
+#        self.labelframe_parameter_contour = tk.LabelFrame(frame, text='Contour plot')
+#        self.labelframe_parameter_contour.grid(row=2, column=1, **opt)
         
         self.frame_notebook = tk.Frame(frame)
         self.frame_notebook.grid(row=3, column=0, columnspan=2, **opt)
 
         # tkw.grid_configure(frame, nr_rows=4, r0=4, r1=4, r3=5)
-        tkw.grid_configure(frame, nr_rows=4, nr_columns=2, r3=10)
+        tkw.grid_configure(frame, nr_rows=4, nr_columns=1, r3=10)
         
         
         pad = {'padx': 5, 
@@ -224,17 +249,17 @@ class PageFixedPlatforms(tk.Frame):
 
         # ----------------------------------------------------------------------
         # Parameter contour plot
-        self.parameter_contour_plot_widget = tkw.ComboboxWidget(self.labelframe_parameter_contour,
-                                                               title='',
-                                                               row=0,
-                                                               pady=5,
-                                                               sticky='w')
-        self.button_plot_contour = tk.Button(self.labelframe_parameter_contour,
-                                             text='Update contour plot',
-                                             command=self._update_contour_plot)
-        self.button_plot_contour.grid(row=0, column=1, **pad)
-
-        tkw.grid_configure(self.labelframe_parameter_contour, nr_columns=2)
+#        self.parameter_contour_plot_widget = tkw.ComboboxWidget(self.labelframe_parameter_contour,
+#                                                               title='',
+#                                                               row=0,
+#                                                               pady=5,
+#                                                               sticky='w')
+#        self.button_plot_contour = tk.Button(self.labelframe_parameter_contour,
+#                                             text='Update contour plot',
+#                                             command=self._update_contour_plot)
+#        self.button_plot_contour.grid(row=0, column=1, **pad)
+#
+#        tkw.grid_configure(self.labelframe_parameter_contour, nr_columns=2)
         
         #----------------------------------------------------------------------
         # Options notebook
@@ -499,22 +524,154 @@ class PageFixedPlatforms(tk.Frame):
         self.compare_widget = gui.CompareWidget(frame,
                                                 session=self.controller.session,
                                                 user=self.user,
-                                                include_sampling_depth=True,
-                                                callback=self._callback_compare,
                                                 row=1,
                                                 **grid_opt)
-        tkw.grid_configure(frame, nr_rows=2)
 
+        # Save directory
+        self.compare_save_directory_widget = tkw.DirectoryWidget(frame, label='Save directory', row=2)
+        default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
+                                         datetime.datetime.now().strftime('%Y%m%d'))
+        self.compare_save_directory_widget.set_directory(default_directory)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Buttons
+        button_frame = tk.Frame(frame)
+        button_frame.grid(row=3, column=0, sticky='nsew', **pad)
+
+        # Button plot
+        self.button_compare_plot = tk.Button(button_frame, text='Plot compare data', comman=self._compare_data_plot)
+        self.button_compare_plot.grid(row=0, column=0, sticky='nsew', **pad)
+
+        # Button save data
+        self.button_compare_save_data = tk.Button(button_frame, text='Save compare data', comman=self._compare_data_save_data)
+        self.button_compare_save_data.grid(row=0, column=1, sticky='nsew', **pad)
+
+        tkw.grid_configure(button_frame, nr_rows=1, nr_columns=2)
+        tkw.grid_configure(frame, nr_rows=4)
+
+    def _compare_data_plot(self):
+        if not self._match_data():
+            self.plot_object_compare.reset_plot()
+            return
+        print(self.current_file_id)
+        print(self.current_ref_file_id)
+        match_object = self.session.get_match_object(self.current_file_id, self.current_ref_file_id)
+        merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
+        compare_parameter = self.compare_widget.get_parameter()
+
+        # Find parameter names in merge df
+        current_par_file_id = '{}_{}'.format(self.current_parameter, self.current_file_id)
+        compare_par_file_id = '{}_{}'.format(compare_parameter, self.current_ref_file_id)
+
+        main_par = match_object.get_merge_parameter(current_par_file_id)
+        comp_par = match_object.get_merge_parameter(compare_par_file_id)
+
+        # print('='*50)
+        # print(main_par)
+        # print(comp_par)
+        # x = [float(item) if item else np.nan for item in merge_df[main_par]]
+        # y = [float(item) if item else np.nan for item in merge_df[comp_par]]
+        # print(x)
+        # print(y)
+
+        # Get list of active visit_depth_id
+        visit_depth_id_par = '{}_{}'.format('visit_depth_id', self.current_file_id)
+        visit_depth_id_list = merge_df[visit_depth_id_par]
+        # Handle flaggs
+        selection = self.flag_widget.get_selection()
+
+        self.plot_object_compare.reset_plot()
+
+        all_values = []
+        all_times = []
+
+        for flag in selection.selected_flags:
+            # print('FLAG', flag)
+            data = self.current_gismo_object.get_data('visit_depth_id', 'time', self.current_parameter, visit_depth_id_list=visit_depth_id_list,
+                                                      mask_options=dict(include_flags=[flag]))
+            print('len()', len(self.current_gismo_object.df))
+            print('len(data)', data['visit_depth_id'])
+            boolean = ~np.isnan(np.array(data[self.current_parameter]))
+            visit_depth_id_flag = data['visit_depth_id'][boolean]
+
+            all_times.extend(list(data['time']))
+
+            boolean = merge_df[visit_depth_id_par].isin(visit_depth_id_flag)
+            x = [float(item) if item else np.nan for item in merge_df.loc[boolean, main_par]]
+            y = [float(item) if item else np.nan for item in merge_df.loc[boolean, comp_par]]
+
+            prop = self.current_gismo_object.settings.get_flag_prop_dict(flag)
+            prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
+            prop.update({'linestyle': '',
+                         'marker': '.'})
+            print(prop)
+            self.plot_object_compare.set_data(x, y, line_id=flag, **prop)
+
+            all_values.extend(x)
+            all_values.extend(y)
+
+            # print('LEN', len(all_values))
+
+        min_value = np.nanmin(all_values)
+        max_value = np.nanmax(all_values) * 1.05
+
+        if min_value > 0:
+            min_value = min_value * 0.95
+
+        # Plot correlation line
+        self.plot_object_compare.set_data([min_value, max_value], [min_value, max_value],
+                                          line_id='correlation', marker='',
+                                          color=self.user.plot_color.setdefault('correlation_line', 'red'))
+
+        self.plot_object_compare.set_x_limits(limits=[min_value, max_value], call_targets=False)
+        self.plot_object_compare.set_y_limits(limits=[min_value, max_value], call_targets=True)
+
+        # Set title and labels
+        time_from = pd.to_datetime(str(min(all_times))).strftime('%Y%m%d')
+        time_to = pd.to_datetime(str(max(all_times))).strftime('%Y%m%d')
+        self.plot_object_compare.set_title('{} - {}'.format(time_from, time_to))
+        self.plot_object_compare.set_x_label(current_par_file_id)
+        self.plot_object_compare.set_y_label(compare_par_file_id)
+
+
+
+    def _compare_data_save_data(self):
+        if not self._match_data():
+            return
+        merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
+        directory = self.compare_save_directory_widget.get_directory()
+        if not directory:
+            return
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        file_path = os.path.join(directory, 'merge_data_{} - {}.txt'.format(self.current_file_id, self.current_ref_file_id))
+        merge_df.to_csv(file_path, sep='\t', index=False)
+
+
+    def _match_data(self):
+        """
+        Match data from the active files. Only calculates if compare widget is updated.
+        :return:
+        """
+        if not all([self.current_file_id, self.current_ref_file_id]):
+            return
+
+        diffs = dict()
+        diffs['hours'] = self.compare_widget.time
+        diffs['dist'] = self.compare_widget.dist
+        diffs['depth'] = self.compare_widget.depth
+
+        # TODO: Match data every time. CHANGE THIS
+        self.session.match_files(self.current_file_id, self.current_ref_file_id, **diffs)
+
+        return True
 
     def _update_compare_widget(self):
         self.compare_widget.update_parameter_list(self.current_ref_file_id)
-        station = self.current_gismo_object.get_station_name()
-        if station:
-            self.compare_widget.set_data(sampling_depth=self.user.sampling_depth.setdefault(station, '0'))
-
 
     #===========================================================================
-    def _callback_compare(self):
+    def _compare_update_plot(self):
         logging.debug('page_fixed_platforms._callback_compare: Start')
         try:
             match_data = gui.add_compare_to_timeseries_plot(plot_object=self.plot_object,
@@ -974,6 +1131,10 @@ class PageFixedPlatforms(tk.Frame):
 #         self.yrange_selection_widget.reset_widget()
 #         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
 
+        try:
+            self._compare_data_plot()
+        except:
+            pass
         logging.debug('page_fixed_platforms._update_plot: End')
 
     def _update_contour_plot(self, **kwargs):
@@ -1002,6 +1163,14 @@ class PageFixedPlatforms(tk.Frame):
         selection = self.flag_widget.get_selection()
         for k, flag in enumerate(selection.selected_flags):
             self.plot_object.set_prop(ax='first', line_id=flag, **selection.get_prop(flag))
+
+        # Compare widget
+        try:
+            selection = self.flag_widget.get_selection()
+            for k, flag in enumerate(selection.selected_flags):
+                self.plot_object_compare.set_prop(ax='first', line_id=flag, **selection.get_prop(flag))
+        except:
+            pass
         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
         logging.debug('page_fixed_platforms._on_flag_widget_change: End')
 
@@ -1098,7 +1267,7 @@ class PageFixedPlatforms(tk.Frame):
         self._update_valid_time_range_in_time_axis()
 
         self._update_parameter_list()
-        self._update_contour_parameters()
+#        self._update_contour_parameters()
         self._on_select_parameter()
 
         self.plot_object.zoom_to_data(call_targets=True)
@@ -1136,7 +1305,13 @@ class PageFixedPlatforms(tk.Frame):
     def _update_frame_reference_file(self):
         # Update reference file combobox. Should not include selected file.
         all_files = self.controller.get_loaded_files_list()
-        ref_file_list = [item for item in all_files if item != self.stringvar_current_reference_file.get()]
+        ref_file_list = []
+        # print('==', self.current_file_id)
+        for item in all_files:
+            # print('--', item)
+            if self.current_file_id not in item:
+                ref_file_list.append(item)
+        # ref_file_list = [item for item in all_files if self.current_file_id not in item]
         self.select_ref_data_widget.update_items(ref_file_list)
 
     def _update_map_1(self, *args, **kwargs):
