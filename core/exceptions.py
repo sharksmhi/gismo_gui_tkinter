@@ -37,3 +37,9 @@ class GUIExceptionUserError(GUIException):
     """
     code = ''
     message = ''
+
+class GUIExceptionBreak(GUIException):
+    """
+    """
+    code = ''
+    message = ''

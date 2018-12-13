@@ -105,7 +105,7 @@ class App(tk.Tk):
         self.info_popup = gui.InformationPopup(self)
         plt.style.use(self.user.layout.setdefault('plotstyle', self.user.layout.setdefault('plotstyle', self.settings['default']['plotstyle'])))
 
-        self.boxen = Boxen(open_directory=self.settings['directory']['Input directory'])
+        # self.boxen = Boxen(open_directory=self.settings['directory']['Input directory'])
         # self.boxen = core.Boxen(self, root_directory=self.root_directory)
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
@@ -196,7 +196,7 @@ class App(tk.Tk):
         #----------------------------------------------------------------------
         # Frame mid
         self.frame_add = tk.LabelFrame(self.frame_mid)
-        self.frame_loaded = tk.LabelFrame(self.frame_mid)
+        self.frame_loaded = tk.LabelFrame(self.frame_mid, text='Loaded files')
         
         # Grid
         self.frame_add.grid(row=0, column=0, sticky="nsew")
@@ -431,10 +431,12 @@ class App(tk.Tk):
 #        
 #        r = 0 
         prop_listbox = {'height': 4}
-        self.listbox_widget_loaded_files = tkw.ListboxWidget(frame, 
+        self.listbox_widget_loaded_files = tkw.ListboxWidget(frame,
                                                              include_delete_button='Remove source',
                                                              prop_listbox=prop_listbox,
-                                                             callback_delete_button=self._delete_source)
+                                                             callback_delete_button=self._delete_source,
+                                                             padx=1,
+                                                             pady=1)
 #        self.listbox_widget_loaded_files = tkw.ListboxSelectionWidget(frame, 
 #                                                                      sort_selected=True, 
 #                                                                      vertical=True, 
@@ -463,7 +465,6 @@ class App(tk.Tk):
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
                                                filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
 
-                                                 
         if file_path:
             self._set_open_directory(file_path)
             old_sampling_type = self.combobox_widget_sampling_type.get_value() 
@@ -473,10 +474,11 @@ class App(tk.Tk):
             # Check settings file path
             settings_file_path = self.combobox_widget_settings_file.get_value()
             # if not settings_file_path and sampling_type != old_sampling_type:
-            print('sampling_type', sampling_type)
-            print(self.settings['directory']['Default {} settings'.format(sampling_type)])
-            print('-')
-            print(self.combobox_widget_settings_file.items)
+            # print('sampling_type', sampling_type)
+            # print(self.settings['directory']['Default {} settings'.format(sampling_type)])
+            # print('-')
+            # print(self.combobox_widget_settings_file.items)
+            # print(self.settings['directory']['Default {} settings'.format(sampling_type)])
             self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
 
             # User settings
@@ -582,6 +584,10 @@ class App(tk.Tk):
                     gui.show_information('No depth found!', 'You need to provide platform depth for this sampling type!')
                     return
                 load_file(depth=platform_depth)
+
+        except Exception:
+            gui.show_information('Load file error',
+                                 'Something went wrong when trying to load file. Maybe you have provided the wrong Settings file?')
 
 
 

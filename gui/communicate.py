@@ -5,8 +5,14 @@
 # License: MIT License (see LICENSE.txt or http://opensource.org/licenses/mit).
 
 import numpy as np
+import os
+import shutil
+
+import pandas as pd
+import datetime
 
 import core
+import gui
 
 import matplotlib.colors as mcolors
 import matplotlib.dates as dates
@@ -15,13 +21,12 @@ import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 from core.exceptions import *
 
+from libs.sharkpylib.gismo.exceptions import *
+from tkinter import messagebox
+
 import logging 
 
-"""
-================================================================================
-================================================================================
-================================================================================
-""" 
+
 def add_compare_to_timeseries_plot(plot_object=None,
                                     session=None,
                                     sample_file_id=None,
@@ -62,7 +67,7 @@ def add_compare_to_timeseries_plot(plot_object=None,
         help_info_function('Done!')
 
     return match_data
-        
+
 
 # """
 # ================================================================================
@@ -235,6 +240,25 @@ def flag_data_time_series(flag_widget=None,
             #                                      index=index,
             #                                      qflag=flag_nr)
 
+def run_automatic_qc(controller, automatic_qc_widget):
+    qc_routine_list = automatic_qc_widget.get_checked_item_list()
+    nr_routines = len(qc_routine_list)
+    if nr_routines == 0:
+        gui.show_information('Run QC', 'No QC routines selected!')
+        return
+
+    if nr_routines == 1:
+        text = 'You are about to run 1 automatic quality control. This might take some time. Do you want to continue?'
+    else:
+        text = 'You are about tu run {} automatic quality controles. This might take some time. Do you want to continue?'.format(nr_routines)
+
+    if not messagebox.askyesno('Run QC', text):
+        return
+
+        controller.controller.run_progress(lambda: controller.session.run_automatic_qc(controller.current_file_id,
+                                                                       qc_routines=qc_routine_list),
+                                 'Running qc on file: {}'.format(controller.current_file_id))
+
 def save_user_info_from_flag_widget(flag_widget, user_object):
     """
     Saves color and marker size to user profile (user_object)
@@ -252,7 +276,317 @@ def save_user_info_from_flag_widget(flag_widget, user_object):
     #     user_object.flag_color.set(f, c)
     #     user_object.flag_markersize.set(f, ms)
 
-                                                                 
+def save_file(controller, gismo_object, save_widget):
+    """
+    Saves the given gismo_object using the information in save_widget
+    save_widget is a gui.SaweWidget object
+
+    :param controller:
+    :param save_widget:
+    :return:
+    """
+    if not controller.current_file_id:
+        gui.show_information('No file loaded', 'Cant save file, no file loaded.')
+        return
+
+    directory = save_widget.stringvar_directory.get().strip()
+    file_name = save_widget.stringvar_file_name.get().strip()
+
+    if not all([directory, file_name]):
+        gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
+        return
+    file_path = os.path.realpath(gismo_object.file_path)
+    if not file_name.endswith('.txt'):
+        file_name = file_name + '.txt'
+    output_file_path = os.path.realpath('/'.join([directory, file_name]))
+
+    if file_path != output_file_path:
+        try:
+            gismo_object.save_file(file_path=output_file_path)
+        except GISMOExceptionFileExcists:
+            if not messagebox.askyesno('Overwrite file!',
+                                       'The given file already exists. Do you want to replace the original file?'):
+                return
+    else:
+        if not messagebox.askyesno('Overwrite file!', 'Do you want to replace the original file?'):
+            return
+
+    # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    output_file_path = directory + '/temp_%s' % file_name
+    gismo_object.save_file(file_path=output_file_path, overwrite=True)
+    os.remove(file_path)
+    shutil.copy2(output_file_path, file_path)
+    os.remove(output_file_path)
+
+
+def save_plot(controller, plot_object, save_directory_widget, in_file_name='plot', **kwargs):
+    """
+    Saves the plot plot_widget using the information in save_directory_widget
+    save_widget is a gui.SaweWidget object
+
+    :param plot_object:
+    :param save_widget:
+    :return:
+    """
+    if not controller.current_file_id:
+        gui.show_information('No file loaded', 'Cant save plot, no file loaded.')
+        return
+
+    directory = save_directory_widget.get_directory()
+    in_file_name = in_file_name.replace('/', '-').replace('\\', '-')
+    file_name = '{}.{}'.format(in_file_name, kwargs.get('file_format', 'png'))
+
+    if not all([directory, file_name]):
+        gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
+        return
+
+    if not os.path.exists(directory):
+        if not messagebox.askyesno('Create directory', 'The given directory does not exist. Do you want to create it?'):
+            return
+        os.makedirs(directory)
+
+    output_file_path = os.path.realpath('/'.join([directory, file_name]))
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    plot_object.save_fig(output_file_path)
+
+
+def save_html_plot(controller, save_widget_html, flag_widget=None, save_directory_widget=None):
+
+    def get_par_list_by_file_id(parameter_list):
+        """
+        """
+        return_dict = dict(main=set(['time']),
+                           ref=set(['time']))
+        for item in parameter_list:
+            par, file_id = item.split('(')
+            if file_id == 'main)':
+                return_dict['main'].add(par.strip())
+            elif file_id == 'ref)':
+                return_dict['ref'].add(par.strip())
+
+        return_dict['main'] = sorted(return_dict['main'])
+        return_dict['ref'] = sorted(return_dict['ref'])
+        return return_dict
+
+    import libs.sharkpylib.plot.html_plot as html_plot
+
+    selection = save_widget_html.get_selection()
+
+    # Check selection
+    export_combined_plots = selection.get('combined_plot')
+    export_individual_plots = selection.get('individual_plots')
+    export_individual_maps = selection.get('individual_maps')
+    parameter_list = selection.get('parameters')
+    directory = save_directory_widget.get_directory()
+
+    # Check selection
+    if not any([export_combined_plots, export_individual_plots, export_individual_maps, parameter_list]):
+        gui.show_information('No selection', 'You need to select what type of plots/maps to export')
+
+    # Check directory
+    if not directory:
+        gui.show_information('Missing directory', 'Could not save html maps and/or plots. No directory selected.')
+        return
+    if not os.path.exists(directory):
+        create_dirs = messagebox.askyesno('Missing directory', 'Directory does not exist. Would you like to create a new directory?')
+        if create_dirs:
+            os.makedirs(directory)
+        else:
+            return
+
+    # Create subdirectory
+    date_string = datetime.datetime.now().strftime('%Y%m%d%H%M')
+    subdir = 'html_exports_{}'.format(date_string)
+    export_dir = os.path.join(directory, subdir)
+    if not os.path.exists(export_dir):
+        os.mkdir(export_dir)
+
+    parameter_dict = get_par_list_by_file_id(parameter_list)
+
+    # Check nr of parameters and warn if too many
+    nr_par = len(parameter_dict['main']+parameter_dict['ref'])
+    max_nr_par = controller.user.process.setdefault('warn_export_nr_parameters', 10)
+    if nr_par > max_nr_par:
+        ok_to_continue = messagebox.askyesno('Export plots/maps',
+                                                'You have chosen to export {} parameters. '
+                                                'This might take some time and MAY cause the program to crash. '
+                                                'Do you wish to continue anyway? ')
+        if not ok_to_continue:
+            self.controller.update_help_information('Export aborted by user.')
+            return
+
+    main_data = {}
+    ref_data = {}
+    if controller.current_file_id and parameter_dict.get('main'):
+        main_data = controller.session.get_data(controller.current_file_id, *parameter_dict.get('main'))
+    if controller.current_ref_file_id and parameter_dict.get('ref'):
+        ref_data = controller.session.get_data(controller.current_ref_file_id, *parameter_dict.get('ref'))
+
+    if export_combined_plots:
+        combined_plot_object = html_plot.PlotlyPlot()
+        # Add Main data
+        if main_data:
+            for par in main_data:
+                if par == 'time':
+                    continue
+                combined_plot_object.add_scatter_data(main_data['time'],
+                                                      main_data[par],
+                                                      name='{} (main)'.format(par),
+                                                      mode='markers')
+        if ref_data:
+            for par in ref_data:
+                if par == 'time':
+                    continue
+                combined_plot_object.add_scatter_data(ref_data['time'],
+                                                      ref_data[par],
+                                                      name='{} (ref)'.format(par),
+                                                      mode='markers')
+        combined_plot_object.plot_to_file(os.path.join(export_dir, 'plot_combined.html'))
+
+    if export_individual_plots and flag_widget:
+        flag_selection = flag_widget.get_selection()
+        selected_flags = flag_selection.selected_flags
+        selected_descriptions = flag_selection.selected_descriptions
+        if main_data:
+            for par in main_data:
+                if par == 'time':
+                    continue
+                individual_plot_object = html_plot.PlotlyPlot(title='{} (main)'.format(par), yaxis_title='')
+                for qf, des in zip(selected_flags, selected_descriptions):
+                    data = controller.session.get_data(controller.current_file_id, 'time', par, mask_options={'include_flags': [qf]})
+                    individual_plot_object.add_scatter_data(data['time'], data[par],
+                                                            name='{} ({})'.format(qf, des),
+                                                            mode='markers')
+                individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
+        if ref_data:
+            for par in ref_data:
+                if par == 'time':
+                    continue
+                individual_plot_object = html_plot.PlotlyPlot(title='{} (ref)'.format(par), yaxis_title='')
+                for qf, des in zip(selected_flags, selected_descriptions):
+                    data = controller.session.get_data(controller.current_ref_file_id, 'time', par, mask_options={'include_flags': [qf]})
+                    individual_plot_object.add_scatter_data(data['time'], data[par],
+                                                            name='{} ({})'.format(qf, des),
+                                                            mode='markers')
+                individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
+
+
+
+def match_data(controller, compare_widget):
+    """
+    Match data from the active files. Only calculates if compare widget is updated.
+    :return:
+    """
+    if not all([controller.current_file_id, controller.current_ref_file_id]):
+        if not controller.current_file_id:
+            gui.show_information('No data loaded', 'No main file loaded!')
+        elif not controller.current_ref_file_id:
+            gui.show_information('No data loaded', 'No reference file loaded!')
+        raise GUIExceptionBreak
+    elif controller.current_file_id == controller.current_ref_file_id:
+        gui.show_information('Cant compare the same data', 'Cant compare with yourself!')
+        raise GUIExceptionBreak
+
+    diffs = dict()
+    diffs['hours'] = compare_widget.time
+    diffs['dist'] = compare_widget.dist
+    diffs['depth'] = compare_widget.depth
+
+    # TODO: Match data every time. CHANGE THIS
+    controller.session.match_files(controller.current_file_id, controller.current_ref_file_id, **diffs)
+    return True
+
+def get_merge_data(controller, compare_widget, flag_widget):
+    """
+    Returns matching data for loaded information
+    :param controller:
+    :return:
+    """
+    if not match_data(controller, compare_widget):
+        return
+
+    file_id = controller.current_file_id
+    ref_file_id = controller.current_ref_file_id
+    parameter = controller.current_parameter
+    gismo_object = controller.current_gismo_object
+
+    match_object = controller.session.get_match_object(file_id, ref_file_id)
+    merge_df = controller.session.get_merge_data(file_id, ref_file_id)
+
+    compare_parameter = compare_widget.get_parameter()
+
+    # Find parameter names in merge df
+    main_par_file_id = '{}_{}'.format(parameter, file_id)
+    compare_par_file_id = '{}_{}'.format(compare_parameter, ref_file_id)
+    depth_compare_file_id = '{}_{}'.format('depth', ref_file_id)
+
+    main_par = match_object.get_merge_parameter(main_par_file_id)
+    comp_par = match_object.get_merge_parameter(compare_par_file_id)
+    depth_par = match_object.get_merge_parameter(depth_compare_file_id)
+
+    # Get list of active visit_depth_id
+    visit_depth_id_par = '{}_{}'.format('visit_depth_id', file_id)
+    visit_depth_id_list = merge_df[visit_depth_id_par]
+
+    # Handle flags
+    selection = flag_widget.get_selection()
+
+    # Build data
+    all_values = []
+    all_times = []
+
+    data = {}
+    data['flags'] = {}
+    for flag in selection.selected_flags:
+        masked_data = gismo_object.get_data('visit_depth_id', 'time', parameter,
+                                     visit_depth_id_list=visit_depth_id_list,
+                                     mask_options=dict(include_flags=[flag]))
+
+        boolean = ~np.isnan(np.array(masked_data[parameter]))
+        visit_depth_id_flag = masked_data['visit_depth_id'][boolean]
+        all_times.extend(list(masked_data['time']))
+
+        boolean = merge_df[visit_depth_id_par].isin(visit_depth_id_flag)
+
+        data['flags'][flag] = {}
+        data['flags'][flag]['x'] = [float(item) if item else np.nan for item in merge_df.loc[boolean, main_par]]
+        data['flags'][flag]['y'] = [float(item) if item else np.nan for item in merge_df.loc[boolean, comp_par]]
+        data['flags'][flag]['depth'] = [float(item) if item else np.nan for item in merge_df.loc[boolean, depth_par]]
+
+        prop = gismo_object.settings.get_flag_prop_dict(flag)
+        prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
+        prop.update({'linestyle': '',
+                     'marker': '.'})
+
+        data['flags'][flag]['prop'] = prop
+
+        all_values.extend(data['flags'][flag]['x'])
+        all_values.extend(data['flags'][flag]['y'])
+
+        # print('LEN', len(all_values))
+
+    data['min_value'] = np.nanmin(all_values)
+    data['max_value'] = np.nanmax(all_values) * 1.05
+
+    if data['min_value'] > 0:
+        data['min_value'] = data['min_value'] * 0.95
+
+    # Set title and labels
+    data['time_from_str'] = pd.to_datetime(str(min(all_times))).strftime('%Y%m%d')
+    data['time_to_str'] = pd.to_datetime(str(max(all_times))).strftime('%Y%m%d')
+
+    data['main_par'] = main_par
+    data['compare_par'] = comp_par
+
+    data['main_par_file_id'] = main_par_file_id
+    data['compare_par_file_id'] = compare_par_file_id
+
+    return data
+
 """
 ================================================================================
 ================================================================================
@@ -525,13 +859,13 @@ def update_time_series_plot(gismo_object=None,
         prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
         prop.update({'linestyle': '',
                      'marker': '.'})
-        # print('='*50)
-        # print('par', par)
-        # print('flag', flag)
-        # print(data[par])
-        # print('prop', prop)
-        # print('-' * 50)
+
         plot_object.set_data(x=data['time'], y=data[par], line_id=flag, call_targets=call_targets, **prop)
+
+    try:
+        plot_object.set_title(gismo_object.get_station_name())
+    except GISMOExceptionMethodNotImplemented:
+        pass
 
     if help_info_function:
         help_info_function('Done!')
@@ -670,39 +1004,129 @@ def update_scatter_route_map(gismo_object=None,
 ================================================================================
 ================================================================================
 ================================================================================
-""" 
-#===========================================================================
-def update_plot_limits_from_settings(plot_object=None,
-                                     user_object=None,
-                                     axis=None, 
-                                     par=None, 
-                                     call_targets_in_plot_object=False):
-    """ 
-    Updates limits in plot. Limits are taken from GISMOsettings object. 
-    Idea is to always update limits via this method. 
+"""
+def sync_limits_in_plot_user_and_axis(plot_object=None,
+                                      user_object=None,
+                                      axis_widget=None,
+                                      par=None,
+                                      axis=None,
+                                      call_targets=True,
+                                      source=None,
+                                      **kwargs):
     """
-    
-    
-    if not all([user_object, axis, par]):
-        return  
+    Syncs plot, user and axis widgets. Takes information in source.
+    Only on axis
 
+    :param plot_object:
+    :param user_object:
+    :param axis_widget:
+    :param par:
+    :param call_targets:
+    :param source: (plot, user och axis)
+    :param kwargs:
+    :return:
+    """
 
-    min_value = user_object.range.get(par, 'min')
-    max_value = user_object.range.get(par, 'max')
+    plot_min = None
+    plot_max = None
 
-    if min_value is None:
-        return
-    
+    # If no info in user info is taken from plot. So we start by finding limits in plot
     if axis in ['x', 't']:
-#        xmin = settings_object['ranges'][par]['xmin'] 
-#        xmax = settings_object['ranges'][par]['xmax']
-        plot_object.set_x_limits(limits=[min_value, max_value], call_targets=call_targets_in_plot_object)
+        plot_min, plot_max = plot_object.get_xlim()
+
+    elif axis in ['y', 'z']:
+        plot_min, plot_max = plot_object.get_ylim()
+
+    if plot_min == None or plot_max == None:
+        raise GUIExceptionBreak
+
+    # Get limits from source
+    if source in ['plot', 'plot_widget', 'plot_object']:
+        min_value = plot_min
+        max_value = plot_max
+    elif source in ['user', 'user_object']:
+        min_value = user_object.range.setdefault(par, 'min', plot_min)
+        max_value = user_object.range.setdefault(par, 'max', plot_max)
+    elif source in ['axis_widget', 'axis']:
+        min_value, max_value = axis_widget.get_limits()
+
+    if par != 'time':
+        min_value = float(min_value)
+        max_value = float(max_value)
+    print('=' * 60)
+    print('=' * 60)
+    print('SYNC')
+    print('-'*60)
+    print(source, axis, par)
+    print(min_value, type(min_value))
+    print(max_value, type(max_value))
+    print('=' * 60)
+    # Set limits in plot
+    if axis in ['x', 't']:
+        plot_object.set_x_limits(limits=[min_value, max_value], call_targets=call_targets)
+
+    elif axis in ['y', 'z']:
+        plot_object.set_y_limits(limits=[min_value, max_value], call_targets=call_targets)
+
+    # Set limits in user
+    if par != 'time':
+        user_object.range.set(par, 'min', min_value)
+        user_object.range.set(par, 'max', max_value)
+
+    # Set limits in axis widget
+    axis_widget.set_limits(min_value, max_value)
+
+#===========================================================================
+def update_plot_limits_from_user(plot_object=None,
+                                 user_object=None,
+                                 axis=None,
+                                 par=None,
+                                 call_targets=False):
+    """ 
+    Updates limits in plot. Limits are taken from user_object.
+    If limits not in user_object min and xas from plot_object is set.
+    """
+
+    if not all([user_object, axis, par]):
+        return
+
+    if axis in ['x', 't']:
+        plot_min, plot_max = plot_object.get_xlim()
+        min_value = user_object.range.setdefault(par, 'min', plot_min)
+        max_value = user_object.range.setdefault(par, 'max', plot_max)
+        plot_object.set_x_limits(limits=[min_value, max_value], call_targets=call_targets)
         
     elif axis in ['y', 'z']:
-#        ymin = settings_object['ranges'][par]['ymin'] 
-#        ymax = settings_object['ranges'][par]['ymax']
-        plot_object.set_y_limits(limits=[min_value, max_value], call_targets=call_targets_in_plot_object)
+        plot_min, plot_max = plot_object.get_ylim()
+        min_value = user_object.range.setdefault(par, 'min', plot_min)
+        max_value = user_object.range.setdefault(par, 'max', plot_max)
+        plot_object.set_y_limits(limits=[min_value, max_value], call_targets=call_targets)
 
+
+def update_plot_limits_from_axis_widgets(plot_object=None,
+                                         user_object=None,
+                                         axis=None,
+                                         par=None,
+                                         call_targets=False):
+    """
+    Updates limits in plot. Limits are taken from the given axis_widgets.
+    Idea is to always update limits via this method.
+    """
+
+    if not all([user_object, axis, par]):
+        return
+
+    if axis in ['x', 't']:
+        plot_min, plot_max = plot_object.get_xlim()
+        min_value = user_object.range.setdefault(par, 'min', plot_min)
+        max_value = user_object.range.setdefault(par, 'max', plot_max)
+        plot_object.set_x_limits(limits=[min_value, max_value], call_targets=call_targets)
+
+    elif axis in ['y', 'z']:
+        plot_min, plot_max = plot_object.get_ylim()
+        min_value = user_object.range.setdefault(par, 'min', plot_min)
+        max_value = user_object.range.setdefault(par, 'max', plot_max)
+        plot_object.set_y_limits(limits=[min_value, max_value], call_targets=call_targets)
 
 def set_valid_time_in_time_axis(gismo_object=None,
                                 time_axis_widget=None, 
@@ -725,14 +1149,12 @@ def set_valid_time_in_time_axis(gismo_object=None,
 ================================================================================
 ================================================================================
 """ 
-def update_limits_in_axis_time_widget(user_object=None,
-                                      axis_time_widget=None, 
+def old_update_limits_in_axis_time_widget(axis_time_widget=None,
                                       plot_object=None, 
                                       par=None, 
                                       axis=None):
     """
-    Takes information from settings_object and updates the Axiscore.SettingsTimeWidget. 
-    If parameter not present in settings limits are taken from the current plot_object. 
+    Takes information from plot_object and updates the core.SettingsTimeWidget.
     if no information is available full range is set.
     """
     
@@ -762,17 +1184,39 @@ def update_limits_in_axis_time_widget(user_object=None,
         axis_time_widget.time_widget_from.set_time(first=True)
         axis_time_widget.time_widget_to.set_time(last=True)
 
-    user_object.range.setdefault(par, 'min', float(min_value))
-    user_object.range.setdefault(par, 'max', float(max_value))
+    # user_object.range.setdefault(par, 'min', float(min_value))
+    # user_object.range.setdefault(par, 'max', float(max_value))
 
 
-"""
-================================================================================
-================================================================================
-================================================================================
-"""
-def update_limits_in_axis_float_widget(user_object=None,
-                                       axis_float_widget=None, 
+def update_limits_in_axis_time_widget(axis_time_widget=None,
+                                      plot_object=None,
+                                      axis=None):
+    """
+    Takes information from plot_object and updates the core.SettingsTimeWidget.
+    """
+
+    if not all([plot_object, axis_time_widget, axis]):
+        return
+
+    min_value = None
+    max_value = None
+
+    if axis in ['x', 't']:
+        min_value, max_value = plot_object.get_xlim(ax='first')
+
+    elif axis in ['y', 'z']:
+        min_value, max_value = plot_object.get_ylim(ax='first')
+
+
+    if min_value:
+        axis_time_widget.time_widget_from.set_time(datenumber=min_value)
+        axis_time_widget.time_widget_to.set_time(datenumber=max_value)
+
+
+
+
+def old_update_limits_in_axis_float_widget(user_object=None,
+                                       axis_float_widget=None,
                                        plot_object=None, 
                                        par=None, 
                                        axis=None):
@@ -807,6 +1251,28 @@ def update_limits_in_axis_float_widget(user_object=None,
         axis_float_widget.set_max_value(str(max_value))
 
 
+def update_limits_in_axis_float_widget(axis_float_widget=None,
+                                       plot_object=None,
+                                       axis=None):
+    """
+    Takes information from plot_object and updates the Axis.SettingsFloatWidget.
+    """
+
+    if not all([plot_object, plot_object, axis]):
+        return
+
+    min_value = None
+    max_value = None
+
+    if axis in ['x', 't']:
+        min_value, max_value = plot_object.get_xlim(ax='first')
+
+    elif axis in ['y', 'z']:
+        min_value, max_value = plot_object.get_ylim(ax='first')
+
+    if min_value:
+        axis_float_widget.set_min_value(str(min_value))
+        axis_float_widget.set_max_value(str(max_value))
 
             
 """
@@ -818,7 +1284,8 @@ def save_limits_from_axis_time_widget(user_object=None,
                                       axis_time_widget=None, 
                                       par=None):
     """
-    Takes informatioen from a Axiscore.SettingsTimeWidget object and store them in given gismo settings object. 
+    Takes informatioen from a Axiscore.SettingsTimeWidget object and store them in given gismo settings object.
+    Not commonly used. Risk of missing data.
     """
     
     if not user_object:
@@ -891,26 +1358,26 @@ def save_limits_from_axis_float_widget(user_object=None,
 ================================================================================
 ================================================================================
 """ 
-def save_limits_from_plot_object(plot_object=None, 
-                                 user_object=None,
-                                 par=None, 
-                                 axis=None, 
-                                 use_plot_limits=False):
-    """
-    Saves limits in in given settings_object from plot_object if limit not already in settings_object. 
-    If use_plot_limits==True limits are overwritten by the limits in plot_object.
-    """    
-    
-    if not all([plot_object, user_object, par, axis]):
-        return
-    
-    if axis in ['x', 't']:
-        min_value, max_value = plot_object.get_xlim()
-    elif axis in ['y', 'z']:
-        min_value, max_value = plot_object.get_ylim()
-
-    user_object.range.set(par, 'min', float(min_value))
-    user_object.range.set(par, 'max', float(max_value))
+# def save_limits_from_plot_object(plot_object=None,
+#                                  user_object=None,
+#                                  par=None,
+#                                  axis=None,
+#                                  use_plot_limits=False):
+#     """
+#     Saves limits in in given settings_object from plot_object if limit not already in settings_object.
+#     If use_plot_limits==True limits are overwritten by the limits in plot_object.
+#     """
+#
+#     if not all([plot_object, user_object, par, axis]):
+#         return
+#
+#     if axis in ['x', 't']:
+#         min_value, max_value = plot_object.get_xlim()
+#     elif axis in ['y', 'z']:
+#         min_value, max_value = plot_object.get_ylim()
+#
+#     user_object.range.set(par, 'min', float(min_value))
+#     user_object.range.set(par, 'max', float(max_value))
 
 
 def plot_map_background_data(map_widget=None, session=None, user=None, current_file_id=None, **kwargs):

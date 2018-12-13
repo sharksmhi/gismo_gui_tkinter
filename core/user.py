@@ -80,6 +80,8 @@ class User(object):
 
         self.plot_color = UserSettings(self.user_directory, 'plot_color')
 
+        self.save = UserSettings(self.user_directory, 'save')
+
 
 
 class UserSettings(object):

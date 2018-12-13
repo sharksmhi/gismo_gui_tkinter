@@ -22,7 +22,6 @@ from .communicate import get_flag_widget
 from .communicate import update_highlighted_profile_in_plot
 from .communicate import update_limits_in_axis_float_widget
 from .communicate import update_limits_in_axis_time_widget
-from .communicate import update_plot_limits_from_settings
 from .communicate import update_profile_plot
 from .communicate import update_range_selection_widget
 from .communicate import update_scatter_route_map
@@ -30,7 +29,6 @@ from .communicate import update_time_series_plot
 
 from .communicate import save_limits_from_axis_float_widget
 from .communicate import save_limits_from_axis_time_widget
-from .communicate import save_limits_from_plot_object
 from .communicate import save_user_info_from_flag_widget
 from .communicate import set_valid_time_in_time_axis
 

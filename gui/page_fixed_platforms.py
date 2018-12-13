@@ -31,6 +31,7 @@ import libs.sharkpylib.tklib.tkmap as tkmap
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from libs.sharkpylib.gismo.exceptions import *
+from core.exceptions import *
 
 import logging
 
@@ -66,6 +67,8 @@ class PageFixedPlatforms(tk.Frame):
 
         self.info_popup = gui.InformationPopup(self.controller)
 
+        self.current_correlation_plot = None
+
     #===========================================================================
     def startup(self):
         self._set_frame()
@@ -81,9 +84,13 @@ class PageFixedPlatforms(tk.Frame):
         # add_file_list = [item for item in loaded_file_list if 'PhysicalChemical' not in item]
 
         self.select_data_widget.update_items(add_file_list)
-        self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
+        self._update_frame_reference_file()
+
+        # self.select_ref_data_widget.update_items(self.controller.get_loaded_files_list())
 
         self._check_on_remove_file()
+
+
         # self._update_parameter_list()
         # self._update_contour_parameters()
 
@@ -102,10 +109,10 @@ class PageFixedPlatforms(tk.Frame):
         
         #-----------------------------------------------------------------------
         # Creating frames
-        self.labelframe_plot = ttk.Labelframe(self, text=u'Plot')
+        self.labelframe_plot = ttk.Labelframe(self, text='Plot')
         self.labelframe_plot.grid(row=0, column=0, **opt)
         
-        self.labelframe_options = ttk.Labelframe(self, text=u'Options')
+        self.labelframe_options = ttk.Labelframe(self, text='Options')
         self.labelframe_options.grid(row=0, column=1, **opt)
                                        
         tkw.grid_configure(self, nr_columns=2, c0=7, c1=1)
@@ -118,7 +125,7 @@ class PageFixedPlatforms(tk.Frame):
         """
         frame = self.labelframe_plot
 #        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Contour plot'])
-        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Correlation plot'])
+        self.notebook_plot = tkw.NotebookWidget(frame, ['Time series plot', 'Correlation plot'])
 
         tkw.grid_configure(frame)
 
@@ -138,7 +145,7 @@ class PageFixedPlatforms(tk.Frame):
 
 
     def _set_notebook_time_plot(self):
-        frame = self.notebook_plot.frame_time_plot
+        frame = self.notebook_plot.frame_time_series_plot
 
         self.plot_object = plot_selector.Plot(sync_colors=True, 
                                               allow_two_axis=False, 
@@ -163,6 +170,14 @@ class PageFixedPlatforms(tk.Frame):
 
     def _set_notebook_compare_plot(self):
         frame = self.notebook_plot.frame_correlation_plot
+        try:
+            self.frame_correlation.destroy()
+        except:
+            pass
+        self.frame_correlation = tk.Frame(frame)
+        self.frame_correlation.grid(row=0, column=0, sticky='nsew')
+        tkw.grid_configure(self.frame_correlation)
+
 
         self.plot_object_compare = plot_selector.Plot(sync_colors=True,
                                                       allow_two_axis=False,
@@ -170,7 +185,7 @@ class PageFixedPlatforms(tk.Frame):
                                                       figsize=(2, 2),
                                                       hover_target=None)
         margins = {'right': 0.06,
-                   'left': 0.06,
+                   'left': 0.08,
                    'top': 0.06,
                    'bottom': 0.10}
 
@@ -179,7 +194,7 @@ class PageFixedPlatforms(tk.Frame):
         # Target to plot object is called when set range is active.
         # self.plot_object_compare.add_range_target(self._callback_plot_range)
 
-        self.plot_widget_compare = tkw.PlotFrame(frame,
+        self.plot_widget_compare = tkw.PlotFrame(self.frame_correlation,
                                                  self.plot_object_compare,
                                                  pack=False,
                                                  include_toolbar=False)
@@ -265,7 +280,9 @@ class PageFixedPlatforms(tk.Frame):
         # Options notebook
         
         self.notebook_options = tkw.NotebookWidget(self.frame_notebook, 
-                                                   frames=['Axis range', 'Select', 'Flag', 'Compare', 'Save/Export', 'Map', 'Automatic QC'], row=0)
+                                                   frames=['Axis range', 'Select data to flag', 'Flag selected data',
+                                                           'Compare', 'Save data', 'Save plots', 'Map', 'Automatic QC'],
+                                                   row=0)
         tkw.grid_configure(self.frame_notebook, nr_rows=1)
         
         
@@ -273,7 +290,8 @@ class PageFixedPlatforms(tk.Frame):
         self._set_notebook_frame_select()
         self._set_notebook_frame_flag()
         self._set_notebook_frame_compare()
-        self._set_notebook_frame_save()
+        self._set_notebook_frame_save_data()
+        self._set_notebook_frame_save_plots()
         self._set_notebook_frame_map()
         self._set_notebook_frame_automatic_qc()
 
@@ -312,12 +330,12 @@ class PageFixedPlatforms(tk.Frame):
 
 
         self.map_widget_1 = tkmap.TkMap(frame_map_1, boundaries=boundaries)
-        self.map_widget_2 = tkmap.TkMap(frame_map_2, boundaries=boundaries)
+        # self.map_widget_2 = tkmap.TkMap(frame_map_2, boundaries=boundaries)
 
         self.button_frame_map_1 = tk.Button(frame_buttons, text='Big map', command=self._popup_map_1)
         self.button_frame_map_1.grid(row=0, column=0, sticky='nsew', pady=5)
-        self.button_frame_map_2 = tk.Button(frame_buttons, text='Big map', command=self._popup_map_2)
-        self.button_frame_map_2.grid(row=0, column=1, sticky='nsew', pady=5)
+        # self.button_frame_map_2 = tk.Button(frame_buttons, text='Big map', command=self._popup_map_2)
+        # self.button_frame_map_2.grid(row=0, column=1, sticky='nsew', pady=5)
 
     def _popup_map_1(self):
         def delete_map_1():
@@ -337,22 +355,22 @@ class PageFixedPlatforms(tk.Frame):
 
         self.toplevel_frame_map_1.protocol('WM_DELETE_WINDOW', delete_map_1)
 
-    def _popup_map_2(self):
-        def delete_map_2():
-            self.toplevel_frame_map_2.destroy()
-            self.toplevel_map_widget_2 = None
-        
-        if self.toplevel_map_widget_2: 
-            return
-        self.toplevel_frame_map_2 = tk.Toplevel(self.controller)
-
-        boundaries = self._get_map_boundaries()
-
-        self.toplevel_map_widget_2 = tkmap.TkMap(self.toplevel_frame_map_2, boundaries=boundaries, toolbar=True)
-        tkw.grid_configure(self.toplevel_frame_map_2)
-        self._update_map_2(self.toplevel_map_widget_2)
-
-        self.toplevel_frame_map_2.protocol('WM_DELETE_WINDOW', delete_map_2)
+    # def _popup_map_2(self):
+    #     def delete_map_2():
+    #         self.toplevel_frame_map_2.destroy()
+    #         self.toplevel_map_widget_2 = None
+    #
+    #     if self.toplevel_map_widget_2:
+    #         return
+    #     self.toplevel_frame_map_2 = tk.Toplevel(self.controller)
+    #
+    #     boundaries = self._get_map_boundaries()
+    #
+    #     self.toplevel_map_widget_2 = tkmap.TkMap(self.toplevel_frame_map_2, boundaries=boundaries, toolbar=True)
+    #     tkw.grid_configure(self.toplevel_frame_map_2)
+    #     self._update_map_2(self.toplevel_map_widget_2)
+    #
+    #     self.toplevel_frame_map_2.protocol('WM_DELETE_WINDOW', delete_map_2)
 
     def _get_map_boundaries(self):
         boundaries = [self.user.map_boundries.setdefault('lon_min', 9),
@@ -399,7 +417,7 @@ class PageFixedPlatforms(tk.Frame):
         
     #===========================================================================
     def _set_notebook_frame_select(self):
-        frame = self.notebook_options.frame_select
+        frame = self.notebook_options.frame_select_data_to_flag
         
         r=0
         
@@ -426,30 +444,25 @@ class PageFixedPlatforms(tk.Frame):
 #        self.button_lasso_select.grid(row=r, column=c, padx=padx, pady=pady, sticky='se')
 
     def _run_automatic_qc(self):
-        qc_routine_list = self.widget_automatic_qc_options.get_checked_item_list()
-        nr_routines = len(qc_routine_list)
-        if nr_routines == 0:
-            gui.show_information('Run QC', 'No QC routines selected!')
-            return
+        gui.communicate.run_automatic_qc(self, self.widget_automatic_qc_options)
 
-        if nr_routines == 1:
-            text = 'You are about to run 1 automatic quality control. This might take some time. Do you want to continue?'
-        else:
-            text = 'You are about tu run {} automatic quality controles. This might take some time. Do you want to continue?'.format(nr_routines)
-
-        if not tk.messagebox.askyesno('Run QC', text):
-            return
-
-        self.controller.run_progress(lambda: self.session.run_automatic_qc(self.current_file_id,
-                                                                           qc_routines=qc_routine_list),
-                                     'Running qc on file: {}'.format(self.current_file_id))
-
-
-        
-    #===========================================================================
-    def _lasso_select(self):
-        self.plot_object.add_mark_lasso_target('first', color='r') # Should be in an other place
-        self.plot_object.mark_lasso(line_id='current_flags') # Negative values in plot
+        # qc_routine_list = self.widget_automatic_qc_options.get_checked_item_list()
+        # nr_routines = len(qc_routine_list)
+        # if nr_routines == 0:
+        #     gui.show_information('Run QC', 'No QC routines selected!')
+        #     return
+        #
+        # if nr_routines == 1:
+        #     text = 'You are about to run 1 automatic quality control. This might take some time. Do you want to continue?'
+        # else:
+        #     text = 'You are about tu run {} automatic quality controles. This might take some time. Do you want to continue?'.format(nr_routines)
+        #
+        # if not tk.messagebox.askyesno('Run QC', text):
+        #     return
+        #
+        # self.controller.run_progress(lambda: self.session.run_automatic_qc(self.current_file_id,
+        #                                                                    qc_routines=qc_routine_list),
+        #                              'Running qc on file: {}'.format(self.current_file_id))
 
     def _update_notebook_frame_flag(self):
         """
@@ -466,7 +479,7 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _set_notebook_frame_flag(self):
-        self.frame_flag_widget = tk.Frame(self.notebook_options.frame_flag)
+        self.frame_flag_widget = tk.Frame(self.notebook_options.frame_flag_selected_data)
         self.frame_flag_widget.grid(row=0, column=0, sticky='nsew')
 
         padx=5
@@ -527,34 +540,39 @@ class PageFixedPlatforms(tk.Frame):
                                                 row=1,
                                                 **grid_opt)
 
-        # Save directory
-        self.compare_save_directory_widget = tkw.DirectoryWidget(frame, label='Save directory', row=2)
-        default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
-                                         datetime.datetime.now().strftime('%Y%m%d'))
-        self.compare_save_directory_widget.set_directory(default_directory)
 
-        # --------------------------------------------------------------------------------------------------------------
-        # Buttons
         button_frame = tk.Frame(frame)
-        button_frame.grid(row=3, column=0, sticky='nsew', **pad)
+        button_frame.grid(row=2, column=0, sticky='nsew', **pad)
 
         # Button plot
-        self.button_compare_plot = tk.Button(button_frame, text='Plot compare data', comman=self._compare_data_plot)
-        self.button_compare_plot.grid(row=0, column=0, sticky='nsew', **pad)
+        self.button_compare_plot_by_flags = tk.Button(button_frame, text='Plot correlation plot\n(color by flag)',
+                                                  comman=lambda: self._compare_data_plot('color_by_flag'))
+        self.button_compare_plot_by_flags.grid(row=0, column=0, sticky='nsew', **pad)
+
+        self.button_compare_plot_by_depth = tk.Button(button_frame, text='Plot correlation plot\n(color by depth)',
+                                                      comman=lambda: self._compare_data_plot('color_by_depth'))
+        self.button_compare_plot_by_depth.grid(row=0, column=1, sticky='nsew', **pad)
 
         # Button save data
-        self.button_compare_save_data = tk.Button(button_frame, text='Save compare data', comman=self._compare_data_save_data)
-        self.button_compare_save_data.grid(row=0, column=1, sticky='nsew', **pad)
+        self.button_compare_save_data = tk.Button(button_frame, text='Save correlation data',
+                                                  comman=self._compare_data_save_data)
+        self.button_compare_save_data.grid(row=0, column=2, sticky='nsew', **pad)
 
-        tkw.grid_configure(button_frame, nr_rows=1, nr_columns=2)
-        tkw.grid_configure(frame, nr_rows=4)
+        self.save_correlation_directory_widget = tkw.DirectoryWidget(button_frame,
+                                                                     label='Save directory',
+                                                                     row=1, column=0, columnspan=3)
+        default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
+                                         datetime.datetime.now().strftime('%Y%m%d'))
+        self.save_correlation_directory_widget.set_directory(default_directory)
 
-    def _compare_data_plot(self):
-        if not self._match_data():
+
+        tkw.grid_configure(frame, nr_rows=5)
+
+    def _save_correlation_plot_html(self):
+        if not gui.communicate.match_data(self, self.compare_widget):
             self.plot_object_compare.reset_plot()
             return
-        print(self.current_file_id)
-        print(self.current_ref_file_id)
+
         match_object = self.session.get_match_object(self.current_file_id, self.current_ref_file_id)
         merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
         compare_parameter = self.compare_widget.get_parameter()
@@ -566,24 +584,29 @@ class PageFixedPlatforms(tk.Frame):
         main_par = match_object.get_merge_parameter(current_par_file_id)
         comp_par = match_object.get_merge_parameter(compare_par_file_id)
 
-        # print('='*50)
-        # print(main_par)
-        # print(comp_par)
-        # x = [float(item) if item else np.nan for item in merge_df[main_par]]
-        # y = [float(item) if item else np.nan for item in merge_df[comp_par]]
-        # print(x)
-        # print(y)
-
         # Get list of active visit_depth_id
         visit_depth_id_par = '{}_{}'.format('visit_depth_id', self.current_file_id)
         visit_depth_id_list = merge_df[visit_depth_id_par]
         # Handle flaggs
         selection = self.flag_widget.get_selection()
 
-        self.plot_object_compare.reset_plot()
+        import libs.sharkpylib.plot.html_plot as html_plot
+
+        # Set title and labels
+        data = self.current_gismo_object.get_data('time',
+                                                  visit_depth_id_list=visit_depth_id_list)
+
+        time_from = pd.to_datetime(str(min(data['time']))).strftime('%Y%m%d')
+        time_to = pd.to_datetime(str(max(data['time']))).strftime('%Y%m%d')
+        self.plot_object_compare.set_title('{} - {}'.format(time_from, time_to))
+        self.plot_object_compare.set_x_label(current_par_file_id)
+        self.plot_object_compare.set_y_label(compare_par_file_id)
+
+        plot_object = html_plot.PlotlyPlot(title='{} - {}'.format(time_from, time_to),
+                                           xaxis_title=current_par_file_id,
+                                           yaxis_title=compare_par_file_id)
 
         all_values = []
-        all_times = []
 
         for flag in selection.selected_flags:
             # print('FLAG', flag)
@@ -594,8 +617,6 @@ class PageFixedPlatforms(tk.Frame):
             boolean = ~np.isnan(np.array(data[self.current_parameter]))
             visit_depth_id_flag = data['visit_depth_id'][boolean]
 
-            all_times.extend(list(data['time']))
-
             boolean = merge_df[visit_depth_id_par].isin(visit_depth_id_flag)
             x = [float(item) if item else np.nan for item in merge_df.loc[boolean, main_par]]
             y = [float(item) if item else np.nan for item in merge_df.loc[boolean, comp_par]]
@@ -604,8 +625,8 @@ class PageFixedPlatforms(tk.Frame):
             prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
             prop.update({'linestyle': '',
                          'marker': '.'})
-            print(prop)
-            self.plot_object_compare.set_data(x, y, line_id=flag, **prop)
+
+            plot_object.add_scatter_data(x, y, name=str(flag), mode='markers')
 
             all_values.extend(x)
             all_values.extend(y)
@@ -619,27 +640,65 @@ class PageFixedPlatforms(tk.Frame):
             min_value = min_value * 0.95
 
         # Plot correlation line
-        self.plot_object_compare.set_data([min_value, max_value], [min_value, max_value],
+        plot_object.add_scatter_data([min_value, max_value], [min_value, max_value], name='correlation_line', mode='lines')
+
+        # Save plot
+        current_par_name = current_par_file_id.replace('/', '_').replace('\\', '_')
+        compare_par_name = compare_par_file_id.replace('/', '_').replace('\\', '_')
+        plot_object.plot_to_file(os.path.join(self.save_plots_directory_widget.get_directory(),
+                                              '{}_{}.html'.format(current_par_name, compare_par_name)))
+
+    def _compare_data_plot(self, *args):
+        # Recreate plot object if
+        self._set_notebook_compare_plot()
+
+        try:
+            data = gui.communicate.get_merge_data(self, self.compare_widget, self.flag_widget)
+        except GUIExceptionBreak:
+            return
+
+        end_points = [data['min_value'], data['max_value']]
+        # Plot correlation line
+        self.plot_object_compare.set_data(end_points, end_points,
                                           line_id='correlation', marker='',
                                           color=self.user.plot_color.setdefault('correlation_line', 'red'))
 
-        self.plot_object_compare.set_x_limits(limits=[min_value, max_value], call_targets=False)
-        self.plot_object_compare.set_y_limits(limits=[min_value, max_value], call_targets=True)
+        if 'color_by_depth' in args:
+            xx = []
+            yy = []
+            cc = []
+            for flag in sorted(data['flags']):
+                xx.extend(list(data['flags'][flag]['x']))
+                yy.extend(list(data['flags'][flag]['y']))
+                cc.extend(list(data['flags'][flag]['depth']))
+
+            self.plot_object_compare.set_data(xx, yy, c=cc,
+                                              cmap='cmo.deep')
+
+            self.current_correlation_plot = 'color_by_depth'
+        else:
+            for flag in sorted(data['flags']):
+                x = data['flags'][flag]['x']
+                y = data['flags'][flag]['y']
+                prop = data['flags'][flag]['prop']
+
+                self.plot_object_compare.set_data(x, y, line_id=flag, **prop)
+                self.current_correlation_plot = 'color_by_flag'
+
+        self.plot_object_compare.set_x_limits(limits=end_points, call_targets=False)
+        self.plot_object_compare.set_y_limits(limits=end_points, call_targets=True)
 
         # Set title and labels
-        time_from = pd.to_datetime(str(min(all_times))).strftime('%Y%m%d')
-        time_to = pd.to_datetime(str(max(all_times))).strftime('%Y%m%d')
-        self.plot_object_compare.set_title('{} - {}'.format(time_from, time_to))
-        self.plot_object_compare.set_x_label(current_par_file_id)
-        self.plot_object_compare.set_y_label(compare_par_file_id)
-
+        self.plot_object_compare.set_title('{} - {}'.format(data['time_from_str'], data['time_to_str']))
+        self.plot_object_compare.set_x_label(data['main_par_file_id'])
+        self.plot_object_compare.set_y_label(data['compare_par_file_id'])
 
 
     def _compare_data_save_data(self):
-        if not self._match_data():
+        if not gui.communicate.match_data(self, self.compare_widget):
             return
         merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
-        directory = self.compare_save_directory_widget.get_directory()
+        directory = self.save_correlation_directory_widget.get_directory()
         if not directory:
             return
         if not os.path.exists(directory):
@@ -648,29 +707,9 @@ class PageFixedPlatforms(tk.Frame):
         file_path = os.path.join(directory, 'merge_data_{} - {}.txt'.format(self.current_file_id, self.current_ref_file_id))
         merge_df.to_csv(file_path, sep='\t', index=False)
 
-
-    def _match_data(self):
-        """
-        Match data from the active files. Only calculates if compare widget is updated.
-        :return:
-        """
-        if not all([self.current_file_id, self.current_ref_file_id]):
-            return
-
-        diffs = dict()
-        diffs['hours'] = self.compare_widget.time
-        diffs['dist'] = self.compare_widget.dist
-        diffs['depth'] = self.compare_widget.depth
-
-        # TODO: Match data every time. CHANGE THIS
-        self.session.match_files(self.current_file_id, self.current_ref_file_id, **diffs)
-
-        return True
-
     def _update_compare_widget(self):
         self.compare_widget.update_parameter_list(self.current_ref_file_id)
 
-    #===========================================================================
     def _compare_update_plot(self):
         logging.debug('page_fixed_platforms._callback_compare: Start')
         try:
@@ -684,16 +723,10 @@ class PageFixedPlatforms(tk.Frame):
             self.map_widget_1.add_scatter(match_data['lat'], match_data['lat'], marker_id='match_data')
         except GISMOExceptionInvalidOption as e:
             gui.show_warning('Invalid option', e)
-        # except gismo.exceptions.GISMOExceptionInvalidInputArgument as e:
-        #     # Could be
-        #     if not self.stringvar_current_reference_file.get():
-        #         gui.show_warning('File not loaded', 'No reference file selected')
-        #     else:
-        #         gui.show_error('Internal error', 'An unexpected error occurred. Please contact administration. ')
-        # logging.debug('page_fixed_platforms._callback_compare: End')
 
-    def _set_notebook_frame_save(self):
-        frame = self.notebook_options.frame_dict['Save/Export']
+    def _set_notebook_frame_save_data(self):
+
+        frame = self.notebook_options.frame_save_data
         # frame = self.notebook_options.frame_save
 
         self.save_file_widget = gui.SaveWidget(frame,
@@ -702,243 +735,156 @@ class PageFixedPlatforms(tk.Frame):
                                                user=self.user,
                                                sticky='nw')
 
-        self.save_plot_widget = gui.SaveWidget(frame,
-                                               label='Save current plot',
-                                               callback=self._callback_save_current_plot,
-                                               user=self.user,
-                                               sticky='nw',
-                                               row=1)
+        tkw.grid_configure(frame, nr_rows=1)
 
-        # Export html plot and map
+    def _set_notebook_frame_save_plots(self):
+
+        def on_change_file_format():
+            self.user.save.set('plot_file_format', self.combobox_widget_file_format.get_value())
+
+        frame = self.notebook_options.frame_save_plots
+
+        prop = {'padx': 5,
+                'pady': 5,
+                'sticky': 'nsew'}
+
+        # Save directory
+        self.save_plots_directory_widget = tkw.DirectoryWidget(frame,
+                                                               label='Save in directory',
+                                                               row=0, columnspan=2, **prop)
+        default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
+                                         datetime.datetime.now().strftime('%Y%m%d'))
+        self.save_plots_directory_widget.set_directory(default_directory)
+
+        self.labelframe_save_plots_pic = ttk.LabelFrame(frame, text='Save pictures')
+        self.labelframe_save_plots_pic.grid(row=1, column=0, **prop)
+
+        self.labelframe_save_plots_html = ttk.LabelFrame(frame, text='Save html')
+        self.labelframe_save_plots_html.grid(row=1, column=1, **prop)
+
+        tkw.grid_configure(frame, nr_rows=2, nr_columns=2)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Save pic
+        pic_frame = self.labelframe_save_plots_pic
+        self.combobox_widget_file_format = tkw.ComboboxWidget(pic_frame, title='File format', items=['png', 'pdf', 'ps', 'eps', 'svg'],
+                                                              callback_target=on_change_file_format, row=0)
+        self.combobox_widget_file_format.set_value(self.user.save.setdefault('plot_file_format', 'png'))
+
+        self.button_save_time_plot = tk.Button(pic_frame, text='Save time series plot',
+                                               comman=self._save_time_plot)
+        self.button_save_time_plot.grid(row=1, column=0, **prop)
+
+        self.button_save_correlation_plot = tk.Button(pic_frame, text='Save correlation plot',
+                                                      comman=self._save_correlation_plot)
+        self.button_save_correlation_plot.grid(row=2, column=0, **prop)
+
+        tkw.grid_configure(pic_frame, nr_rows=3)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Save html
+        html_frame = self.labelframe_save_plots_html
+        self.button_save_correlation_plot_html = tk.Button(html_frame, text='Save correlation html plot',
+                                                           comman=self._save_correlation_plot_html)
+        self.button_save_correlation_plot_html.grid(row=0, column=0, **prop)
+
+        tkw.grid_configure(html_frame, nr_rows=1)
+
+
+        # Export html plot
         self.save_widget_html = gui.SaveWidgetHTML(frame,
-                                                   label='Export html plots',
+                                                   label='Export time series html plots',
                                                    callback=self._callback_save_html,
                                                    default_directory=self.settings['directory']['Export directory'],
                                                    user=self.user,
                                                    sticky='nw',
-                                                   row=2)
+                                                   row=2,
+                                                   columnspan=2)
 
         tkw.grid_configure(frame, nr_rows=3)
 
-
-    #===========================================================================
-    def _callback_save_file(self, directory, file_name):
-        if not self.current_file_id:
-            gui.show_information('No file loaded', 'Cant save file, no file loaded.')
-            return
-        if not all([directory, file_name]):
-            gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
-            return
-        file_path = os.path.realpath(self.current_gismo_object.file_path)
-        output_file_path = os.path.realpath('/'.join([directory, file_name]))
-
-        if file_path != output_file_path:
-            try:
-                self.current_gismo_object.save_file(file_path=output_file_path)
-            except GISMOExceptionFileExcists:
-                if not messagebox.askyesno('Overwrite file!', 'The given file already exists. Do you want to replace the original file?'):
-                    return
-        else:
-            if not messagebox.askyesno('Overwrite file!', 'Do you want to replace the original file?'):
-                return
-
-        # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        output_file_path = directory + '/temp_%s' % file_name
-        self.current_gismo_object.save_file(file_path=output_file_path, overwrite=True)
-        os.remove(file_path)
-        shutil.copy2(output_file_path, file_path)
-        os.remove(output_file_path)
-
-    def _callback_save_current_plot(self, directory, file_name):
-        if not self.current_file_id:
-            gui.show_information('No file loaded', 'Cant save plot, no file loaded.')
-            return
-        if not all([directory, file_name]):
-            gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
-            return
-        output_file_path = os.path.realpath('/'.join([directory, file_name]))
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        self.plot_object.save_fig(output_file_path)
-
+    def _callback_save_file(self, *args, **kwargs):
+        gui.communicate.save_file(self, self.current_gismo_object, self.save_file_widget)
 
     def _callback_save_html(self):
-
-        # Import lib here. We dont want to start a thread if we cant import modules
-        import libs.sharkpylib.plot.html_plot as html_plot
-        self.controller.run_progress(self._save_html, 'Saving plots...')
+        if self.save_widget_html.has_sufficient_selections():
+            self.controller.run_progress(self._save_html, 'Saving plots...')
+        else:
+            gui.show_information('Missing selection', 'You did not provide enough information for plotting htlm plots.')
 
     def _save_html(self):
+        gui.communicate.save_html_plot(self, self.save_widget_html, flag_widget=self.flag_widget,
+                                       save_directory_widget=self.save_plots_directory_widget)
 
-        def get_par_list_by_file_id(parameter_list):
-            """
-            Extendet par i is a parameter starting with Main: or Ref: depending on if its a parameter from the
-            main file of reference file.
-            :param plot_object:
-            :param extended_par:
-            :return:
-            """
-            return_dict = dict(main=set(['time']),
-                               ref=set(['time']))
-            for item in parameter_list:
-                par, file_id = item.split('(')
-                if file_id == 'main)':
-                    return_dict['main'].add(par.strip())
-                elif file_id == 'ref)':
-                    return_dict['ref'].add(par.strip())
+    def _save_correlation_plot(self):
+        file_format = self.combobox_widget_file_format.get_value()
+        # self.current_correlation_plot = 'color_by_depth'
+        in_file_name = 'correlation_{}_{}_{}_{}'.format(self.current_parameter, self.current_file_id,
+                                                     self.current_ref_file_id, self.current_correlation_plot)
+        gui.communicate.save_plot(self, self.plot_object_compare, self.save_plots_directory_widget,
+                                  file_format=file_format, in_file_name=in_file_name)
 
-            return_dict['main'] = sorted(return_dict['main'])
-            return_dict['ref'] = sorted(return_dict['ref'])
-            return return_dict
+    def _save_time_plot(self, *args, **kwargs):
+        file_format = self.combobox_widget_file_format.get_value()
+        in_file_name = 'time_series_{}_{}'.format(self.current_parameter, self.current_file_id)
+        gui.communicate.save_plot(self, self.plot_object, self.save_plots_directory_widget,
+                                  file_format=file_format, in_file_name=in_file_name)
 
-
-        import libs.sharkpylib.plot.html_plot as html_plot
-
-        selection = self.save_widget_html.get_selection()
-
-        # Check selection
-        export_combined_plots = selection.get('combined_plot')
-        export_individual_plots = selection.get('individual_plots')
-        export_individual_maps = selection.get('individual_maps')
-        parameter_list = selection.get('parameters')
-        directory = selection.get('directory')
-
-        # Check selection
-        if not any([export_combined_plots, export_individual_plots, export_individual_maps, parameter_list]):
-            gui.show_information('No selection', 'You need to select what type of plots/maps to export')
-
-        # Check directory
-        if not directory:
-            gui.show_information('Missing directory', 'Could not save html maps and/or plots. No directory selected.')
-            return
-        if not os.path.exists(directory):
-            create_dirs = tk.messagebox.askyesno('Missing directory', 'Directory does not exist. Would you like to create a new directory?')
-            if create_dirs:
-                os.makedirs(directory)
-            else:
-                return
-
-        # Create subdirectory
-        date_string = datetime.datetime.now().strftime('%Y%m%d%H%M')
-        subdir = 'html_exports_{}'.format(date_string)
-        export_dir = os.path.join(directory, subdir)
-        if not os.path.exists(export_dir):
-            os.mkdir(export_dir)
-
-        parameter_dict = get_par_list_by_file_id(parameter_list)
-
-        # Check nr of parameters and warn if too many
-        nr_par = len(parameter_dict['main']+parameter_dict['ref'])
-        max_nr_par = self.user.process.setdefault('warn_export_nr_parameters', 10)
-        if nr_par > max_nr_par:
-            ok_to_continue = tk.messagebox.askyesno('Export plots/maps',
-                                                    'You have chosen to export {} parameters. '
-                                                    'This might take some time and MAY cause the program to crash. '
-                                                    'Do you wish to continue anyway? ')
-            if not ok_to_continue:
-                self.controller.update_help_information('Export aborted by user.')
-                return
-
-        main_data = {}
-        ref_data = {}
-        if self.current_file_id and parameter_dict.get('main'):
-            main_data = self.session.get_data(self.current_file_id, *parameter_dict.get('main'))
-        if self.current_ref_file_id and parameter_dict.get('ref'):
-            ref_data = self.session.get_data(self.current_ref_file_id, *parameter_dict.get('ref'))
-
-        if export_combined_plots:
-            combined_plot_object = html_plot.PlotlyPlot()
-            # Add Main data
-            if main_data:
-                for par in main_data:
-                    if par == 'time':
-                        continue
-                    combined_plot_object.add_scatter_data(main_data['time'], main_data[par], name='{} (main)'.format(par),
-                                                                mode='markers')
-            if ref_data:
-                for par in ref_data:
-                    if par == 'time':
-                        continue
-                    combined_plot_object.add_scatter_data(ref_data['time'], ref_data[par], name='{} (ref)'.format(par),
-                                                                mode='markers')
-            combined_plot_object.plot_to_file(os.path.join(export_dir, 'plot_combined.html'))
-
-        if export_individual_plots:
-
-            flag_selection = self.flag_widget.get_selection()
-            selected_flags = flag_selection.selected_flags
-            selected_descriptions = flag_selection.selected_descriptions
-            if main_data:
-                for par in main_data:
-                    individual_plot_object = html_plot.PlotlyPlot(title='{} (main)'.format(par), yaxis_title='')
-                    for qf, des in zip(selected_flags, selected_descriptions):
-                        data = self.session.get_data(self.current_file_id, 'time', par, mask_options={'include_flags': [qf]})
-                        individual_plot_object.add_scatter_data(data['time'], data[par],
-                                                                name='{} ({})'.format(qf, des),
-                                                                mode='markers')
-                    individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
-            if ref_data:
-                for par in ref_data:
-                    individual_plot_object = html_plot.PlotlyPlot(title='{} (ref)'.format(par), yaxis_title='')
-                    for qf, des in zip(selected_flags, selected_descriptions):
-                        data = self.session.get_data(self.current_ref_file_id, 'time', par, mask_options={'include_flags': [qf]})
-                        individual_plot_object.add_scatter_data(data['time'], data[par],
-                                                                name='{} ({})'.format(qf, des),
-                                                                mode='markers')
-                    individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
-
-        if export_individual_maps:
-            pass
-
-
-
-
-    #===========================================================================
     def _callback_axis_widgets(self):
-        logging.debug('page_fixed_platforms._callback_axis_widgets: Start')
-        # Update limits in settings_object from axis widget.
-        self._save_limits_from_axis_widgets()
 
-        # Update limits in plot
-        self._update_plot_limits()
+        gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
+                                                          user_object=self.user,
+                                                          axis_widget=self.yrange_widget,
+                                                          par=self.current_parameter,
+                                                          axis='y',
+                                                          call_targets=False,
+                                                          source='axis')
 
-        self.plot_object.call_targets()
+        gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
+                                                          user_object=self.user,
+                                                          axis_widget=self.xrange_widget,
+                                                          par='time',
+                                                          axis='x',
+                                                          call_targets=True,
+                                                          source='axis')
 
-        # Update plots
+        # Update limits in user from axis widget.
+        # gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
+        #                                        axis_float_widget=self.yrange_widget,
+        #                                        par=self.current_parameter)
+        #
+        # # self._save_limits_from_axis_widgets()
+        #
+        # # Update limits in plot
+        # self._update_plot_limits()
+        #
+        # self.plot_object.call_targets()
+        #
+        # # Update plots
         time_limits = self.xrange_widget.get_limits()
         y_limits = self.yrange_widget.get_limits()
-        # TODO: Handle error
+        # # TODO: Handle error
         time_start, time_end = time_limits
         min_value, max_value = y_limits
-
-        # Save to user
-        self.user.range.set(self.current_parameter, 'min', float(min_value))
-        self.user.range.set(self.current_parameter, 'max', float(max_value))
+        #
+        # # Save to user
+        # self.user.range.set(self.current_parameter, 'min', float(min_value))
+        # self.user.range.set(self.current_parameter, 'max', float(max_value))
 
         self._update_map_1(highlighted_time_start=time_start, highlighted_time_end=time_end)
-        self._update_map_2(highlighted_time_start=time_start, highlighted_time_end=time_end)
+        # self._update_map_2(highlighted_time_start=time_start, highlighted_time_end=time_end)
 
-
-        logging.debug('page_fixed_platforms._callback_axis_widgets: End')
-
-    #===========================================================================
     def _callback_plot_range(self):
-        logging.debug('page_fixed_platforms._callback_plot_range: Start')
         if not self.plot_object.mark_range_orientation:
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
             gui.update_range_selection_widget(plot_object=self.plot_object,
-                                          range_selection_widget=self.yrange_selection_widget)
+                                              range_selection_widget=self.yrange_selection_widget)
         elif self.plot_object.mark_range_orientation == 'horizontal':
             gui.update_range_selection_widget(plot_object=self.plot_object,
-                                          range_selection_widget=self.xrange_selection_widget)
-        logging.debug('page_fixed_platforms._callback_plot_range: End')
+                                              range_selection_widget=self.xrange_selection_widget)
 
-    #===========================================================================
     def _update_parameter_list(self):
-        logging.debug('page_fixed_platforms._update_parameter_list: Start')
         exclude_parameters = ['time', 'lat', 'lon']
         parameter_list = [item for item in self.session.get_parameter_list(self.current_file_id) if item not in exclude_parameters]
 
@@ -947,7 +893,6 @@ class PageFixedPlatforms(tk.Frame):
                                            default_item=None)
 
         self._update_export_parameter_list()
-        logging.debug('page_fixed_platforms._update_parameter_list: End')
 
     def _update_export_parameter_list(self):
         # Parameters for exporting
@@ -964,9 +909,7 @@ class PageFixedPlatforms(tk.Frame):
                 parameter_list.append('{} (ref)'.format(par))
         self.save_widget_html.update_parameters(parameter_list)
 
-    #===========================================================================
     def _reset_widgets(self):
-        logging.debug('page_fixed_platforms._reset_widgets: Start')
         self.plot_object.reset_plot()
         self.parameter_widget.update_items()
 
@@ -975,146 +918,129 @@ class PageFixedPlatforms(tk.Frame):
         self.xrange_selection_widget.reset_widget()
         self.yrange_selection_widget.reset_widget()
 
-        logging.debug('page_fixed_platforms._reset_widgets: End')
-
-    #===========================================================================
     def _on_select_parameter(self):
-        logging.debug('page_fixed_platforms._on_select_parameter: Start')
         # Reset plot
         self.plot_object.reset_plot()
 
         self.current_parameter = self.parameter_widget.selected_item
 
-        # Find all stations
-        # all_fixed_platforms_id = [self._get_file_id(item) for item in self.controller.listbox_widget_loaded_files.items if
-        #                           'fixed platform' in item.lower()]
-        # self.current_all_data = dict()
-        # for file_id in all_fixed_platforms_id:
-        #     if file_id == self.current_file_id:
-        #         data = self.session.get_data(file_id, 'lat', 'lon', self.current_parameter)
-        #     else:
-        #         data = self.session.get_data(file_id, 'lat', 'lon')
-        #     self.current_all_data[file_id] = data
-        #     self.current_all_data[file_id] = data
-
         if not self.current_parameter:
             return
-
-        logging.debug('ferrybox: _on_select_parameter')
 
         # First plot...
         self._update_plot(call_targets=False)
 
         # ...then set full range in plot without updating (not calling to update the tk.canvas).
-        # self.plot_object.zoom_to_data(call_targets=False)
+        if self.user.options.setdefault('zoom_to_data_on_parameter_update', True):
+            self.plot_object.zoom_to_data(call_targets=False, x_limits=True)
 
-        self._update_plot_limits()
+        # Update limits in plot from user
+        gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
+                                                          user_object=self.user,
+                                                          axis_widget=self.yrange_widget,
+                                                          par=self.current_parameter,
+                                                          axis='y',
+                                                          call_targets=False,
+                                                          source='user')
+
+        gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
+                                                          user_object=self.user,
+                                                          axis_widget=self.xrange_widget,
+                                                          par='time',
+                                                          axis='x',
+                                                          call_targets=True,
+                                                          source='plot')
+
+        return
+
+        # gui.communicate.update_plot_limits_from_user(plot_object=self.plot_object,
+        #                                              user_object=self.user,
+        #                                              axis='y',
+        #                                              par=self.current_parameter,
+        #                                              call_targets=False)
+        # self._update_y_limits_in_plot_from_user(call_targets=False)
+
+        self.plot_object.call_targets()
+
         #
         # # Next is to update limits in settings_object. This will not overwrite old settings.
-        self._save_limits_from_plot()
+        # self._save_limits_from_plot()
         #
-        # # Now update the Axis-widgets...
-        self._update_axis_widgets()
+        # # Now update the Axis-widgets...always from plot
+        gui.update_limits_in_axis_time_widget(axis_time_widget=self.xrange_widget,
+                                              plot_object=self.plot_object,
+                                              axis='x')
+
+        gui.update_limits_in_axis_float_widget(axis_float_widget=self.yrange_widget,
+                                               plot_object=self.plot_object,
+                                               axis='y')
+        # self._update_axis_widgets()
         #
         # # ...and update limits in plot
         # self._update_plot_limits()
 
-        self._update_map_2()
-
-        self.plot_object.call_targets()
+        # self._update_map_2()
 
 
-        logging.debug('page_fixed_platforms._on_select_parameter: End')
 
-    #===========================================================================
-    def _update_plot_limits(self):
-        logging.debug('page_fixed_platforms._update_plot_limits: Start')
-
-        gui.update_plot_limits_from_settings(plot_object=self.plot_object,
-                                             user_object=self.controller.user,
-                                             axis='x',
-                                             par='time',
-                                             call_targets_in_plot_object=False)
-
-        gui.update_plot_limits_from_settings(plot_object=self.plot_object,
-                                             user_object=self.controller.user,
-                                             axis='y',
-                                             par=self.current_parameter,
-                                             call_targets_in_plot_object=False)
-        logging.debug('page_fixed_platforms._update_plot_limits: End')
-
-    #===========================================================================
-    def _save_limits_from_plot(self):
-        """
-        Method saves limits from plot object and adds information to user_object.
-        :return:
-        """
-        logging.debug('timeseries: _save_limits_from_plot: Start')
-        gui.save_limits_from_plot_object(plot_object=self.plot_object,
-                                         user_object=self.controller.user,
-                                         par='time',
-                                         axis='x',
-                                         use_plot_limits=False)
-
-        gui.save_limits_from_plot_object(plot_object=self.plot_object,
-                                         user_object=self.controller.user,
-                                         par=self.current_parameter,
-                                         axis='y',
-                                         use_plot_limits=False)
-        logging.debug('page_fixed_platforms._save_limits_from_plot: End')
+    # def _update_y_limits_in_plot_from_user(self, call_targets=False):
+    #     gui.communicate.update_plot_limits_from_user(plot_object=self.plot_object,
+    #                                                  user_object=self.controller.user,
+    #                                                  axis='y',
+    #                                                  par='time',
+    #                                                  call_targets=call_targets)
 
 
-    #===========================================================================
-    def _save_limits_from_axis_widgets(self):
-        logging.debug('page_fixed_platforms._save_limits_from_axis_widgets: Start')
+    # def _save_limits_from_plot(self):
+    #     """
+    #     Method saves limits from plot object and adds information to user_object.
+    #     :return:
+    #     """
+    #     gui.save_limits_from_plot_object(plot_object=self.plot_object,
+    #                                      user_object=self.controller.user,
+    #                                      par='time',
+    #                                      axis='x',
+    #                                      use_plot_limits=False)
+    #
+    #     gui.save_limits_from_plot_object(plot_object=self.plot_object,
+    #                                      user_object=self.controller.user,
+    #                                      par=self.current_parameter,
+    #                                      axis='y',
+    #                                      use_plot_limits=False)
 
-        gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
-                                              axis_time_widget=self.xrange_widget,
-                                              par='time')
+    # def _save_limits_from_axis_widgets(self):
+    #     # gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
+    #     #                                       axis_time_widget=self.xrange_widget,
+    #     #                                       par='time')
+    #
+    #     gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
+    #                                            axis_float_widget=self.yrange_widget,
+    #                                            par=self.current_parameter)
 
-        gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
-                                               axis_float_widget=self.yrange_widget,
-                                               par=self.current_parameter)
-        logging.debug('page_fixed_platforms._save_limits_from_axis_widgets: End')
+    # def _update_axis_widgets(self):
+    #     gui.update_limits_in_axis_time_widget(axis_time_widget=self.xrange_widget,
+    #                                           plot_object=self.plot_object,
+    #                                           axis='x')
+    #
+    #     gui.update_limits_in_axis_float_widget(axis_float_widget=self.yrange_widget,
+    #                                            plot_object=self.plot_object,
+    #                                            axis='y')
 
-    #===========================================================================
-    def _update_axis_widgets(self):
-        logging.debug('page_fixed_platforms._update_axis_widgets: Start')
-
-        gui.update_limits_in_axis_time_widget(user_object=self.controller.user,
-                                              axis_time_widget=self.xrange_widget,
-                                              plot_object=self.plot_object,
-                                              par='time',
-                                              axis='x')
-
-        gui.update_limits_in_axis_float_widget(user_object=self.controller.user,
-                                               axis_float_widget=self.yrange_widget,
-                                               plot_object=self.plot_object,
-                                               par=self.current_parameter,
-                                               axis='y')
-        logging.debug('page_fixed_platforms._update_axis_widgets: End')
-
-    #===========================================================================
     def _on_flag_widget_flag(self):
-        logging.debug('page_fixed_platforms._on_flag_widget_flag: Start')
         self.controller.update_help_information('Flagging data, please wait...')
         gui.flag_data_time_series(flag_widget=self.flag_widget,
-                              gismo_object=self.current_gismo_object,
-                              plot_object=self.plot_object,
-                              par=self.current_parameter)
+                                  gismo_object=self.current_gismo_object,
+                                  plot_object=self.plot_object,
+                                  par=self.current_parameter)
 
         self._update_plot()
 
         self.controller.update_help_information('Done!')
-        logging.debug('page_fixed_platforms._on_flag_widget_flag: End')
 
-    #===========================================================================
     def _update_plot(self, **kwargs):
         """
         Called by the parameter widget to update plot.
         """
-        logging.debug('page_fixed_platforms._update_plot: Start')
-
         gui.update_time_series_plot(gismo_object=self.current_gismo_object,
                                     par=self.current_parameter,
                                     plot_object=self.plot_object,
@@ -1126,16 +1052,6 @@ class PageFixedPlatforms(tk.Frame):
             self.plot_object.set_title(self.current_gismo_object.get_station_name())
         except GISMOExceptionMethodNotImplemented:
             pass
-
-#         self.xrange_selection_widget.reset_widget()
-#         self.yrange_selection_widget.reset_widget()
-#         gui.save_user_info_from_flag_widget(self.flag_widget, self.controller.user)
-
-        try:
-            self._compare_data_plot()
-        except:
-            pass
-        logging.debug('page_fixed_platforms._update_plot: End')
 
     def _update_contour_plot(self, **kwargs):
         contour_par = self.parameter_contour_plot_widget.get_value()
@@ -1154,10 +1070,6 @@ class PageFixedPlatforms(tk.Frame):
         self.plot_object_contour.set_data(x, y, z, contour_plot=True)
         self.plot_object_contour.add_legend()
 
-
-
-
-    #===========================================================================
     def _on_flag_widget_change(self):
         logging.debug('page_fixed_platforms._on_flag_widget_change: Start')
         selection = self.flag_widget.get_selection()
@@ -1201,10 +1113,27 @@ class PageFixedPlatforms(tk.Frame):
         Information taken from self.select_ref_data_widget
         :return:
         """
+        ref_string = self.select_ref_data_widget.get_value().strip()
+        if not ref_string:
+            self._reset_ref_file_id()
+            gui.show_information('No reference file selected', 'You have to select a file in the list.')
+            return
         self.current_ref_sampling_type = self.select_ref_data_widget.get_value().split(':')[0].strip()
         self.current_ref_file_id = self._get_file_id(self.select_ref_data_widget.get_value())
         self.current_ref_file_path = self.session.get_file_path(self.current_ref_file_id)
         self.current_ref_gismo_object = self.session.get_gismo_object(self.current_ref_file_id)
+
+    def _reset_file_id(self):
+        self.current_sampling_type = ''
+        self.current_file_id = ''
+        self.current_file_path = ''
+        self.current_gismo_object = None
+
+    def _reset_ref_file_id(self):
+        self.current_ref_sampling_type = ''
+        self.current_ref_file_id = ''
+        self.current_ref_file_path = ''
+        self.current_ref_gismo_object = None
 
     def _update_contour_parameters(self):
         """
@@ -1251,13 +1180,11 @@ class PageFixedPlatforms(tk.Frame):
 
     #===========================================================================
     def _update_file(self):
-        logging.debug('page_fixed_platforms._update_file: Start')
         self._set_current_file()
 
         if not self.current_file_id:
             self.save_file_widget.set_file_path('')
             self.stringvar_current_data_file.set('')
-            self.save_plot_widget.set_file_path('')
             return
 
         self._reset_widgets()
@@ -1267,21 +1194,18 @@ class PageFixedPlatforms(tk.Frame):
         self._update_valid_time_range_in_time_axis()
 
         self._update_parameter_list()
-#        self._update_contour_parameters()
+
         self._on_select_parameter()
 
-        self.plot_object.zoom_to_data(call_targets=True)
-
-        self._update_frame_save_widget()
+        self._update_frame_save_widgets()
 
         self._update_frame_reference_file()
 
         self._update_map_1()
-        self._update_map_2()
+        # self._update_map_2()
         
         self._update_frame_automatic_qc()
 
-        logging.debug('page_fixed_platforms._update_file: End')
 
     def _update_frame_automatic_qc(self):
         self.widget_automatic_qc_options.deactivate_all()
@@ -1294,13 +1218,16 @@ class PageFixedPlatforms(tk.Frame):
         gui.set_valid_time_in_time_axis(gismo_object=self.session.get_gismo_object(data_file_id),
                                         time_axis_widget=self.xrange_widget)
 
-    def _update_frame_save_widget(self):
+    def _update_frame_save_widgets(self):
         if not self.current_file_path:
             self.save_file_widget.set_file_path()
-            self.stringvar_current_data_file.set('')
             self.save_plot_widget.set_file_path()
             return
+
+        # Set file paths
+        # TODO: Set directory
         self.save_file_widget.set_file_path(self.current_file_path)
+
 
     def _update_frame_reference_file(self):
         # Update reference file combobox. Should not include selected file.
@@ -1422,7 +1349,7 @@ class PageFixedPlatforms(tk.Frame):
         if not self.stringvar_current_data_file.get():
             self.plot_object.reset_plot()
             self._update_map_1()
-            self._update_map_2()
+            # self._update_map_2()
             self.save_file_widget.set_file_path()  # Resets the plot
-            self.save_plot_widget.set_file_path()  # Resets the plot
+            # self.save_plot_widget.set_file_path()  # Resets the plot
             self.save_widget_html.update_parameters([])

@@ -12,6 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import datetime
 
 import os
 import numpy as np
@@ -525,6 +526,10 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
 
     def set_max_value(self, max_value):
         self.stringvar_max.set(max_value)
+
+    def set_limits(self, min_value, max_value):
+        self.set_min_value(min_value)
+        self.set_max_value(max_value)
         
     #===========================================================================
     def _set_frame(self):
@@ -552,7 +557,7 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
             self._toggle_grid()
             
         # Zoom to data
-        ttk.Button(frame, text=u'Zoom to data', command=self._zoom_to_data).grid(row=r, column=c+2, padx=padx, pady=pady, sticky='se')
+        ttk.Button(frame, text='Zoom to full range', command=self._zoom_to_data).grid(row=r, column=c+2, padx=padx, pady=pady, sticky='se')
         r+=1
         
         entry_width = 10
@@ -577,14 +582,24 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
                                  sv=self.stringvar_max, 
                                  en=self.entry_lim_max: tkw.check_float_entry(sv, en, only_negative_values=self.only_negative_values))
         self.entry_lim_max.bind('<Return>', self._on_return_max_range)
+
+        ttk.Button(frame, text='Set range', command=self._on_return_max_range).grid(row=r, column=c + 2, padx=padx,
+                                                                                    pady=pady, sticky='se')
         
         tkw.grid_configure(frame, nr_rows=r+1, nr_columns=3)
         
         
     #===========================================================================
     def _zoom_to_data(self):
-        
-        self.plot_object.zoom_to_data(ax='first', call_targets=False)
+
+        if self.axis in self.x_list:
+            x_limits = True
+            y_limits = False
+        else:
+            x_limits = False
+            y_limits = True
+
+        self.plot_object.zoom_to_data(ax='first', call_targets=False, x_limits=x_limits, y_limits=y_limits)
         
         if self.axis in self.x_list:
             min_value, max_value = self.plot_object.get_xlim(ax='first')
@@ -609,7 +624,18 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
         return self.stringvar_min.get(), self.stringvar_max.get()
         
     #===========================================================================
-    def _on_return_min_range(self, event):
+    def _on_return_min_range(self, event=None):
+        # Check if value is bigger than max range
+        value_min_str = self.stringvar_min.get()
+        value_max_str = self.stringvar_max.get()
+        if not all([value_min_str, value_max_str]):
+            return
+        value_min = float(value_min_str)
+        value_max = float(value_max_str)
+
+        if value_max < value_min:
+            self.stringvar_min.set(value_max_str)
+
 #        self._save_limits()
         self.update_widget()
         self.entry_lim_max.focus()
@@ -618,7 +644,18 @@ class AxisSettingsFloatWidget(AxisSettingsBaseWidget):
 #        self._set_limits_in_plot_object()
         
     #===========================================================================
-    def _on_return_max_range(self, event):
+    def _on_return_max_range(self, event=None):
+        # Check if value is smaller than min range
+        value_min_str = self.stringvar_min.get()
+        value_max_str = self.stringvar_max.get()
+        if not all([value_min_str, value_max_str]):
+            return
+        value_min = float(value_min_str)
+        value_max = float(value_max_str)
+
+        if value_max < value_min:
+            self.stringvar_max.set(value_min_str)
+
 #        self._save_limits()
         self.update_widget()
         self.entry_lim_min.focus()
@@ -682,7 +719,21 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
     def get_limits(self):
         return self.time_widget_from.get_time_object(), self.time_widget_to.get_time_object()
         
-    
+    def set_limits(self, min_time, max_time):
+        """
+        min- and max_time are of format datenumber
+        :param min_time:
+        :param max_time:
+        :return:
+        """
+        if isinstance(min_time, datetime.datetime):
+            self.time_widget_from.set_time(datetime_object=min_time)
+            self.time_widget_to.set_time(datetime_object=max_time)
+        else:
+            self.time_widget_from.set_time(datenumber=min_time)
+            self.time_widget_to.set_time(datenumber=max_time)
+
+
     #===========================================================================
     def _set_frame(self):
         """
@@ -707,7 +758,7 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
             self._toggle_grid()
             
         # Zoom to data
-        ttk.Button(frame, text=u'Zoom to data', command=self._zoom_to_data).grid(row=r, column=1, sticky='se')
+        ttk.Button(frame, text='Zoom to full time range', command=self._zoom_to_data).grid(row=r, column=1, sticky='se')
             
         r+=1
         
@@ -732,6 +783,17 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
     
     #===========================================================================
     def _callback_time_widget(self):
+        # First check so that times are in order
+        time_from = self.time_widget_from.get_time_object()
+        time_to = self.time_widget_to.get_time_object()
+        print('*'*50)
+        print('_callback_time_widget')
+        print(time_from, type(time_from))
+        print(time_to, type(time_to))
+        if time_to < time_from:
+            print('time_to < time_from')
+            self.time_widget_to.set_time(datetime_object=time_from)
+
         if self.callback:
             self.callback()
 #        self._save_limits()
@@ -746,7 +808,14 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
             self._callback_time_widget()
             
         elif self.plot_object:
-            self.plot_object.zoom_to_data(ax='first', call_targets=False)
+            if self.axis in self.x_list:
+                x_limits = True
+                y_limits = False
+            else:
+                x_limits = False
+                y_limits = True
+
+            self.plot_object.zoom_to_data(ax='first', call_targets=False, x_limits=x_limits, y_limits=y_limits)
             
             if self.axis in self.x_list:
                 min_value, max_value = self.plot_object.get_xlim(ax='first')
@@ -959,7 +1028,7 @@ class SaveWidget(ttk.LabelFrame):
         
         self._set_frame()
 
-        self._set_directory()
+        self.set_directory()
         
     #===========================================================================
     def _set_frame(self):
@@ -1002,11 +1071,15 @@ class SaveWidget(ttk.LabelFrame):
             self.stringvar_directory.set(directory)
 
     # ===========================================================================
-    def _set_directory(self):
+    def set_directory(self, directory=None):
         if not self.user:
             return
-        directory = self.user.path.setdefault('save_file_directory', '')
-        directory = directory.replace('\\', '/')
+        if directory:
+            directory = directory.replace('\\', '/')
+            self.user.path.set('export_directory', directory)
+        else:
+            directory = self.user.path.setdefault('export_directory', '')
+            directory = directory.replace('\\', '/')
         self.stringvar_directory.set(directory)
 
     #===========================================================================
@@ -1015,7 +1088,7 @@ class SaveWidget(ttk.LabelFrame):
             directory = self.stringvar_directory.get().strip() #.replace('\\', '/')
             file_name = self.stringvar_file_name.get().strip()
             if self.user:
-                self.user.path.set('save_file_directory', directory)
+                self.user.path.set('export_directory', directory)
             self.callback(directory, file_name)
     
     #===========================================================================
@@ -1023,7 +1096,7 @@ class SaveWidget(ttk.LabelFrame):
         if not file_path: # or os.path.exists(file_path):
             self.stringvar_directory.set('')
             self.stringvar_file_name.set('')
-            self._set_directory()
+            self.set_directory()
             return
         directory, file_name = os.path.split(file_path)
         directory = directory.replace('\\', '/')
@@ -1063,7 +1136,7 @@ class SaveWidgetHTML(ttk.LabelFrame):
 
         self._set_frame()
 
-        self._set_directory()
+        # self._set_directory()
 
         # ===========================================================================
 
@@ -1075,18 +1148,9 @@ class SaveWidgetHTML(ttk.LabelFrame):
         frame.grid(row=0, column=0, padx=padx, pady=pady, sticky='w')
         tkw.grid_configure(self)
 
-
-        tk.Label(frame, text='Directory:').grid(row=0, column=0, padx=padx, pady=pady, sticky='nw')
-        self.stringvar_directory = tk.StringVar()
-        self.entry_directory = tk.Entry(frame, textvariable=self.stringvar_directory, **self.prop_entry)
-        self.entry_directory.grid(row=0, column=1, padx=padx, pady=pady, sticky='nw')
-        self.stringvar_directory.trace("w",
-                                       lambda name, index, mode, sv=self.stringvar_directory: tkw.check_path_entry(sv))
-
-
         self.frame_parameters = tk.Frame(frame)
         # self.frame_parameters = tk.LabelFrame(frame, text='Parameters to export')
-        self.frame_parameters.grid(row=1, column=0, columnspan=2, padx=padx, pady=pady, sticky='nsew')
+        self.frame_parameters.grid(row=0, column=0, columnspan=1, padx=padx, pady=pady, sticky='nsew')
 
         self.checkbutton_widget = tkw.CheckbuttonWidget(frame,
                                                       items=['Combined plot', 'Individual plots'],
@@ -1094,12 +1158,11 @@ class SaveWidgetHTML(ttk.LabelFrame):
                                                       include_select_all=False,
                                                       colors=[],
                                                       pady=0,
-                                                      row=1,
-                                                      column=2)
+                                                      row=0,
+                                                      column=1)
 
-
-        ttk.Button(frame, text=u'Export', command=self._save_file).grid(row=2, column=0, columnspan=2, padx=padx,
-                                                                      pady=pady, sticky='se')
+        ttk.Button(frame, text='Export', command=self._save_file).grid(row=1, column=0, columnspan=2, padx=padx,
+                                                                      pady=pady, sticky='sw')
 
         tkw.grid_configure(frame, nr_rows=2, nr_columns=2)
 
@@ -1109,8 +1172,8 @@ class SaveWidgetHTML(ttk.LabelFrame):
 
         self.listbox_widget_parameters = tkw.ListboxSelectionWidget(self.frame_parameters,
                                                                     prop_frame={},
-                                                                    prop_items={'height': 3},
-                                                                    prop_selected={'height': 3},
+                                                                    prop_items={'height': 4},
+                                                                    prop_selected={'height': 4},
                                                                     items=[],
                                                                     selected_items=[],
                                                                     title_items='Available parameters',
@@ -1142,7 +1205,6 @@ class SaveWidgetHTML(ttk.LabelFrame):
         :return:
         """
         selection = dict()
-        selection['directory'] = self.stringvar_directory.get()
         selection['parameters'] = self.listbox_widget_parameters.get_selected()
         plot_types_selected = self.checkbutton_widget.get_checked_item_list()
         selection['combined_plot'] = 'Combined plot' in plot_types_selected
@@ -1150,6 +1212,12 @@ class SaveWidgetHTML(ttk.LabelFrame):
         selection['individual_maps'] = 'Individual maps' in plot_types_selected
 
         return selection
+
+    def has_sufficient_selections(self):
+        if self.checkbutton_widget.get_checked_item_list() and self.listbox_widget_parameters.get_selected():
+            return True
+        else:
+            return False
 
     # ===========================================================================
     def _set_directory(self):
@@ -1159,7 +1227,8 @@ class SaveWidgetHTML(ttk.LabelFrame):
 
     def update_parameters(self, parameter_list=[]):
         self.listbox_widget_parameters.update_items(parameter_list)
-     
+
+
 """
 ================================================================================
 ================================================================================
