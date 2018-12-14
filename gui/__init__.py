@@ -58,6 +58,7 @@ from .page_ferrybox import PageFerrybox
 from .page_fixed_platforms import PageFixedPlatforms
 from .page_user import PageUser
 from .page_about import PageAbout
+from .page_time_series import PageTimeSeries
 
 # print('GUI IMPORT')
 # for key in sorted(sys.modules.keys()):

@@ -37,6 +37,7 @@ all_pages.add(gui.PageFerrybox)
 all_pages.add(gui.PageFixedPlatforms)
 all_pages.add(gui.PageUser)
 all_pages.add(gui.PageAbout)
+all_pages.add(gui.PageTimeSeries)
 
 
 #============================================================================
@@ -162,10 +163,10 @@ class App(tk.Tk):
         
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
-        # self.show_frame(gui.PageStart)
+        self.show_frame(gui.PageStart)
         # self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageFerrybox)
-        self.show_frame(gui.PageFixedPlatforms)
+        # self.show_frame(gui.PageFixedPlatforms)
 
         self.update()
         self.deiconify()
@@ -756,6 +757,9 @@ class App(tk.Tk):
         if 'gui.page_fixed_platforms' in sys.modules:
             self.goto_menu.add_command(label='Fixed platforms',
                                        command=lambda: self.show_frame(gui.PageFixedPlatforms))
+        if 'gui.page_time_series' in sys.modules:
+            self.goto_menu.add_command(label='Time series',
+                                       command=lambda: self.show_frame(gui.PageTimeSeries))
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 
