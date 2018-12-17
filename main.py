@@ -33,8 +33,8 @@ all_pages.add(gui.PageStart)
 
 #============================================================================
 # Timeseries pages
-all_pages.add(gui.PageFerrybox)
-all_pages.add(gui.PageFixedPlatforms)
+# all_pages.add(gui.PageFerrybox)
+# all_pages.add(gui.PageFixedPlatforms)
 all_pages.add(gui.PageUser)
 all_pages.add(gui.PageAbout)
 all_pages.add(gui.PageTimeSeries)
@@ -163,12 +163,13 @@ class App(tk.Tk):
         
         # Show start page given in settings.ini
         self.page_history = [gui.PageStart]
-        self.show_frame(gui.PageStart)
+        # self.show_frame(gui.PageStart)
         # self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageFerrybox)
         # self.show_frame(gui.PageFixedPlatforms)
+        self.show_frame(gui.PageTimeSeries)
 
-        self.update()
+        self.update_all()
         self.deiconify()
 
     #==========================================================================
@@ -319,7 +320,7 @@ class App(tk.Tk):
         #----------------------------------------------------------------------
         # Three main frames 
         frame = self.frame_add
-        frame_data = tk.LabelFrame(frame, text='Data file')
+        frame_data = tk.LabelFrame(frame, text='Get data file')
         frame_settings = tk.LabelFrame(frame, text='Settings file')
         frame_sampling_type = tk.LabelFrame(frame, text='Sampling type')
         frame_platform_depth = tk.LabelFrame(frame, text='Platform depth')
@@ -497,9 +498,11 @@ class App(tk.Tk):
                 depth = self.user.sampling_depth.setdefault(temp_file_id, 1)
                 self.entry_widget_platform_depth.set_value(depth)
             else:
+                self.entry_widget_platform_depth.set_value('')
                 self.entry_widget_platform_depth.disable_widget()
         else:
             self.button_load_file.configure(state='disabled')
+            self.entry_widget_platform_depth.set_value('')
             self.entry_widget_platform_depth.disable_widget()
             
     #===========================================================================
@@ -682,7 +685,6 @@ class App(tk.Tk):
         pass
 #         self.update_help_information(None)
 #         self.working_indicator.destroy()
-        
     
     #===========================================================================
     def update_files_information(self):
@@ -1046,6 +1048,11 @@ class App(tk.Tk):
         
         try:
             self.titles[gui.PageCTD] = 'CTD'
+        except:
+            pass
+
+        try:
+            self.titles[gui.PageTimeSeries] = 'Time Series'
         except:
             pass
 

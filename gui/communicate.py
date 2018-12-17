@@ -13,8 +13,8 @@ import datetime
 
 import core
 import gui
+from libs.sharkpylib import utils
 
-import matplotlib.colors as mcolors
 import matplotlib.dates as dates
 import libs.sharkpylib.gismo as gismo
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
@@ -171,10 +171,7 @@ def get_flag_widget(parent=None,
     color_list = []
     markersize_list = []
 
-    all_colors = ['blue', 'red', 'darkgreen', 'yellow', 'magenta', 'cyan', 'black', 'gray']
-    all_colors = list(mcolors.BASE_COLORS) + list(mcolors.TABLEAU_COLORS) + list(mcolors.CSS4_COLORS)
-    all_colors = sorted([c for c in all_colors if not c.startswith('tab:')])
-
+    all_colors = utils.ColorsList()
 
     for f in flags:
         f = str(f)
@@ -215,49 +212,84 @@ def flag_data_time_series(flag_widget=None,
     selection = flag_widget.get_selection()
     flag_nr = selection.flag
 
-    time_start = dates.num2date(plot_object.get_mark_from_value())
-    time_end = dates.num2date(plot_object.get_mark_to_value())
+    mark_from = plot_object.get_mark_from_value()
+    mark_to = plot_object.get_mark_to_value()
 
+    if not all([mark_from, mark_to]):
+        raise GUIExceptionNoRangeSelection
+
+    # print(mark_from, type(mark_from))
+    time_start = None
+    time_end = None
+    times_to_flag = None
     import pandas as pd
-    time_start = pd.Timestamp.tz_localize(pd.to_datetime(time_start), None)
-    time_end = pd.Timestamp.tz_localize(pd.to_datetime(time_end), None)
+    if plot_object.mark_range_orientation == 'vertical':
+        time_from, time_to = plot_object.get_xlim()
+        time_from = dates.num2date(time_from)
+        time_to = dates.num2date(time_to)
 
-    # time_values = plot_object.get_marked_x_values()
-    # index = plot_object.get_marked_index()
-    # print('time_values[0]', time_values[0])
-    gismo_object.flag_data(flag_nr, par, time_start=time_start, time_end=time_end)
-    # gismo_object.flag_parameter_at_index(par=par,
-    #                                      index=index,
-    #                                      qflag=flag_nr)
+        time_from = pd.Timestamp.tz_localize(pd.to_datetime(time_from), None)
+        time_to = pd.Timestamp.tz_localize(pd.to_datetime(time_to), None)
+
+
+        data = gismo_object.get_data('time', par)
+        print("data['time'][0]", data['time'][0], type(data['time'][0]))
+        print('time_to', time_from, type(time_from))
+        print('time_to', time_to, type(time_to))
+        print('mark_from', mark_from)
+        print('mark_to', mark_to)
+
+        (data['time'] >= time_from)
+        (data['time'] <= time_to)
+        (data[par] >= mark_from)
+        (data[par] <= mark_to)
+
+        booelan = (data['time'] >= time_from) & \
+                  (data['time'] <= time_to) & \
+                  (data[par] >= mark_from) & \
+                  (data[par] <= mark_to)
+        times_to_flag = data['time'][booelan]
+
+    else:
+        time_start = dates.num2date(mark_from)
+        time_end = dates.num2date(mark_to)
+
+        time_start = pd.Timestamp.tz_localize(pd.to_datetime(time_start), None)
+        time_end = pd.Timestamp.tz_localize(pd.to_datetime(time_end), None)
+
+    # Flag data
+    gismo_object.flag_data(flag_nr, par, time=times_to_flag, time_start=time_start, time_end=time_end)
     # Flag dependent parameters
     dependent_list = gismo_object.get_dependent_parameters(par)
     if dependent_list:
         print('par', par)
         for sub_par in dependent_list:
             print('sub_par', sub_par)
-            gismo_object.flag_data(flag_nr, sub_par, time_start=time_start, time_end=time_end)
-            # gismo_object.flag_parameter_at_index(par=sub_par,
-            #                                      index=index,
-            #                                      qflag=flag_nr)
+            gismo_object.flag_data(flag_nr, sub_par, time=times_to_flag, time_start=time_start, time_end=time_end)
 
 def run_automatic_qc(controller, automatic_qc_widget):
     qc_routine_list = automatic_qc_widget.get_checked_item_list()
     nr_routines = len(qc_routine_list)
     if nr_routines == 0:
         gui.show_information('Run QC', 'No QC routines selected!')
-        return
+        return False
 
     if nr_routines == 1:
-        text = 'You are about to run 1 automatic quality control. This might take some time. Do you want to continue?'
+        text = 'You are about to run 1 automatic quality control. ' \
+               'This might take some time but process will run in background. ' \
+               'Do you want to continue?'
     else:
-        text = 'You are about tu run {} automatic quality controles. This might take some time. Do you want to continue?'.format(nr_routines)
+        text = 'You are about tu run {} automatic quality controles. ' \
+               'This might take some time but process will run in background. ' \
+               'Do you want to continue?'.format(nr_routines)
 
     if not messagebox.askyesno('Run QC', text):
-        return
+        return False
 
-        controller.controller.run_progress(lambda: controller.session.run_automatic_qc(controller.current_file_id,
-                                                                       qc_routines=qc_routine_list),
-                                 'Running qc on file: {}'.format(controller.current_file_id))
+    controller.controller.run_progress(lambda: controller.session.run_automatic_qc(controller.current_file_id,
+                                       qc_routines=qc_routine_list),
+                                       'Running qc on file: {}'.format(controller.current_file_id))
+    return qc_routine_list
 
 def save_user_info_from_flag_widget(flag_widget, user_object):
     """
@@ -416,7 +448,7 @@ def save_html_plot(controller, save_widget_html, flag_widget=None, save_director
                                                 'This might take some time and MAY cause the program to crash. '
                                                 'Do you wish to continue anyway? ')
         if not ok_to_continue:
-            self.controller.update_help_information('Export aborted by user.')
+            controller.update_help_information('Export aborted by user.')
             return
 
     main_data = {}
@@ -1053,14 +1085,14 @@ def sync_limits_in_plot_user_and_axis(plot_object=None,
     if par != 'time':
         min_value = float(min_value)
         max_value = float(max_value)
-    print('=' * 60)
-    print('=' * 60)
-    print('SYNC')
-    print('-'*60)
-    print(source, axis, par)
-    print(min_value, type(min_value))
-    print(max_value, type(max_value))
-    print('=' * 60)
+    # print('=' * 60)
+    # print('=' * 60)
+    # print('SYNC')
+    # print('-'*60)
+    # print(source, axis, par)
+    # print(min_value, type(min_value))
+    # print(max_value, type(max_value))
+    # print('=' * 60)
     # Set limits in plot
     if axis in ['x', 't']:
         plot_object.set_x_limits(limits=[min_value, max_value], call_targets=call_targets)
@@ -1411,7 +1443,10 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
                                     data['lon'][::ferrybox_track_every],
                                     marker_id=file_id,
                                     color=ferrybox_track_color,
-                                    zorder=zorder)
+                                    zorder=zorder,
+                                    marker='.',
+                                    linestyle='')
+
             elif 'physicalchemical' in sampling_type.lower():
                 zorder = 11
                 data = session.get_data(file_id, 'lat', 'lon')

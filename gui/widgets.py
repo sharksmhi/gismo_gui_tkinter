@@ -297,8 +297,9 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
         
         self.time_widget_from = tkw.TimeWidget(frame, 
                                   title='From', 
-                                  show_header=True, 
-                                  callback_target=self._callback_time_widget_from, 
+                                  show_header=True,
+                                  lowest_time_resolution='second',
+                                  callback_target=self._callback_time_widget_from,
                                   row=r, 
                                   column=1)
         r+=1  
@@ -308,7 +309,8 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
         
         self.time_widget_to = tkw.TimeWidget(frame, 
                                   title='To', 
-                                  show_header=True, 
+                                  show_header=True,
+                                  lowest_time_resolution='second',
                                   callback_target=self._callback_time_widget_to, 
                                   row=r, 
                                   column=1)
@@ -764,7 +766,8 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
         
         self.time_widget_from = tkw.TimeWidget(frame, 
                                   title='From', 
-                                  show_header=True, 
+                                  show_header=True,
+                                  lowest_time_resolution='second',
                                   callback_target=self._callback_time_widget,
                                   row=r, 
                                   columnspan=2)
@@ -772,7 +775,8 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
         
         self.time_widget_to = tkw.TimeWidget(frame, 
                                   title='To', 
-                                  show_header=True, 
+                                  show_header=True,
+                                  lowest_time_resolution='second',
                                   callback_target=self._callback_time_widget, 
                                   row=r, 
                                   columnspan=2)
@@ -840,8 +844,8 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
 class CompareWidget(tk.Frame):
     def __init__(self, 
                  parent,
+                 controller=None,
                  session=None,
-                 user=None,
                  include_sampling_depth=False,
                  callback=None, 
                  prop_frame={},  
@@ -849,8 +853,8 @@ class CompareWidget(tk.Frame):
 
         self.prop_frame = {}
         self.prop_frame.update(prop_frame)
+        self.controller = controller
         self.session = session
-        self.user = user
         self.include_sampling_depth = include_sampling_depth
         self.callback = callback
         
@@ -873,9 +877,9 @@ class CompareWidget(tk.Frame):
         
         self._set_frame()
 
-        self.set_data(time=self.user.match.setdefault('hours', '24'),
-                      dist=self.user.match.setdefault('dist', '5000'),
-                      depth=self.user.match.setdefault('depth', '2'))
+        self.set_data(time=self.controller.user.match.setdefault('hours', '24'),
+                      dist=self.controller.user.match.setdefault('dist', '5000'),
+                      depth=self.controller.user.match.setdefault('depth', '2'))
         
     #===========================================================================
     def _set_frame(self):
@@ -920,31 +924,6 @@ class CompareWidget(tk.Frame):
         self.entry['dist'].south_entry = self.entry['depth']
         self.entry['depth'].south_entry = self.entry['time']
 
-        # tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        # self.stringvar['time'] = tk.StringVar()
-        # self.entry['time'] = tk.Entry(self, textvariable=self.stringvar['time'], width=40)
-        # self.entry['time'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        # self.stringvar['time'].trace("w", lambda name, index, mode, sv=self.stringvar['time']: tkw.check_int_entry(sv))
-        # r+=1
-        #
-        # tk.Label(self, text='Max distance [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        # self.stringvar['dist'] = tk.StringVar()
-        # self.entry['dist'] = tk.Entry(self, textvariable=self.stringvar['dist'], width=40)
-        # self.entry['dist'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        # self.stringvar['dist'].trace("w", lambda name, index, mode, sv=self.stringvar['dist']: tkw.check_int_entry(sv))
-        # r+=1
-        #
-        # tk.Label(self, text='Max depth diff [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        # self.entry['depth'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save, entry_type='int', row=r,
-        #                                       column=c+1, padx=padx, pady=pady, sticky='w')
-        #
-        #
-        # self.stringvar['depth'] = tk.StringVar()
-        # self.entry['depth'] = tk.Entry(self, textvariable=self.stringvar['depth'], width=40)
-        # self.entry['depth'].grid(row=r, column=c+1, padx=padx, pady=pady, sticky='w')
-        # self.stringvar['depth'].trace("w", lambda name, index, mode, sv=self.stringvar['depth']: tkw.check_int_entry(sv))
-        # r+=1
-
         r += 1
         self.parameter_widget = tkw.ComboboxWidget(self,
                                                    title='Parameter',
@@ -955,12 +934,12 @@ class CompareWidget(tk.Frame):
                                                    sticky='w')
         r += 1
 
-
         tkw.grid_configure(self, nr_rows=r, nr_columns=2)
 
     def update_parameter_list(self, file_id):
         parameter_list = self.session.get_parameter_list(file_id)
-        self.parameter_widget.update_items(parameter_list)
+        default_parameter = self.controller.user.parameter_priority.get_priority(parameter_list)
+        self.parameter_widget.update_items(parameter_list, default_item=default_parameter)
 
     def get_parameter(self):
         return self.parameter_widget.get_value()
@@ -982,9 +961,9 @@ class CompareWidget(tk.Frame):
         self.old_values = self.new_values
 
         # Save settings to user
-        self.user.match.set('hours', str(self.time))
-        self.user.match.set('dist', str(self.dist))
-        self.user.match.set('depth', str(self.depth))
+        self.controller.user.match.set('hours', str(self.time))
+        self.controller.user.match.set('dist', str(self.dist))
+        self.controller.user.match.set('depth', str(self.depth))
     
     #===========================================================================
     def set_data(self, **kwargs):
@@ -1146,7 +1125,6 @@ class SaveWidgetHTML(ttk.LabelFrame):
 
         frame = tk.Frame(self)
         frame.grid(row=0, column=0, padx=padx, pady=pady, sticky='w')
-        tkw.grid_configure(self)
 
         self.frame_parameters = tk.Frame(frame)
         # self.frame_parameters = tk.LabelFrame(frame, text='Parameters to export')
@@ -1192,7 +1170,7 @@ class SaveWidgetHTML(ttk.LabelFrame):
                                                                     widget_id=u'',
                                                                     allow_nr_selected=None,
                                                                     vertical=False)
-
+        tkw.grid_configure(self.frame_parameters)
 
     # ===========================================================================
     def _save_file(self):
@@ -1361,11 +1339,13 @@ class InformationPopup(object):
     def _ok(self):
         self.popup_frame.destroy()
         # self.controller.deiconify()
+        self.controller.update_all()
 
     def _ok_and_forget(self):
         self.user.options.set('show_info_popups', False)
         self.popup_frame.destroy()
         # self.controller.deiconify()
+        self.controller.update_all()
 
     def _update_wrap(self, event):
         self.label.config(wraplength=self.popup_frame.winfo_width())

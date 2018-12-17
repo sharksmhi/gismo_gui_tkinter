@@ -14,6 +14,12 @@ def data_file_selected(**kwargs):
            """.format(user)
     return text
 
+def flag_widget_help_text(**kwargs):
+    text = 'Flag data by selecting a range under tab "Selects data to flag". ' \
+           'Then choose a flag in the left column below and press "Flag selected data". ' \
+           'In the second column below you can decide which flags to show by clicking the boxes and then ' \
+           'press "Update flags to show". You can also choose color and marker size for the different flags.'
+    return text
 
 
 

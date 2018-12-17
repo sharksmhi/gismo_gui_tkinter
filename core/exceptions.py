@@ -32,13 +32,22 @@ class GUIExceptionMissingAttribute(GUIException):
     code = ''
     message = ''
 
+
 class GUIExceptionUserError(GUIException):
     """
     """
     code = ''
     message = ''
 
+
 class GUIExceptionBreak(GUIException):
+    """
+    """
+    code = ''
+    message = ''
+
+
+class GUIExceptionNoRangeSelection(GUIException):
     """
     """
     code = ''

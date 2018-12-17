@@ -82,6 +82,8 @@ class User(object):
 
         self.save = UserSettings(self.user_directory, 'save')
 
+        self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority')
+
 
 
 class UserSettings(object):
@@ -96,7 +98,7 @@ class UserSettings(object):
         self.data = {}
 
         if not os.path.exists(self.directory):
-            os.mkdir(self.directory)
+            os.makedirs(self.directory)
 
         if not os.path.exists(self.file_path):
             self._save()
@@ -210,3 +212,27 @@ class UserSettingsParameter(UserSettings):
         :return:
         """
         return self.data.get(par, {}).get(key, None)
+
+class UserSettingsPriorityList(UserSettings):
+    def __init__(self, directory, settings_type):
+        UserSettings.__init__(self, directory, settings_type)
+
+        self.data.setdefault('priority_list', [])
+        self._save()
+
+    def set_priority(self, item):
+        if item in self.data['priority_list']:
+            self.data['priority_list'].pop(self.data['priority_list'].index(item))
+        self.data['priority_list'].insert(0, item)
+        self._save()
+
+    def get_priority(self, check_in_list):
+        for item in self.data['priority_list']:
+            if item in check_in_list:
+                return item
+        # Return parameter starting with Chlo
+        for item in check_in_list:
+            if item.lower().startswith('chl'):
+                self.set_priority(item)
+                return item
+        return check_in_list[0]

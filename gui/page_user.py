@@ -8,6 +8,7 @@ from tkinter import ttk
 import core
 
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
+from libs.sharkpylib import utils
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -30,8 +31,7 @@ class PageUser(tk.Frame):
         self.user_manager = self.controller.user_manager
         self.user = self.user_manager.user # Obs. Have to update un updata page if user is updated
 
-        all_colors = list(mcolors.BASE_COLORS) + list(mcolors.TABLEAU_COLORS) + list(mcolors.CSS4_COLORS)
-        self.color_list = sorted([c for c in all_colors if not c.startswith('tab:')])
+        self.color_list = utils.ColorsList()
 
     #===========================================================================
     def startup(self):
@@ -50,6 +50,8 @@ class PageUser(tk.Frame):
         # Colormap
         # self._load_color_map_info()
         self._on_select_colormap()
+
+        self._check_options()
 
 
         
@@ -108,6 +110,9 @@ class PageUser(tk.Frame):
         self.checkbutton_show_info_popup.grid(row=0, column=0, padx=5, pady=5, sticky='nw')
         tkw.grid_configure(frame)
 
+    def _check_options(self):
+        self.intvar_show_info_popup.set(self.user.options.get('show_info_popups'))
+
 
     def _set_frame_plot_style(self):
         labelframe = self.labelframe_plot_style
@@ -129,6 +134,7 @@ class PageUser(tk.Frame):
             color = self.combobox_map_color[item].get_value()
             if color:
                 self.user.map_prop.set(item, color)
+                self.labels_map_color[item].config(fg=color)
                 # self.combobox_map_color[item].set_background_color(color)
 
         frame = self.labelframe_map
@@ -208,21 +214,28 @@ class PageUser(tk.Frame):
         # TODO: physicalchemical_color_background
         # TODO: physicalchemical_markersize_background
 
-        map_color_list = ['ferrybox_track_color_background',
+        map_color_list = ['ferrybox_track_color',
+                          'ferrybox_track_color_highlighted',
+                          'ferrybox_track_color_background',
                           'fixed_platform_color_background',
                           'physicalchemical_color_background']
 
         default_colors = dict(ferrybox_track_color_background='gray',
-                              fixed_platform_color_background='lighblue',
-                              physicalchemical_color_background='lightgreen')
+                              ferrybox_track_color='gray',
+                              ferrybox_track_color_highlighted='gray',
+                              fixed_platform_color_background='gray',
+                              physicalchemical_color_background='gray')
 
         self.combobox_map_color = {}
+        self.labels_map_color = {}
         grid_items = dict(sticky='w')
         r = 0
         for item in map_color_list:
             title = item.replace('_', ' ').capitalize()
             default_color = self.user.map_prop.setdefault(item, default_colors.get(item, 'black'))
-            tk.Label(frame_properties, text=title).grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+            self.labels_map_color[item] = tk.Label(frame_properties, text=title)
+            self.labels_map_color[item].grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+            self.labels_map_color[item].config(fg=default_color)
             self.combobox_map_color[item] = tkw.ComboboxWidget(frame_properties,
                                                                callback_target=lambda x=item: save_color(x),
                                                                items=self.color_list,
