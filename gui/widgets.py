@@ -944,6 +944,10 @@ class CompareWidget(tk.Frame):
     def get_parameter(self):
         return self.parameter_widget.get_value()
 
+    def get_selection(self):
+        return self.new_values
+
+
     #===========================================================================
     def _save(self, entry=None):
         self.time = float(self.entry['time'].get_value())
@@ -964,6 +968,9 @@ class CompareWidget(tk.Frame):
         self.controller.user.match.set('hours', str(self.time))
         self.controller.user.match.set('dist', str(self.dist))
         self.controller.user.match.set('depth', str(self.depth))
+
+        # Save parameter
+        self.controller.user.parameter_priority.set_priority(self.get_parameter())
     
     #===========================================================================
     def set_data(self, **kwargs):

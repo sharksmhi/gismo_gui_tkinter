@@ -72,6 +72,8 @@ class PageTimeSeries(tk.Frame):
         self.allowed_data_files = ['Ferrybox', 'Fixed platform']
         self.allowed_compare_files = ['PhysicalChemical']
 
+        self._reset_merge_data()
+
     #===========================================================================
     def startup(self):
         self._set_frame()
@@ -87,6 +89,10 @@ class PageTimeSeries(tk.Frame):
         self._check_on_remove_file()
 
         self._update_map_1() # To add background data
+
+    def _reset_merge_data(self):
+        self.current_merge_data = {}
+        self.current_compare_selection = []
 
     def _update_frame_data_file(self):
         loaded_file_list = self.controller.get_loaded_files_list()
@@ -617,6 +623,10 @@ class PageTimeSeries(tk.Frame):
         button_frame.grid(row=2, column=0, sticky='nsew', **pad)
 
         # Button plot
+        self.button_compare_plot_in_timeseries = tk.Button(button_frame, text='Plot in time series',
+                                                      comman=lambda: self._compare_data_plot('in_timeseries'))
+        self.button_compare_plot_in_timeseries.grid(row=0, column=0, sticky='nsew', **pad)
+
         self.button_compare_plot_by_flags = tk.Button(button_frame, text='Plot correlation plot\n(color by flag)',
                                                   comman=lambda: self._compare_data_plot('color_by_flag'))
         self.button_compare_plot_by_flags.grid(row=0, column=0, sticky='nsew', **pad)
@@ -723,13 +733,25 @@ class PageTimeSeries(tk.Frame):
                                               '{}_{}.html'.format(current_par_name, compare_par_name)))
 
     def _compare_data_plot(self, *args):
+
+
         # Recreate plot object if
         self._set_notebook_compare_plot()
 
-        try:
-            data = gui.communicate.get_merge_data(self, self.compare_widget, self.flag_widget)
-        except GUIExceptionBreak:
-            return
+        selection = self.compare_widget.get_selection()
+        if selection != self.current_compare_selection:
+            try:
+                self.current_merge_data = gui.communicate.get_merge_data(self, self.compare_widget, self.flag_widget)
+                self.current_compare_selection = selection
+            except GUIExceptionBreak:
+                self._reset_merge_data()
+                return
+
+        data = self.current_merge_data
+
+        if 'in_timeseries' in args:
+            self.plot_object.set_data()
+
 
         end_points = [data['min_value'], data['max_value']]
         # Plot correlation line
@@ -747,10 +769,13 @@ class PageTimeSeries(tk.Frame):
                 cc.extend(list(data['flags'][flag]['depth']))
 
             self.plot_object_compare.set_data(xx, yy, c=cc,
-                                              cmap='cmo.deep')
+                                              cmap='cmo.deep',
+                                              colorbar_title='Depth\n[m]')
+
+            # self.plot_object_contour.add_legend(title='Depth [m]')
 
             self.current_correlation_plot = 'color_by_depth'
-        else:
+        if 'color_by_flag' in args:
             for flag in sorted(data['flags']):
                 x = data['flags'][flag]['x']
                 y = data['flags'][flag]['y']
@@ -1028,80 +1053,6 @@ class PageTimeSeries(tk.Frame):
                                                           source='plot')
 
         self._update_map_2()
-        return
-
-        # gui.communicate.update_plot_limits_from_user(plot_object=self.plot_object,
-        #                                              user_object=self.user,
-        #                                              axis='y',
-        #                                              par=self.current_parameter,
-        #                                              call_targets=False)
-        # self._update_y_limits_in_plot_from_user(call_targets=False)
-
-        self.plot_object.call_targets()
-
-        #
-        # # Next is to update limits in settings_object. This will not overwrite old settings.
-        # self._save_limits_from_plot()
-        #
-        # # Now update the Axis-widgets...always from plot
-        gui.update_limits_in_axis_time_widget(axis_time_widget=self.xrange_widget,
-                                              plot_object=self.plot_object,
-                                              axis='x')
-
-        gui.update_limits_in_axis_float_widget(axis_float_widget=self.yrange_widget,
-                                               plot_object=self.plot_object,
-                                               axis='y')
-        # self._update_axis_widgets()
-        #
-        # # ...and update limits in plot
-        # self._update_plot_limits()
-
-        # self._update_map_2()
-
-
-
-    # def _update_y_limits_in_plot_from_user(self, call_targets=False):
-    #     gui.communicate.update_plot_limits_from_user(plot_object=self.plot_object,
-    #                                                  user_object=self.controller.user,
-    #                                                  axis='y',
-    #                                                  par='time',
-    #                                                  call_targets=call_targets)
-
-
-    # def _save_limits_from_plot(self):
-    #     """
-    #     Method saves limits from plot object and adds information to user_object.
-    #     :return:
-    #     """
-    #     gui.save_limits_from_plot_object(plot_object=self.plot_object,
-    #                                      user_object=self.controller.user,
-    #                                      par='time',
-    #                                      axis='x',
-    #                                      use_plot_limits=False)
-    #
-    #     gui.save_limits_from_plot_object(plot_object=self.plot_object,
-    #                                      user_object=self.controller.user,
-    #                                      par=self.current_parameter,
-    #                                      axis='y',
-    #                                      use_plot_limits=False)
-
-    # def _save_limits_from_axis_widgets(self):
-    #     # gui.save_limits_from_axis_time_widget(user_object=self.controller.user,
-    #     #                                       axis_time_widget=self.xrange_widget,
-    #     #                                       par='time')
-    #
-    #     gui.save_limits_from_axis_float_widget(user_object=self.controller.user,
-    #                                            axis_float_widget=self.yrange_widget,
-    #                                            par=self.current_parameter)
-
-    # def _update_axis_widgets(self):
-    #     gui.update_limits_in_axis_time_widget(axis_time_widget=self.xrange_widget,
-    #                                           plot_object=self.plot_object,
-    #                                           axis='x')
-    #
-    #     gui.update_limits_in_axis_float_widget(axis_float_widget=self.yrange_widget,
-    #                                            plot_object=self.plot_object,
-    #                                            axis='y')
 
     def _check_loaded_data(self):
         """
@@ -1118,7 +1069,6 @@ class PageTimeSeries(tk.Frame):
             return False
 
         return True
-
 
     def _on_flag_widget_flag(self):
         if not self._check_loaded_data():
@@ -1168,7 +1118,6 @@ class PageTimeSeries(tk.Frame):
 
         x = self.session.get_data(self.current_file_id, 'time')['time']
         self.plot_object_contour.set_data(x, y, z, contour_plot=True)
-        self.plot_object_contour.add_legend()
 
     def _on_flag_widget_change(self):
         logging.debug('page_fixed_platforms._on_flag_widget_change: Start')
@@ -1282,6 +1231,8 @@ class PageTimeSeries(tk.Frame):
     def _update_file(self):
         self._set_current_file()
 
+        self._reset_merge_data()
+
         if not self.current_file_id:
             self.save_file_widget.set_file_path('')
             self.stringvar_current_data_file.set('')
@@ -1293,6 +1244,8 @@ class PageTimeSeries(tk.Frame):
 
         self._update_valid_time_range_in_time_axis()
 
+        self._set_notebook_compare_plot()
+
         self._update_parameter_list()
 
         self._on_select_parameter()
@@ -1303,8 +1256,6 @@ class PageTimeSeries(tk.Frame):
 
         self._update_frame_reference_file()
 
-
-        
         self._update_frame_automatic_qc()
 
 

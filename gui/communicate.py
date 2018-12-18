@@ -211,6 +211,7 @@ def flag_data_time_series(flag_widget=None,
     """
     selection = flag_widget.get_selection()
     flag_nr = selection.flag
+    active_flags = selection.selected_flags
 
     mark_from = plot_object.get_mark_from_value()
     mark_to = plot_object.get_mark_to_value()
@@ -219,9 +220,7 @@ def flag_data_time_series(flag_widget=None,
         raise GUIExceptionNoRangeSelection
 
     # print(mark_from, type(mark_from))
-    time_start = None
-    time_end = None
-    times_to_flag = None
+
     import pandas as pd
     if plot_object.mark_range_orientation == 'vertical':
         time_from, time_to = plot_object.get_xlim()
@@ -233,22 +232,33 @@ def flag_data_time_series(flag_widget=None,
 
 
         data = gismo_object.get_data('time', par)
-        print("data['time'][0]", data['time'][0], type(data['time'][0]))
-        print('time_to', time_from, type(time_from))
-        print('time_to', time_to, type(time_to))
-        print('mark_from', mark_from)
-        print('mark_to', mark_to)
+        time_array = np.array([pd.to_datetime(item) for item in data['time']])
+        # print("time_array[0]", time_array[0], type(time_array[0]))
+        # print('time_from', time_from, type(time_from))
+        # print('time_to', time_to, type(time_to))
+        # print('mark_from', mark_from)
+        # print('mark_to', mark_to)
 
-        (data['time'] >= time_from)
-        (data['time'] <= time_to)
+        (time_array >= time_from)
+        (time_array <= time_to)
         (data[par] >= mark_from)
         (data[par] <= mark_to)
 
-        booelan = (data['time'] >= time_from) & \
-                  (data['time'] <= time_to) & \
+        boolean = (time_array >= time_from) & \
+                  (time_array <= time_to) & \
                   (data[par] >= mark_from) & \
                   (data[par] <= mark_to)
-        times_to_flag = data['time'][booelan]
+        times_to_flag = time_array[boolean]
+
+        # Flag data
+        gismo_object.flag_data(flag_nr, par, time=times_to_flag, flags=active_flags)
+        # Flag dependent parameters
+        # dependent_list = gismo_object.get_dependent_parameters(par)
+        # if dependent_list:
+        #     print('par', par)
+        #     for sub_par in dependent_list:
+        #         print('sub_par', sub_par)
+        #         gismo_object.flag_data(flag_nr, sub_par, time=times_to_flag)
 
     else:
         time_start = dates.num2date(mark_from)
@@ -257,15 +267,15 @@ def flag_data_time_series(flag_widget=None,
         time_start = pd.Timestamp.tz_localize(pd.to_datetime(time_start), None)
         time_end = pd.Timestamp.tz_localize(pd.to_datetime(time_end), None)
 
-    # Flag data
-    gismo_object.flag_data(flag_nr, par, time=times_to_flag, time_start=time_start, time_end=time_end)
-    # Flag dependent parameters
-    dependent_list = gismo_object.get_dependent_parameters(par)
-    if dependent_list:
-        print('par', par)
-        for sub_par in dependent_list:
-            print('sub_par', sub_par)
-            gismo_object.flag_data(flag_nr, sub_par, time=times_to_flag, time_start=time_start, time_end=time_end)
+        # Flag data
+        gismo_object.flag_data(flag_nr, par, time_start=time_start, time_end=time_end, flags=active_flags)
+        # Flag dependent parameters
+        # dependent_list = gismo_object.get_dependent_parameters(par)
+        # if dependent_list:
+        #     print('par', par)
+        #     for sub_par in dependent_list:
+        #         print('sub_par', sub_par)
+        #         gismo_object.flag_data(flag_nr, sub_par, time_start=time_start, time_end=time_end)
 
 def run_automatic_qc(controller, automatic_qc_widget):
     qc_routine_list = automatic_qc_widget.get_checked_item_list()
@@ -505,8 +515,6 @@ def save_html_plot(controller, save_widget_html, flag_widget=None, save_director
                                                             name='{} ({})'.format(qf, des),
                                                             mode='markers')
                 individual_plot_object.plot_to_file(os.path.join(export_dir, 'plot_{}.html'.format(par.replace('/', '_'))))
-
-
 
 def match_data(controller, compare_widget):
     """
