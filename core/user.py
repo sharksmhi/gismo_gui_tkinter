@@ -80,6 +80,8 @@ class User(object):
 
         self.plot_color = UserSettings(self.user_directory, 'plot_color')
 
+        self.plot_time_series_ref = UserSettings(self.user_directory, 'plot_time_series_ref')
+
         self.save = UserSettings(self.user_directory, 'save')
 
         self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority')

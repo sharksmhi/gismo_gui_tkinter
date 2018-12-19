@@ -91,6 +91,7 @@ class PageTimeSeries(tk.Frame):
         self._update_map_1() # To add background data
 
     def _reset_merge_data(self):
+        self.current_gismo_match_object = None
         self.current_merge_data = {}
         self.current_compare_selection = []
 
@@ -657,7 +658,6 @@ class PageTimeSeries(tk.Frame):
         if not gui.communicate.match_data(self, self.compare_widget):
             self.plot_object_compare.reset_plot()
             return
-
         match_object = self.session.get_match_object(self.current_file_id, self.current_ref_file_id)
         merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
         compare_parameter = self.compare_widget.get_parameter()
@@ -735,63 +735,90 @@ class PageTimeSeries(tk.Frame):
 
     def _compare_data_plot(self, *args):
 
-
         # Recreate plot object if
         self._set_notebook_compare_plot()
 
         selection = self.compare_widget.get_selection()
+        load_match_data = False
         if selection != self.current_compare_selection:
-            try:
-                self.current_merge_data = gui.communicate.get_merge_data(self, self.compare_widget, self.flag_widget)
-                self.current_compare_selection = selection
-            except GUIExceptionBreak:
-                self._reset_merge_data()
-                return
+            load_match_data = True
+        try:
+            self.current_merge_data = gui.communicate.get_merge_data(self,
+                                                                     self.compare_widget,
+                                                                     self.flag_widget,
+                                                                     load_match_data=load_match_data)
+            self.current_gismo_match_object = self.session.get_match_object(self.current_file_id, self.current_ref_file_id)
+            self.current_compare_selection = selection
+        except GUIExceptionBreak:
+            self._reset_merge_data()
+            return
 
-        data = self.current_merge_data
+
+        # if selection != self.current_compare_selection:
+        #     try:
+        #         self.current_merge_data = gui.communicate.get_merge_data(self, self.compare_widget, self.flag_widget)
+        #         self.current_gismo_match_object = self.session.get_match_object(self.current_file_id, self.current_ref_file_id)
+        #         self.current_compare_selection = selection
+        #     except GUIExceptionBreak:
+        #         self._reset_merge_data()
+        #         return
 
         if 'in_timeseries' in args:
-            self.plot_object.set_data()
+            print('in_timeseries')
+            gui.communicate.add_compare_to_timeseries_plot(plot_object=self.plot_object,
+                                                           session=self.session,
+                                                           file_id=self.current_file_id,
+                                                           ref_file_id=self.current_ref_file_id,
+                                                           help_info_function=self.controller.update_help_information,
+                                                           par=self.compare_widget.get_parameter(),
+                                                           user=self.user)
+            self.plot_has_ref_data = True
 
+        else:
+            if self.plot_has_ref_data:
+                self._update_plot()
+                self.plot_has_ref_data = False
+            # self.plot_object.delete_data(marker_id='ref_data') # Does not work...
+            data = self.current_merge_data
 
-        end_points = [data['min_value'], data['max_value']]
-        # Plot correlation line
-        self.plot_object_compare.set_data(end_points, end_points,
-                                          line_id='correlation', marker='',
-                                          color=self.user.plot_color.setdefault('correlation_line', 'red'))
+            end_points = [data['min_value'], data['max_value']]
+            # Plot correlation line
+            self.plot_object_compare.set_data(end_points, end_points,
+                                              line_id='correlation', marker='',
+                                              color=self.user.plot_color.setdefault('correlation_line', 'red'))
 
-        if 'color_by_depth' in args:
-            xx = []
-            yy = []
-            cc = []
-            for flag in sorted(data['flags']):
-                xx.extend(list(data['flags'][flag]['x']))
-                yy.extend(list(data['flags'][flag]['y']))
-                cc.extend(list(data['flags'][flag]['depth']))
+            if 'color_by_depth' in args:
+                xx = []
+                yy = []
+                cc = []
+                for flag in sorted(data['flags']):
+                    xx.extend(list(data['flags'][flag]['x']))
+                    yy.extend(list(data['flags'][flag]['y']))
+                    cc.extend(list(data['flags'][flag]['depth']))
 
-            self.plot_object_compare.set_data(xx, yy, c=cc,
-                                              cmap='cmo.deep',
-                                              colorbar_title='Depth\n[m]')
+                self.plot_object_compare.set_data(xx, yy, c=cc,
+                                                  cmap='cmo.deep',
+                                                  colorbar_title='Depth\n[m]')
 
-            # self.plot_object_contour.add_legend(title='Depth [m]')
+                # self.plot_object_contour.add_legend(title='Depth [m]')
 
-            self.current_correlation_plot = 'color_by_depth'
-        if 'color_by_flag' in args:
-            for flag in sorted(data['flags']):
-                x = data['flags'][flag]['x']
-                y = data['flags'][flag]['y']
-                prop = data['flags'][flag]['prop']
+                self.current_correlation_plot = 'color_by_depth'
+            elif 'color_by_flag' in args:
+                for flag in sorted(data['flags']):
+                    x = data['flags'][flag]['x']
+                    y = data['flags'][flag]['y']
+                    prop = data['flags'][flag]['prop']
 
-                self.plot_object_compare.set_data(x, y, line_id=flag, **prop)
-                self.current_correlation_plot = 'color_by_flag'
+                    self.plot_object_compare.set_data(x, y, line_id=flag, **prop)
+                    self.current_correlation_plot = 'color_by_flag'
 
-        self.plot_object_compare.set_x_limits(limits=end_points, call_targets=False)
-        self.plot_object_compare.set_y_limits(limits=end_points, call_targets=True)
+            self.plot_object_compare.set_x_limits(limits=end_points, call_targets=False)
+            self.plot_object_compare.set_y_limits(limits=end_points, call_targets=True)
 
-        # Set title and labels
-        self.plot_object_compare.set_title('{} - {}'.format(data['time_from_str'], data['time_to_str']))
-        self.plot_object_compare.set_x_label(data['main_par_file_id'])
-        self.plot_object_compare.set_y_label(data['compare_par_file_id'])
+            # Set title and labels
+            self.plot_object_compare.set_title('{} - {}'.format(data['time_from_str'], data['time_to_str']))
+            self.plot_object_compare.set_x_label(data['main_par_file_id'])
+            self.plot_object_compare.set_y_label(data['compare_par_file_id'])
 
 
     def _compare_data_save_data(self):
@@ -1109,6 +1136,7 @@ class PageTimeSeries(tk.Frame):
             self.plot_object.set_title(self.current_gismo_object.get_station_name())
         except GISMOExceptionMethodNotImplemented:
             pass
+        self.plot_has_ref_data = False
 
     def _update_contour_plot(self, **kwargs):
         contour_par = self.parameter_contour_plot_widget.get_value()

@@ -32,6 +32,7 @@ class PageUser(tk.Frame):
         self.user = self.user_manager.user # Obs. Have to update un updata page if user is updated
 
         self.color_list = utils.ColorsList()
+        self.marker_list = utils.MarkerList()
 
     #===========================================================================
     def startup(self):
@@ -84,17 +85,21 @@ class PageUser(tk.Frame):
         self.labelframe_color_maps = ttk.Labelframe(self, text='Color maps')
         self.labelframe_color_maps.grid(row=r, column=1, **opt)
 
-        self.labelframe_plot_style = ttk.Labelframe(self, text='Plot style')
-        self.labelframe_plot_style.grid(row=r, column=2, **opt)
+        self.labelframe_plot_ref = ttk.Labelframe(self, text='Plot reference data')
+        self.labelframe_plot_ref.grid(row=r, column=2, **opt)
 
-        r+=1
+        r += 1
         self.labelframe_options = ttk.Labelframe(self, text='Other options')
         self.labelframe_options.grid(row=r, column=0, **opt)
+
+        self.labelframe_plot_style = ttk.Labelframe(self, text='Plot style')
+        self.labelframe_plot_style.grid(row=r, column=1, **opt)
 
         tkw.grid_configure(self, nr_rows=3, nr_columns=3, r1=10)
     
         self._set_frame_map()
         self._set_frame_color_maps()
+        self._set_frame_plot_ref()
         self._set_frame_plot_style()
         self._set_frame_options()
 
@@ -135,7 +140,6 @@ class PageUser(tk.Frame):
             if color:
                 self.user.map_prop.set(item, color)
                 self.labels_map_color[item].config(fg=color)
-                # self.combobox_map_color[item].set_background_color(color)
 
         frame = self.labelframe_map
         padx = 5
@@ -149,12 +153,12 @@ class PageUser(tk.Frame):
 
         # --------------------------------------------------------------------------------------------------------------
         # Boundaries
-        # Labels 
+        # Labels
         tk.Label(frame_boundaries, text='Latitude MIN').grid(row=0, column=0, sticky='w', padx=padx, pady=pady)
         tk.Label(frame_boundaries, text='Latitude MAX').grid(row=1, column=0, sticky='w', padx=padx, pady=pady)
         tk.Label(frame_boundaries, text='Longitude MIN').grid(row=2, column=0, sticky='w', padx=padx, pady=pady)
         tk.Label(frame_boundaries, text='Longitude MAX').grid(row=3, column=0, sticky='w', padx=padx, pady=pady)
-        
+
         # Entries
         prop_entry = {'width': 10}
 
@@ -238,7 +242,7 @@ class PageUser(tk.Frame):
             self.labels_map_color[item].config(fg=default_color)
             self.combobox_map_color[item] = tkw.ComboboxWidget(frame_properties,
                                                                callback_target=lambda x=item: save_color(x),
-                                                               items=self.color_list,
+                                                               items=self.color_list[:],
                                                                default_item=default_color,
                                                                align='horizontal',
                                                                grid_items=grid_items,
@@ -281,6 +285,66 @@ class PageUser(tk.Frame):
 
         self.current_pars_in_cmap = {}
 
+    def _set_frame_plot_ref(self):
+
+        def save(item):
+            value = self.combobox_time_series_ref[item].get_value()
+            if value:
+                if 'size' in item:
+                    value = int(value)
+                self.user.plot_time_series_ref.set(item, value)
+                if 'color' in item:
+                    self.labels_time_series_ref[item].config(fg=value)
+
+        frame = self.labelframe_plot_ref
+
+        self.combobox_time_series_ref = {}
+        self.labels_time_series_ref = {}
+
+        padx=5
+        pady=5
+
+        r = 0
+        self.labels_time_series_ref['marker'] = tk.Label(frame, text='Marker')
+        self.labels_time_series_ref['marker'].grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+        self.combobox_time_series_ref['marker'] = tkw.ComboboxWidget(frame,
+                                                                     callback_target=lambda x='marker': save(x),
+                                                                     items=self.marker_list,
+                                                                     default_item=self.user.plot_time_series_ref.setdefault('marker', '*'),
+                                                                     row=r,
+                                                                     column=1)
+
+        r += 1
+        default_marker_size = str(self.user.plot_time_series_ref.setdefault('markersize', 10))
+        self.labels_time_series_ref['markersize'] = tk.Label(frame, text='Markersize')
+        self.labels_time_series_ref['markersize'].grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+        self.combobox_time_series_ref['markersize'] = tkw.ComboboxWidget(frame,
+                                                                         callback_target=lambda x='markersize': save(x),
+                                                                         items=list(range(2, 20)),
+                                                                         default_item=default_marker_size,
+                                                                         row=r,
+                                                                         column=1)
+        r += 1
+        default_color = self.user.plot_time_series_ref.setdefault('color', 'red')
+        self.labels_time_series_ref['color'] = tk.Label(frame, text='Color')
+        self.labels_time_series_ref['color'].grid(row=r, column=0, sticky='w', padx=padx, pady=pady)
+        self.labels_time_series_ref['color'].config(fg=default_color)
+        self.combobox_time_series_ref['color'] = tkw.ComboboxWidget(frame,
+                                                                    callback_target=lambda x='color': save(x),
+                                                                    items=self.color_list[:],
+                                                                    default_item=default_color,
+                                                                    row=r,
+                                                                    column=1)
+
+
+
+
+        self.user.plot_time_series_ref.setdefault('marker', 'x'),
+        self.user.plot_time_series_ref.setdefault('markersize', 'red'),
+        self.user.plot_time_series_ref.setdefault('color', 'red')
+
+
+
     def _save_current_colormap(self):
         """
         Get color map information from user.
@@ -298,7 +362,10 @@ class PageUser(tk.Frame):
         parameter_list_all = []
         for sampling_type in self.session.get_sampling_types():
             for file_id in self.session.get_file_id_list(sampling_type):
-                parameter_list_all.extend(self.session.get_parameter_list(file_id))
+                try:
+                    parameter_list_all.extend(self.session.get_parameter_list(file_id))
+                except:
+                    pass
         if not parameter_list_all:
             return
         # Update widget_listbox_cmap

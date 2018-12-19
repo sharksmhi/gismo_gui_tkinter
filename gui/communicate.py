@@ -28,11 +28,13 @@ import logging
 
 
 def add_compare_to_timeseries_plot(plot_object=None,
-                                    session=None,
-                                    sample_file_id=None,
-                                    main_file_id=None,
-                                    compare_widget=None,
-                                    help_info_function=None):
+                                   session=None,
+                                   file_id=None,
+                                   ref_file_id=None,
+                                   par=None,
+                                   help_info_function=None,
+                                   user=None):
+
     """
     sample_object is the main GISMOfile. 
     gismo_object is the file where matching data will be extracted from 
@@ -40,16 +42,16 @@ def add_compare_to_timeseries_plot(plot_object=None,
 
     help_info_function('Adding reference data...please wait...')
 
-    diffs = {}
-    diffs['hours'] = compare_widget.time
-    diffs['dist'] = compare_widget.dist
-    diffs['depth'] = compare_widget.depth
-    diffs['main_sampling_depth'] = compare_widget.sampling_depth
-    session.match_files(main_file_id, sample_file_id, **diffs)
-
-    par = compare_widget.get_parameter()
-
-    match_data = session.get_match_data(main_file_id, sample_file_id, 'time', 'lat', 'lon', par)
+    # diffs = {}
+    # diffs['hours'] = compare_widget.time
+    # diffs['dist'] = compare_widget.dist
+    # diffs['depth'] = compare_widget.depth
+    # diffs['main_sampling_depth'] = compare_widget.sampling_depth
+    # session.match_files(main_file_id, sample_file_id, **diffs)
+    #
+    # par = compare_widget.get_parameter()
+    #
+    match_data = session.get_match_data(file_id, ref_file_id, 'time', 'lat', 'lon', par)
     print('='*50)
     print('match_data')
     print(match_data)
@@ -57,7 +59,13 @@ def add_compare_to_timeseries_plot(plot_object=None,
         help_info_function('No matching data!', bg='red')
         return
 
-    plot_object.set_data(x=match_data['time'], y=match_data[par], line_id='matching data', marker='x', color='black', linestyle='None')
+    plot_object.set_data(x=match_data['time'],
+                         y=match_data[par],
+                         line_id='ref_data',
+                         marker=user.plot_time_series_ref.setdefault('marker', '*'),
+                         markersize=user.plot_time_series_ref.setdefault('markersize', 10),
+                         color=user.plot_time_series_ref.setdefault('color', 'red'),
+                         linestyle='None')
 
     help_info_function('Reference data for parameter {} added!'.format(par), bg='green')
 
@@ -540,15 +548,16 @@ def match_data(controller, compare_widget):
     controller.session.match_files(controller.current_file_id, controller.current_ref_file_id, **diffs)
     return True
 
-def get_merge_data(controller, compare_widget, flag_widget):
+def get_merge_data(controller, compare_widget, flag_widget, load_match_data=True):
     """
     Returns matching data for loaded information
     :param controller:
     :return:
     """
     # Try matching data
-    if not match_data(controller, compare_widget):
-        return
+    if load_match_data:
+        if not match_data(controller, compare_widget):
+            return
 
     file_id = controller.current_file_id
     ref_file_id = controller.current_ref_file_id

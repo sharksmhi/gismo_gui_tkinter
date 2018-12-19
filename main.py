@@ -113,7 +113,7 @@ class App(tk.Tk):
         except:
             pass
         startup_user = self.settings.get('user', {}).get('Startup user', self.computer_name)
-        if startup_user == 'default': #not in self.user_manager.get_user_list():
+        if startup_user == 'default':  # not in self.user_manager.get_user_list():
             self.user_manager.set_user('default', create_if_missing=True)
             self.settings.change_setting('user', 'Startup user', self.computer_name)
             self.settings.save_settings()
@@ -180,9 +180,9 @@ class App(tk.Tk):
         
         
         # Show start page given in settings.ini
-        self.page_history = [gui.PageStart]
+        self.page_history = [gui.PageUser]
         # self.show_frame(gui.PageStart)
-        # self.show_frame(gui.PageUser)
+        self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageFerrybox)
         # self.show_frame(gui.PageFixedPlatforms)
         self.show_frame(gui.PageTimeSeries)
@@ -692,11 +692,6 @@ class App(tk.Tk):
         self.bind("<Control-f>", lambda event: self.show_frame(gui.PageFerrybox))
         self.bind("<Control-b>", lambda event: self.show_frame(gui.PageFixedPlatforms))
 
-    
-    
-    
-    
-    #==========================================================================
     def add_working_indicator(self):
         pass
 #         self.update_help_information(u'Loading...')
@@ -704,30 +699,19 @@ class App(tk.Tk):
 #                                           fg=u'red', 
 #                                           font=("Helvetica", 16, u'italic'))
 #         self.working_indicator.grid(row=0, column=0)
-       
-    #==========================================================================
+
     def delete_working_indicator(self): 
         pass
 #         self.update_help_information(None)
 #         self.working_indicator.destroy()
-    
-    #===========================================================================
+
     def update_files_information(self):
         """
         Updates the file information window (at the bottom left of the screen). 
         """
         self.loaded_files_combobox_widget.update_items(sorted(core.Boxen().loaded_ferrybox_files))
         self.loaded_files_combobox_widget_sample.update_items(sorted(core.Boxen().loaded_sample_files))
-        
-        
-        
-#         self.file_info_text.config(state=u'normal')
-#         self.file_info_text.delete('1.0','end')
-#         self.file_info_text.insert('end', string) 
-#         self.file_info_text.config(state=u'disabled')
-        
-    
-    #===========================================================================
+
     def update_help_information(self, text='', **kwargs):
         """
         Created     20180822
@@ -736,37 +720,27 @@ class App(tk.Tk):
                   fg='black')
         kw.update(kwargs)
         self.info_widget.set_text(text, **kw)
-        
-        
-    #===========================================================================
+
     def reset_help_information(self):
         """
         Created     20180822
         """ 
         self.info_widget.reset()
-        
-    
-    #===========================================================================
+
     def update_all(self):
         
         for page_name, frame in self.frames.items():
             if self.pages_started[page_name]:
                 print('page_name', page_name)
                 frame.update_page()
-            # try:
-            #     if self.pages_started[page_name]:
-            #         frame.update_page()
-            # except:
-            #     pass
-    
-    #===========================================================================
+
     def _set_menubar(self):
         """
         Method sets up the menu bar at the top och the Window.
         """
         self.menubar = tk.Menu(self)
         
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         # File menu
         self.file_menu = tk.Menu(self.menubar, tearoff=0)
         self.file_menu.add_command(label=u'Home',
@@ -774,12 +748,11 @@ class App(tk.Tk):
         self.file_menu.add_separator()
         self.file_menu.add_command(label=u'Quit', command=self.quit_toolbox)
         self.menubar.add_cascade(label=u'File', menu=self.file_menu)
-        
-        
-        #-----------------------------------------------------------------------
+
+        # -----------------------------------------------------------------------
         # Goto menu
         self.goto_menu = tk.Menu(self.menubar, tearoff=0)
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
 
         if 'gui.page_time_series' in sys.modules:
             self.goto_menu.add_command(label='Time series',
@@ -795,14 +768,14 @@ class App(tk.Tk):
 
         self.menubar.add_cascade(label='Users', menu=self.user_menu)
 
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         # Help menu
-        self.help_menu = tk.Menu(self.menubar, tearoff=0)
-        self.help_menu.add_command(label='About',
+        self.info_menu = tk.Menu(self.menubar, tearoff=0)
+        self.info_menu.add_command(label='About',
                                    command=lambda: self.show_frame(gui.PageAbout))
-        self.menubar.add_cascade(label='Help', menu=self.help_menu)
+        self.menubar.add_cascade(label='Info', menu=self.info_menu)
         
-        #-----------------------------------------------------------------------
+        # -----------------------------------------------------------------------
         # Insert menu
         self.config(menu=self.menubar)
 
