@@ -27,8 +27,7 @@ You should now have three folders (venv36, gismo_gui_tkinter and sharkylib).
 
 #### Install required packages 
 - Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packages for python36 (the packages filenames should contain cp36): 
-      pyproj 
-      basemap 
+      **pyproj, basemap** 
       
 - From the command line type (from the directory where you have your three folders): 
 
@@ -47,8 +46,13 @@ You should now have three folders (venv36, gismo_gui_tkinter and sharkylib).
       pip install -r gismo_gui_tkinter/requirements.txt 
       
 ### Run GISMOtoolbox 
-Run the application via he command line: 
-- Activate environment: venv36\Scripts\activate 
-- Run: python gismo_gui_tkinter\main.py
+Run the application via the command line: 
+- Activate environment: 
+
+      venv36\Scripts\activate 
+      
+- Run:
+
+      python gismo_gui_tkinter\main.py 
 
       
