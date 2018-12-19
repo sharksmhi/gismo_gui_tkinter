@@ -1,6 +1,6 @@
 # GISMOtoolbox (gismo_gui_tkinter)
 GISMOtoolbox is a Python 3.6 GUI application for working with in-situ data from ferrybox and fixed platforms. 
-Functionality includes automatic and visual flagging of data, camparison between sampling types and interactive plot exports. 
+Functionality includes automatic and visual flagging of data, comparison between sampling types and interactive plot exports. 
 Graphics by tkinter. 
 
 ### Preparations and requirements 
@@ -11,32 +11,39 @@ Application uses basemap for showing maps. The module requires Microsoft Visual 
 - Create a directory where you want to install GISMOtoolbox 
 - From this directory open a cmd console (you will get this option if you hold down SHIFT and right click) 
 - Create a virtual environment by typing (this will create a virtual environment in the folder venv36): 
+
       C:\Python36\python.exe -m venv venv36 
       
 - Clone the GISMOtoolbox repository by typing (git can be downloaded here https://git-scm.com/downloads): 
+
       git clone https://github.com/sharksmhi/gismo_gui_tkinter.git 
       
 - Clone the sharkpylib by typing: 
+
       git clone https://github.com/sharksmhi/sharkpylib.git 
       
 You should now have three folders (venv36, gismo_gui_tkinter and sharkylib). 
 - Copy the folder sharkpylib to gimso_gui_tkinger/libs 
 
 #### Install required packages 
-- Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packeges for python36 (should contain cp36): 
+- Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packages for python36 (should contain cp36): 
       pyproj 
       basemap 
       
 - From the command line type (from the directory where you have your three folders): 
+
       venv36\Scripts\activate 
       
-      This will activate the newly created virituell environment. 
+  This will activate the newly created virtual environment. 
 
 - Now install the two packages by typing: 
-      pip install <path to downloded pyproj-file>
-      pip insatll <path to downloded basemap-file> 
+
+      pip install <path to downloaded pyproj-file>
+      
+      pip install <path to downloaded basemap-file> 
       
 - We also need to install some other required packages by typing: 
+
       pip install -r gismo_gui_tkinter/requirements.txt 
       
 ### Run GISMOtoolbox 
