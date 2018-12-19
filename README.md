@@ -26,7 +26,7 @@ You should now have three folders (venv36, gismo_gui_tkinter and sharkylib).
 - Copy the folder sharkpylib to gimso_gui_tkinger/libs 
 
 #### Install required packages 
-- Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packages for python36 (should contain cp36): 
+- Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packages for python36 (the packages filenames should contain cp36): 
       pyproj 
       basemap 
       
