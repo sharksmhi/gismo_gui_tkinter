@@ -565,7 +565,7 @@ class PageFerrybox(tk.Frame):
 
         # Export html plot and map
         self.save_widget_html = gui.SaveWidgetHTML(frame,
-                                                   label='Export html plots',
+                                                   label='Export HTML plots',
                                                    callback=self._callback_save_html,
                                                    default_directory=self.settings['directory']['Export directory'],
                                                    user=self.user,
@@ -658,7 +658,7 @@ class PageFerrybox(tk.Frame):
 
         # Check directory
         if not directory:
-            gui.show_information('Missing directory', 'Could not save html maps and/or plots. No directory selected.')
+            gui.show_information('Missing directory', 'Could not save HTML maps and/or plots. No directory selected.')
             return
         if not os.path.exists(directory):
             create_dirs = tk.messagebox.askyesno('Missing directory', 'Directory does not exist. Would you like to create a new directory?')

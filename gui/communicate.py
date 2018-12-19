@@ -38,7 +38,7 @@ def add_compare_to_timeseries_plot(plot_object=None,
     gismo_object is the file where matching data will be extracted from 
     """
 
-    help_info_function('Adding reference data...please wait...', fg='red')
+    help_info_function('Adding reference data...please wait...')
 
     diffs = {}
     diffs['hours'] = compare_widget.time
@@ -54,17 +54,12 @@ def add_compare_to_timeseries_plot(plot_object=None,
     print('match_data')
     print(match_data)
     if not len(np.where(~np.isnan(np.array(match_data[par])))):
-        help_info_function('No matching data!', fg='red')
+        help_info_function('No matching data!', bg='red')
         return
 
     plot_object.set_data(x=match_data['time'], y=match_data[par], line_id='matching data', marker='x', color='black', linestyle='None')
 
-    help_info_function('Reference data for parameter {} added!'.format(par))
-
-
-    
-    if help_info_function:
-        help_info_function('Done!')
+    help_info_function('Reference data for parameter {} added!'.format(par), bg='green')
 
     return match_data
 
@@ -286,19 +281,21 @@ def run_automatic_qc(controller, automatic_qc_widget):
 
     if nr_routines == 1:
         text = 'You are about to run 1 automatic quality control. ' \
-               'This might take some time but process will run in background. ' \
+               'This might take some time. ' \
                'Do you want to continue?'
     else:
         text = 'You are about tu run {} automatic quality controles. ' \
-               'This might take some time but process will run in background. ' \
+               'This might take some time. ' \
                'Do you want to continue?'.format(nr_routines)
 
     if not messagebox.askyesno('Run QC', text):
         return False
 
-    controller.controller.run_progress(lambda: controller.session.run_automatic_qc(controller.current_file_id,
-                                       qc_routines=qc_routine_list),
-                                       'Running qc on file: {}'.format(controller.current_file_id))
+    controller.session.run_automatic_qc(controller.current_file_id, qc_routines=qc_routine_list)
+
+    # controller.controller.run_progress(lambda: controller.session.run_automatic_qc(controller.current_file_id,
+    #                                    qc_routines=qc_routine_list),
+    #                                    'Running qc on file: {}'.format(controller.current_file_id))
     return qc_routine_list
 
 def save_user_info_from_flag_widget(flag_widget, user_object):
@@ -337,30 +334,33 @@ def save_file(controller, gismo_object, save_widget):
     if not all([directory, file_name]):
         gui.show_information('Invalid directory or filename', 'Cant save plot! Invalid directory or filename.')
         return
-    file_path = os.path.realpath(gismo_object.file_path)
+    original_file_path = os.path.realpath(gismo_object.file_path)
     if not file_name.endswith('.txt'):
         file_name = file_name + '.txt'
-    output_file_path = os.path.realpath('/'.join([directory, file_name]))
+    output_file_path = os.path.join(directory, file_name)
 
-    if file_path != output_file_path:
+    if original_file_path != output_file_path:
         try:
             gismo_object.save_file(file_path=output_file_path)
+            gui.show_information('File saved', 'File saved to:\n{}'.format(output_file_path))
+            return
         except GISMOExceptionFileExcists:
             if not messagebox.askyesno('Overwrite file!',
-                                       'The given file already exists. Do you want to replace the original file?'):
+                                       'The given file already exists. Do you want to replace the existing file?'):
                 return
     else:
         if not messagebox.askyesno('Overwrite file!', 'Do you want to replace the original file?'):
             return
+    print('CONTINUE!!!')
 
     # Create temporary file and then overwrite by changing the name. This is so that the process don't get interrupted.
     if not os.path.exists(directory):
         os.makedirs(directory)
-    output_file_path = directory + '/temp_%s' % file_name
-    gismo_object.save_file(file_path=output_file_path, overwrite=True)
-    os.remove(file_path)
-    shutil.copy2(output_file_path, file_path)
-    os.remove(output_file_path)
+    temp_file_path = directory + '/temp_%s' % file_name
+    gismo_object.save_file(file_path=temp_file_path, overwrite=True)
+    os.remove(original_file_path)
+    shutil.copy2(temp_file_path, original_file_path)
+    os.remove(temp_file_path)
 
 
 def save_plot(controller, plot_object, save_directory_widget, in_file_name='plot', **kwargs):
@@ -431,7 +431,7 @@ def save_html_plot(controller, save_widget_html, flag_widget=None, save_director
 
     # Check directory
     if not directory:
-        gui.show_information('Missing directory', 'Could not save html maps and/or plots. No directory selected.')
+        gui.show_information('Missing directory', 'Could not save HTML maps and/or plots. No directory selected.')
         return
     if not os.path.exists(directory):
         create_dirs = messagebox.askyesno('Missing directory', 'Directory does not exist. Would you like to create a new directory?')
@@ -546,6 +546,7 @@ def get_merge_data(controller, compare_widget, flag_widget):
     :param controller:
     :return:
     """
+    # Try matching data
     if not match_data(controller, compare_widget):
         return
 
@@ -669,7 +670,8 @@ def flag_data_profile(flag_widget=None,
 
 #===========================================================================
 def update_range_selection_widget(plot_object=None, 
-                                  range_selection_widget=None):
+                                  range_selection_widget=None,
+                                  time_axis=False):
     """
     Updates entries in range_selection_widget. 
     This is to get live update from the plot when "mark range" is active.
@@ -681,10 +683,23 @@ def update_range_selection_widget(plot_object=None,
     
     min_value = plot_object.get_mark_from_value(ax='first')
     max_value = plot_object.get_mark_to_value(ax='first')
-    
-    if min_value > max_value:
-        min_value = None
-        max_value = None
+
+    try:
+        if min_value > max_value:
+            min_value = None
+            max_value = None
+    except TypeError:
+        return
+
+    if not time_axis:
+        try:
+            min_value = round(min_value, 2)
+        except:
+            pass
+        try:
+            max_value = round(max_value, 2)
+        except:
+            pass
 
     # For time series plot
     
@@ -704,6 +719,22 @@ def update_range_selection_widget(plot_object=None,
     else:
         range_selection_widget.set_max(None)
 #        range_selection_widget.stringvar_max.set(u'')
+
+    if not time_axis:
+        if plot_object.mark_range_orientation == 'vertical':
+            plot_object.set_bottom_range(min_value)
+            plot_object.set_top_range(max_value)
+            # plot_object.mark_range_range(mark_bottom=min_value,
+            #                              mark_top=max_value,
+            #                              mark_left=None,
+            #                              mark_right=None)
+        else:
+            plot_object.set_left_range(min_value)
+            plot_object.set_right_range(max_value)
+            # plot_object.mark_range_range(mark_bottom=None,
+            #                              mark_top=None,
+            #                              mark_left=min_value,
+            #                              mark_right=max_value)
         
         
 """
@@ -1431,10 +1462,10 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
     ferrybox_track_every = kwargs.get('ferrybox_track_every', 10)
     ferrybox_track_color = user.map_prop.setdefault('ferrybox_track_color_background', 'gray')
 
-    fixed_platforms_color = user.map_prop.setdefault('fixed_platform_color_background', 'pink')
+    fixed_platforms_color = user.map_prop.setdefault('fixed_platform_color_background', 'gray')
     fixed_platforms_markersize = user.map_prop.setdefault('fixed_platform_markersize_background', 5)
 
-    physicalchemical_station_color = user.map_prop.setdefault('physicalchemical_color_background', 'lightgreen')
+    physicalchemical_station_color = user.map_prop.setdefault('physicalchemical_color_background', 'gray')
     physicalchemical_markersize = user.map_prop.setdefault('physicalchemical_markersize_background', 5)
 
     map_widget.delete_all_markers()

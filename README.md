@@ -19,7 +19,7 @@ Application uses basemap for showing maps. The module requires Microsoft Visual 
 - Clone the sharkpylib by typing: 
       git clone https://github.com/sharksmhi/sharkpylib.git 
       
-You should now have three folders in (venv36, gismo_gui_tkinter and sharkylib). 
+You should now have three folders (venv36, gismo_gui_tkinter and sharkylib). 
 - Copy the folder sharkpylib to gimso_gui_tkinger/libs 
 
 #### Install required packages 
@@ -27,5 +27,21 @@ You should now have three folders in (venv36, gismo_gui_tkinter and sharkylib).
       pyproj 
       basemap 
       
-- From the command line bros
+- From the command line type (from the directory where you have your three folders): 
+      venv36\Scripts\activate 
+      
+      This will activate the newly created virituell environment. 
+
+- Now install the two packages by typing: 
+      pip install <path to downloded pyproj-file>
+      pip insatll <path to downloded basemap-file> 
+      
+- We also need to install some other required packages by typing: 
+      pip install -r gismo_gui_tkinter/requirements.txt 
+      
+### Run GISMOtoolbox 
+Run the application via he command line: 
+- Activate environment: venv36\Scripts\activate 
+- Run: python gismo_gui_tkinter\main.py
+
       

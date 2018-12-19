@@ -221,8 +221,8 @@ class PageUser(tk.Frame):
                           'physicalchemical_color_background']
 
         default_colors = dict(ferrybox_track_color_background='gray',
-                              ferrybox_track_color='gray',
-                              ferrybox_track_color_highlighted='gray',
+                              ferrybox_track_color='pink',
+                              ferrybox_track_color_highlighted='red',
                               fixed_platform_color_background='gray',
                               physicalchemical_color_background='gray')
 

@@ -63,6 +63,7 @@ class Settings(dict):
             if line.startswith('end'):
                 break
             if line.strip():
+                # print('===', line)
                 split_line = line.strip().split(u'\t')
                 key = split_line[0].strip()
                 group = split_line[1].strip()
@@ -109,6 +110,7 @@ class Settings(dict):
                         if not self.root_directory:
                             raise GTBExceptionMissingAttribute('"root" keyword found in settings file but root_directory is not given')
                         value = value.replace(u'root/', self.root_directory.replace(u'\\',u'/') + u'/')
+                        # print('---', value)
                     # shapefile
                     if group == u'shapefile':
                         coordinate_system = split_line[3].strip()

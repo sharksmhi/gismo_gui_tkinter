@@ -793,7 +793,7 @@ class PageFixedPlatforms(tk.Frame):
 
         # Export html plot
         self.save_widget_html = gui.SaveWidgetHTML(frame,
-                                                   label='Export time series html plots',
+                                                   label='Export time series HTML plots',
                                                    callback=self._callback_save_html,
                                                    default_directory=self.settings['directory']['Export directory'],
                                                    user=self.user,

@@ -10,6 +10,7 @@ from tkinter import filedialog
 
 import os
 import sys
+import socket
 
 import matplotlib.pyplot as plt
 
@@ -49,7 +50,7 @@ class App(tk.Tk):
     This class contains the main window (page), "container", for 
     the GISMOtoolbox application.
     Additional pages in the application are stored under self.frames. 
-    The container is the parent frame that is passed to other pages. 
+    The container is the parent frame that is passed to other pages.
     self is also passed to the other pages objects and should there be given the name
     "self.controller". 
     Toolboxsettings and logfile can be reached in all page objects by calling
@@ -62,6 +63,8 @@ class App(tk.Tk):
                  users_directory='',
                  root_directory='',
                  log_directory='',
+                 mapping_files_directory='',
+                 settings_files_directory='',
                  default_settings_file_path='',
                  sampling_types_factory=None,
                  qc_routines_factory=None,
@@ -82,12 +85,16 @@ class App(tk.Tk):
         self.root_directory = root_directory
         self.users_directory = users_directory
         self.log_directory = log_directory
+        self.mapping_files_directory = mapping_files_directory
+        self.settings_files_directory = settings_files_directory
+
 
         # Load paths
         self.paths = core.Paths(self.app_directory)
 
         # Load settings files object
         self.settings_files = core.SettingsFiles(self.paths.directory_settings_files)
+
         
         # Initiate logging
         log_file = os.path.join(self.log_directory, 'gismo.log')
@@ -100,8 +107,17 @@ class App(tk.Tk):
 
         # Load user
         self.user_manager = core.UserManager(os.path.join(self.root_directory, 'users'))
-        startup_user = self.settings.get('user', {}).get('Startup user', 'default')
-        self.user_manager.set_user(startup_user, create_if_missing=True)
+        self.computer_name = 'my_computer'
+        try:
+            self.computer_name = socket.gethostname()
+        except:
+            pass
+        startup_user = self.settings.get('user', {}).get('Startup user', self.computer_name)
+        if startup_user == 'default': #not in self.user_manager.get_user_list():
+            self.user_manager.set_user('default', create_if_missing=True)
+            self.settings.change_setting('user', 'Startup user', self.computer_name)
+            self.settings.save_settings()
+        self.user_manager.set_user(self.computer_name, create_if_missing=True)
         self.user = self.user_manager.user
         self.info_popup = gui.InformationPopup(self)
         plt.style.use(self.user.layout.setdefault('plotstyle', self.user.layout.setdefault('plotstyle', self.settings['default']['plotstyle'])))
@@ -111,6 +127,8 @@ class App(tk.Tk):
         self.session = GISMOsession(root_directory=self.root_directory,
                                     users_directory=self.users_directory,
                                     log_directory=self.log_directory,
+                                    mapping_files_directory=self.mapping_files_directory,
+                                    settings_files_directory=self.settings_files_directory,
                                     user=user,
                                     sampling_types_factory=sampling_types_factory,
                                     qc_routines_factory=qc_routines_factory,
@@ -218,19 +236,21 @@ class App(tk.Tk):
         self.frame_info = tk.Frame(self.frame_bot)
         self.frame_info.grid(row=0, column=0, sticky="nsew")
 
-        ttk.Separator(self.frame_bot, orient=tk.VERTICAL).grid(row=0, column=1, sticky='ns')
+        # ttk.Separator(self.frame_bot, orient=tk.VERTICAL).grid(row=0, column=1, sticky='ns')
 
         self.frame_progress = tk.Frame(self.frame_bot)
-        self.frame_progress.grid(row=0, column=2, sticky="nsew")
-
-        self.info_widget = tkw.LabelFrameLabel(self.frame_info, pack=False)
-        self.info_widget.set_text('Test info line')
-
+        # self.frame_progress.grid(row=0, column=2, sticky="nsew")
         self.progress_widget = tkw.ProgressbarWidget(self.frame_progress, sticky='nsew')
 
+        self.info_widget = tkw.LabelFrameLabel(self.frame_info, pack=False)
+
+
+
         tkw.grid_configure(self.frame_info)
-        tkw.grid_configure(self.frame_progress)
-        tkw.grid_configure(self.frame_bot, nr_columns=3, c0=20, c2=4)
+        # tkw.grid_configure(self.frame_progress)
+
+        tkw.grid_configure(self.frame_bot)
+        # tkw.grid_configure(self.frame_bot, nr_columns=3, c0=20, c2=4)
 
     def run_progress(self, run_function, message=''):
 
@@ -351,7 +371,7 @@ class App(tk.Tk):
                                                              command=lambda: self._get_data_file_path('Fixed platforms CMEMS'))
         self.button_get_ctd_data_file = tk.Button(frame_data, text='CTD-profile',
                                                   command=lambda: self._get_data_file_path('CTD SHARK'))
-        self.button_get_sampling_file = tk.Button(frame_data, text='Sampling data',
+        self.button_get_sampling_file = tk.Button(frame_data, text='SHARKweb bottle data',
                                                   command=lambda: self._get_data_file_path('PhysicalChemical SHARK'))
 
         tkw.disable_widgets(self.button_get_ctd_data_file)
@@ -463,7 +483,7 @@ class App(tk.Tk):
         Created     20180821
         """
         open_directory = self._get_open_directory()
-            
+        print(open_directory)
         file_path = filedialog.askopenfilename(initialdir=open_directory, 
                                                filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
 
@@ -518,6 +538,9 @@ class App(tk.Tk):
         self._update_settings_combobox_widget()
 
     def _get_open_directory(self):
+        print('¤¤¤')
+        print(self.user.path.get('open_directory'))
+        print(self.settings['directory']['Input directory'])
         return self.user.path.setdefault('open_directory', self.settings['directory']['Input directory'])
 
     def _set_open_directory(self, directory):
@@ -540,7 +563,8 @@ class App(tk.Tk):
 
             self.session.load_file(sampling_type=sampling_type,
                                    data_file_path=data_file_path,
-                                   settings_file_path=settings_file_path,
+                                   settings_file=settings_file,
+                                   # settings_file_path=settings_file_path,
                                    reload=False,
                                    root_directory=self.root_directory,
                                    **kwargs)
@@ -557,7 +581,7 @@ class App(tk.Tk):
             self.update_all()
             self.button_load_file.configure(state='normal')
 
-            self.update_help_information('File loaded! Please continue.')
+            self.update_help_information('File loaded! Please continue.', bg='green')
 
         self.reset_help_information()
         data_file_path = self.stringvar_data_file.get()
@@ -589,9 +613,10 @@ class App(tk.Tk):
                     return
                 load_file(depth=platform_depth)
 
-        except Exception:
-            gui.show_information('Load file error',
-                                 'Something went wrong when trying to load file. Maybe you have provided the wrong Settings file?')
+        # except Exception as e:
+        #     gui.show_information('Load file error',
+        #                          'Something went wrong when trying to load file. Maybe you have provided the wrong Settings file?')
+        #     print(e)
 
 
 
@@ -703,11 +728,14 @@ class App(tk.Tk):
         
     
     #===========================================================================
-    def update_help_information(self, text=u'', **kwargs):
+    def update_help_information(self, text='', **kwargs):
         """
         Created     20180822
-        """ 
-        self.info_widget.set_text(text, **kwargs)
+        """
+        kw = dict(bg=self.cget('bg'),
+                  fg='black')
+        kw.update(kwargs)
+        self.info_widget.set_text(text, **kw)
         
         
     #===========================================================================
@@ -753,12 +781,6 @@ class App(tk.Tk):
         self.goto_menu = tk.Menu(self.menubar, tearoff=0)
         #-----------------------------------------------------------------------
 
-        if 'gui.page_ferrybox' in sys.modules:
-            self.goto_menu.add_command(label='Ferrybox',
-                                       command=lambda: self.show_frame(gui.PageFerrybox))
-        if 'gui.page_fixed_platforms' in sys.modules:
-            self.goto_menu.add_command(label='Fixed platforms',
-                                       command=lambda: self.show_frame(gui.PageFixedPlatforms))
         if 'gui.page_time_series' in sys.modules:
             self.goto_menu.add_command(label='Time series',
                                        command=lambda: self.show_frame(gui.PageTimeSeries))
@@ -1108,6 +1130,9 @@ def main():
     users_directory = os.path.join(root_directory, 'users')
     log_directory = os.path.join(root_directory, 'log')
     default_settings_file_path = os.path.join(root_directory, 'system/settings.ini')
+    mapping_files_directory = os.path.join(root_directory, 'data/mapping_files')
+    settings_files_directory = os.path.join(root_directory, 'settings_files')
+
 
     if not os.path.exists(log_directory):
         os.mkdir(log_directory)
@@ -1119,6 +1144,8 @@ def main():
               root_directory=root_directory,
               users_directory=users_directory,
               log_directory=log_directory,
+              mapping_files_directory=mapping_files_directory,
+              settings_files_directory=settings_files_directory,
               default_settings_file_path=default_settings_file_path,
               sampling_types_factory=sampling_types_factory,
               qc_routines_factory=qc_routines_factory)

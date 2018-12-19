@@ -14,30 +14,12 @@ import logging
 pages = set()
 #============================================================================
 # Ferrybox pages
-# try:
-#     pages.add(gui.PageTimeseries)
-# #     logging.info('PageFerrybox imported!')
-# except:
-#     pass
-# #     logging.info('PageFerrybox not imported!')
-
-#----------------------------------------------------------------------------
-#try:
-#    pages.add(gui.PageFerryboxRoute)
-##     logging.info('PageFerryboxRoute imported!')
-#except:
-#    pass
-#     logging.info('PageFerryboxRoute not imported!')
+try:
+    pages.add(gui.PageTimeSeries)
+except:
+    pass
 
 
-#============================================================================
-# CTD pages
-# try:
-#     pages.add(gui.PageCTD)
-# #     logging.info('PageCTD imported!')
-# except:
-#     pass
-# #     logging.info('PageCTD not imported!')
 
 """
 ================================================================================
@@ -101,10 +83,8 @@ class PageStart(tk.Frame):
 
         # self.button_texts = {gui.PageFerrybox: 'Ferrybox',
         #                      gui.PageBuoy: 'Buoy'}
-        self.button_texts = {'Ferrybox': gui.PageFerrybox,
-                             'Fixed platforms': gui.PageFixedPlatforms}
-        self.button_colors = {gui.PageFerrybox: 'sandybrown',
-                              gui.PageFixedPlatforms: 'lightblue'}
+        self.button_texts = {'Ferrybox\nand\nfixed platforms': gui.PageTimeSeries}
+        self.button_colors = {gui.PageTimeSeries: 'sandybrown'}
         
         r=0
         c=0
@@ -118,8 +98,6 @@ class PageStart(tk.Frame):
                                      command=lambda x=page: self.controller.show_frame(x),
                                      font=font, 
                                      bg=color)
-                
-            
             
                 self.button[page].grid(row=0, column=0, padx=padx, pady=pady, sticky='nsew') 
                 self.frames[r][c].grid_rowconfigure(0, weight=1)

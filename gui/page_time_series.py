@@ -175,7 +175,7 @@ class PageTimeSeries(tk.Frame):
                                               hover_target=self._on_plot_hover,
                                               time_axis='x')
         margins = {'right': 0.03, 
-                   'left': 0.06,
+                   'left': 0.08,
                    'top': 0.04,
                    'bottom': 0.03}
 
@@ -629,21 +629,22 @@ class PageTimeSeries(tk.Frame):
 
         self.button_compare_plot_by_flags = tk.Button(button_frame, text='Plot correlation plot\n(color by flag)',
                                                   comman=lambda: self._compare_data_plot('color_by_flag'))
-        self.button_compare_plot_by_flags.grid(row=0, column=0, sticky='nsew', **pad)
+        self.button_compare_plot_by_flags.grid(row=0, column=1, sticky='nsew', **pad)
 
         self.button_compare_plot_by_depth = tk.Button(button_frame, text='Plot correlation plot\n(color by depth)',
                                                       comman=lambda: self._compare_data_plot('color_by_depth'))
-        self.button_compare_plot_by_depth.grid(row=0, column=1, sticky='nsew', **pad)
+        self.button_compare_plot_by_depth.grid(row=0, column=2, sticky='nsew', **pad)
 
         # Button save data
-        self.button_compare_save_data = tk.Button(button_frame, text='Save correlation data',
+        self.button_compare_save_data = tk.Button(button_frame, text='Save correlated dataset\n'
+                                                                     '(tab separated ascii file)',
                                                   comman=self._compare_data_save_data)
-        self.button_compare_save_data.grid(row=0, column=2, sticky='nsew', **pad)
+        self.button_compare_save_data.grid(row=0, column=3, sticky='nsew', **pad)
 
         self.save_correlation_directory_widget = tkw.DirectoryWidget(button_frame,
                                                                      label='Save directory',
                                                                      row=1, column=0, columnspan=3)
-        tkw.grid_configure(button_frame, nr_rows=2, nr_columns=3)
+        tkw.grid_configure(button_frame, nr_rows=2, nr_columns=4)
 
         default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
                                          datetime.datetime.now().strftime('%Y%m%d'))
@@ -856,7 +857,7 @@ class PageTimeSeries(tk.Frame):
                                          datetime.datetime.now().strftime('%Y%m%d'))
         self.save_plots_directory_widget.set_directory(default_directory)
 
-        self.labelframe_save_plots_pic = ttk.LabelFrame(frame, text='Save pictures')
+        self.labelframe_save_plots_pic = ttk.LabelFrame(frame, text='Save plots')
         self.labelframe_save_plots_pic.grid(row=1, column=0, **prop)
 
         self.labelframe_save_plots_html = ttk.LabelFrame(frame, text='Save html')
@@ -884,7 +885,7 @@ class PageTimeSeries(tk.Frame):
         # --------------------------------------------------------------------------------------------------------------
         # Save html
         html_frame = self.labelframe_save_plots_html
-        self.button_save_correlation_plot_html = tk.Button(html_frame, text='Save correlation html plot',
+        self.button_save_correlation_plot_html = tk.Button(html_frame, text='Show and save correlation plots\nin HTML format',
                                                            comman=self._save_correlation_plot_html)
         self.button_save_correlation_plot_html.grid(row=0, column=0, **prop)
 
@@ -893,7 +894,7 @@ class PageTimeSeries(tk.Frame):
 
         # Export html plot
         self.save_widget_html = gui.SaveWidgetHTML(frame,
-                                                   label='Export time series html plots',
+                                                   label='Show and save time series plots in HTML format',
                                                    callback=self._callback_save_html,
                                                    default_directory=self.settings['directory']['Export directory'],
                                                    user=self.user,
@@ -977,10 +978,12 @@ class PageTimeSeries(tk.Frame):
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
             gui.update_range_selection_widget(plot_object=self.plot_object,
-                                              range_selection_widget=self.yrange_selection_widget)
+                                              range_selection_widget=self.yrange_selection_widget,
+                                              time_axis=False)
         elif self.plot_object.mark_range_orientation == 'horizontal':
             gui.update_range_selection_widget(plot_object=self.plot_object,
-                                              range_selection_widget=self.xrange_selection_widget)
+                                              range_selection_widget=self.xrange_selection_widget,
+                                              time_axis=False)
 
     def _update_parameter_list(self):
         exclude_parameters = ['time', 'lat', 'lon']
@@ -1018,6 +1021,7 @@ class PageTimeSeries(tk.Frame):
 
     def _on_select_parameter(self):
         # Reset plot
+        self.controller.update_help_information()
         self.plot_object.reset_plot()
 
         self.current_parameter = self.parameter_widget.get_value()
@@ -1054,6 +1058,8 @@ class PageTimeSeries(tk.Frame):
 
         self._update_map_2()
 
+        self.controller.update_help_information('Parameter updated', bg='green')
+
     def _check_loaded_data(self):
         """
         Checks loaded file and loded data. If both are loaded return True else show popup window and return False
@@ -1073,13 +1079,14 @@ class PageTimeSeries(tk.Frame):
     def _on_flag_widget_flag(self):
         if not self._check_loaded_data():
             return
-
         try:
             gui.flag_data_time_series(flag_widget=self.flag_widget,
                                       gismo_object=self.current_gismo_object,
                                       plot_object=self.plot_object,
                                       par=self.current_parameter)
             self._update_plot()
+            self.xrange_selection_widget.clear_widget()
+            self.yrange_selection_widget.clear_widget()
         except GUIExceptionNoRangeSelection:
             gui.show_information('Could not flag data',
                                  'You need to make a selection under tab "Select data to flag" before you can flag data')
@@ -1258,6 +1265,8 @@ class PageTimeSeries(tk.Frame):
 
         self._update_frame_automatic_qc()
 
+        self.controller.update_help_information('File updated: {}'.format(self.current_file_id), bg='green')
+
 
     def _update_frame_automatic_qc(self):
         self.widget_automatic_qc_options.deactivate_all()
@@ -1396,6 +1405,7 @@ class PageTimeSeries(tk.Frame):
     #===========================================================================
     def _update_file_reference(self):
         logging.debug('page_fixed_platforms._update_file_reference: Start')
+
         self._set_current_reference_file()
         
         if not self.current_ref_file_id:
@@ -1410,6 +1420,7 @@ class PageTimeSeries(tk.Frame):
         self._update_compare_widget()
 
         logging.debug('page_fixed_platforms._update_file_reference: End')
+        self.controller.update_help_information('Reference file updated: {}'.format(self.current_ref_file_id), bg='green')
         
 
     def _check_on_remove_file(self):

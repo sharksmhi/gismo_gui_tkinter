@@ -19,10 +19,7 @@ import numpy as np
 #import shutil
 
 
-#import gtb_core
-#import gtb_gui
-#import gtb_lib
-#import gtb_utils
+import gui
 
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
@@ -113,7 +110,7 @@ class RangeSelectorFloatWidget(ttk.Labelframe):
         r+=1
         
             
-        ttk.Button(frame, text=u'Clear mark', command=self._clear_mark).grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
+        ttk.Button(frame, text=u'Clear mark', command=self._clear_mark).grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
         
         tkw.grid_configure(frame, nr_rows=r+1, nr_columns=2)
         
@@ -235,6 +232,11 @@ class RangeSelectorFloatWidget(ttk.Labelframe):
         self.stringvar_min.set('')
         self.stringvar_max.set('')
 
+    # ===========================================================================
+    def clear_widget(self):
+        self.stringvar_min.set('')
+        self.stringvar_max.set('')
+
     #===========================================================================
     def disable_widget(self):
         for children in self.winfo_children:
@@ -258,7 +260,7 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
                  axis='x', 
                  prop_frame={}, 
                  line_id='current_flags', 
-                 plot_object=None, 
+                 plot_object=None,
                  **kwargs):
 
         self.line_id = line_id
@@ -316,7 +318,7 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
                                   column=1)
         r+=1   
         
-        ttk.Button(frame, text=u'Clear mark', command=self._clear_mark).grid(row=r, column=1, padx=padx, pady=pady, sticky='w')
+        ttk.Button(frame, text=u'Clear mark', command=self._clear_mark).grid(row=r, column=0, padx=padx, pady=pady, sticky='w')
         
         tkw.grid_configure(frame, nr_rows=r+1, nr_columns=2)
         
@@ -366,6 +368,7 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
         if not self.plot_object:
             return
         self.plot_object.clear_all_marked()
+        self.clear_widget()
 #        self.plot_object.clear_marked_range()
 #        self.plot_object.clear_marked_points()
 #         self.reset_widget()
@@ -397,9 +400,12 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
     def _callback_time_widget_to(self):
         if not self.plot_object:
             return
-        
-        min_value = self.time_widget_from.get_time_number()
-        max_value = self.time_widget_to.get_time_number()
+
+        try:
+            min_value = self.time_widget_from.get_time_number()
+            max_value = self.time_widget_to.get_time_number()
+        except ValueError as e:
+            gui.show_warning(e.message)
 
         if min_value > max_value:
             max_value = self.time_widget_from.get_time_number()
@@ -418,6 +424,15 @@ class RangeSelectorTimeWidget(ttk.Labelframe):
     def reset_widget(self):
         self.time_widget_from.reset_widget()
         self.time_widget_to.reset_widget()
+
+    # ===========================================================================
+    def clear_widget(self):
+        """
+        Clears widget but keeps values.
+        :return:
+        """
+        self.time_widget_from.clear_widget()
+        self.time_widget_to.clear_widget()
         
     #===========================================================================
     def disable_widget(self):
@@ -901,21 +916,30 @@ class CompareWidget(tk.Frame):
         #     r += 1
         #
 
+        self.parameter_widget = tkw.ComboboxWidget(self,
+                                                   title='Parameter',
+                                                   callback_target=self._save,
+                                                   row=r,
+                                                   column=0,
+                                                   pady=5,
+                                                   sticky='w')
+
+        r += 1
         prop_entry = dict(width=10)
         tk.Label(self, text='Max time diff [hours]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.entry['time'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+        self.entry['time'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_change_value=self._save,
                                               entry_type='int', row=r,
                                               column=c + 1, padx=padx, pady=pady, sticky='w')
 
         r += 1
         tk.Label(self, text='Max distance [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.entry['dist'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+        self.entry['dist'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_change_value=self._save,
                                               entry_type='int', row=r,
                                               column=c + 1, padx=padx, pady=pady, sticky='w')
 
         r += 1
         tk.Label(self, text='Max depth diff [m]:').grid(row=r, column=c, padx=padx, pady=pady, sticky='w')
-        self.entry['depth'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_focus_out=self._save,
+        self.entry['depth'] = tkw.EntryWidget(self, prop_entry=prop_entry, callback_on_change_value=self._save,
                                               entry_type='int', row=r,
                                               column=c + 1, padx=padx, pady=pady, sticky='w')
 
@@ -924,14 +948,7 @@ class CompareWidget(tk.Frame):
         self.entry['dist'].south_entry = self.entry['depth']
         self.entry['depth'].south_entry = self.entry['time']
 
-        r += 1
-        self.parameter_widget = tkw.ComboboxWidget(self,
-                                                   title='Parameter',
-                                                   callback_target=self._save,
-                                                   row=r,
-                                                   column=0,
-                                                   pady=5,
-                                                   sticky='w')
+
         r += 1
 
         tkw.grid_configure(self, nr_rows=r, nr_columns=2)
@@ -950,9 +967,14 @@ class CompareWidget(tk.Frame):
 
     #===========================================================================
     def _save(self, entry=None):
-        self.time = float(self.entry['time'].get_value())
-        self.dist = float(self.entry['dist'].get_value())
-        self.depth = float(self.entry['depth'].get_value())
+        try:
+            self.time = float(self.entry['time'].get_value())
+            self.dist = float(self.entry['dist'].get_value())
+            self.depth = float(self.entry['depth'].get_value())
+        except ValueError:
+            pass
+
+        print(self.time, self.dist, self.depth)
         # if self.include_sampling_depth:
         #     self.sampling_depth = float(self.stringvar['sampling_depth'].get())
 #        self.modulus = int(self.stringvar['modulus'].get())
