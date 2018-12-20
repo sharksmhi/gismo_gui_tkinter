@@ -16,8 +16,8 @@ Application uses basemap for showing maps. The module requires Microsoft Visual 
       
 Download the the latest versions of gismo_gui_tkinter and sharkpylib here: 
 
-      git clone https://github.com/sharksmhi/gismo_gui_tkinter/releases/latest
-      git clone https://github.com/sharksmhi/sharkpylib/releases/latest
+      https://github.com/sharksmhi/gismo_gui_tkinter/releases/latest
+      https://github.com/sharksmhi/sharkpylib/releases/latest
 
 Unzip and rename (remove version number)
 
