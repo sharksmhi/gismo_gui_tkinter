@@ -112,13 +112,31 @@ class App(tk.Tk):
             self.computer_name = socket.gethostname()
         except:
             pass
-        startup_user = self.settings.get('user', {}).get('Startup user', self.computer_name)
-        if startup_user == 'default':  # not in self.user_manager.get_user_list():
-            self.user_manager.set_user('default', create_if_missing=True)
-            self.settings.change_setting('user', 'Startup user', self.computer_name)
-            self.settings.save_settings()
-        self.user_manager.set_user(self.computer_name, create_if_missing=True)
+        default_user = self.settings.get('user', {}).get('Startup user', 'default')
+        startup_user = self.computer_name
+        self.user_manager.set_user('default', create_if_missing=True)
         self.user = self.user_manager.user
+        if default_user == 'default':
+            if startup_user not in self.user_manager.get_user_list():
+                self.user_manager.add_user(startup_user, default_user)
+        else:
+            startup_user = default_user
+        # print('startup_user', startup_user)
+        self.settings.change_setting('user', 'Startup user', startup_user)
+        self.settings.save_settings()
+        self.user_manager.set_user(startup_user, create_if_missing=True)
+        self.user = self.user_manager.user
+
+            # # if startup_user
+            # self.user_manager.set_user(startup_user)
+            #
+            #
+        # if startup_user == 'default':  # not in self.user_manager.get_user_list():
+        #     self.user_manager.set_user('default', create_if_missing=True)
+        #     self.settings.change_setting('user', 'Startup user', self.computer_name)
+        #     self.settings.save_settings()
+        # self.user_manager.set_user(self.computer_name, create_if_missing=True)
+        # self.user = self.user_manager.user
         self.info_popup = gui.InformationPopup(self)
         plt.style.use(self.user.layout.setdefault('plotstyle', self.user.layout.setdefault('plotstyle', self.settings['default']['plotstyle'])))
 
@@ -454,7 +472,8 @@ class App(tk.Tk):
 #        r = 0 
         prop_listbox = {'height': 4}
         self.listbox_widget_loaded_files = tkw.ListboxWidget(frame,
-                                                             include_delete_button='Remove source',
+                                                             include_delete_button=False,
+                                                             # include_delete_button='Remove source',
                                                              prop_listbox=prop_listbox,
                                                              callback_delete_button=self._delete_source,
                                                              padx=1,
@@ -538,9 +557,9 @@ class App(tk.Tk):
         self._update_settings_combobox_widget()
 
     def _get_open_directory(self):
-        print('¤¤¤')
-        print(self.user.path.get('open_directory'))
-        print(self.settings['directory']['Input directory'])
+        # print('¤¤¤')
+        # print(self.user.path.get('open_directory'))
+        # print(self.settings['directory']['Input directory'])
         return self.user.path.setdefault('open_directory', self.settings['directory']['Input directory'])
 
     def _set_open_directory(self, directory):
@@ -731,7 +750,7 @@ class App(tk.Tk):
         
         for page_name, frame in self.frames.items():
             if self.pages_started[page_name]:
-                print('page_name', page_name)
+                # print('page_name', page_name)
                 frame.update_page()
 
     def _set_menubar(self):
@@ -894,7 +913,7 @@ class App(tk.Tk):
             # self.run_progress_in_toplevel(frame.startup, 'Opening page, please wait...')
             frame.startup()
             self.pages_started[page] = True
-        print('CALL UPDATE PAGE', frame)
+        # print('CALL UPDATE PAGE', frame)
         frame.update_page()
         # self.deiconify()
 #             try:
@@ -1106,7 +1125,6 @@ def main():
     mapping_files_directory = os.path.join(root_directory, 'data/mapping_files')
     settings_files_directory = os.path.join(root_directory, 'settings_files')
 
-
     if not os.path.exists(log_directory):
         os.mkdir(log_directory)
 
@@ -1129,6 +1147,7 @@ def main():
     return app
     
 if __name__ == '__main__':
+    print('Version', )
     app = main()
 
 

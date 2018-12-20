@@ -612,8 +612,8 @@ class PageFixedPlatforms(tk.Frame):
             # print('FLAG', flag)
             data = self.current_gismo_object.get_data('visit_depth_id', 'time', self.current_parameter, visit_depth_id_list=visit_depth_id_list,
                                                       mask_options=dict(include_flags=[flag]))
-            print('len()', len(self.current_gismo_object.df))
-            print('len(data)', data['visit_depth_id'])
+            # print('len()', len(self.current_gismo_object.df))
+            # print('len(data)', data['visit_depth_id'])
             boolean = ~np.isnan(np.array(data[self.current_parameter]))
             visit_depth_id_flag = data['visit_depth_id'][boolean]
 
@@ -1143,9 +1143,9 @@ class PageFixedPlatforms(tk.Frame):
         par_list = self.session.get_parameter_list(self.current_file_id)
         striped_pars = []
         nr_list = []
-        print('='*50)
+        # print('='*50)
         for par in par_list:
-            print(par, type(par))
+            # print(par, type(par))
             striped_pars.append(re.sub('_\d*', '', par))
             found = re.findall('_\d*', par)
             if found:
@@ -1249,9 +1249,9 @@ class PageFixedPlatforms(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
-                print('NOT MAP_WIDGET 1')
+                # print('NOT MAP_WIDGET 1')
                 continue
-            print('RUNNING')
+            # print('RUNNING')
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
 
@@ -1283,7 +1283,7 @@ class PageFixedPlatforms(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
-                print('NOT MAP_WIDGET 2')
+                # print('NOT MAP_WIDGET 2')
                 continue
 
             map_widget.delete_all_markers()

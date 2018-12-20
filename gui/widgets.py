@@ -974,7 +974,7 @@ class CompareWidget(tk.Frame):
         except ValueError:
             pass
 
-        print(self.time, self.dist, self.depth)
+        # print(self.time, self.dist, self.depth)
         # if self.include_sampling_depth:
         #     self.sampling_depth = float(self.stringvar['sampling_depth'].get())
 #        self.modulus = int(self.stringvar['modulus'].get())

@@ -23,10 +23,12 @@ def flag_widget_help_text(**kwargs):
 
 
 
-
-
 def about():
     text = """
-           GISMOtoolbox is a ...
+           GISMOtoolbox is an application to manually perform quality control of in situ ocean data from different 
+           sampling types such as ferryboxes and fixed platforms. As of now it is setup to use the standard CMEMS data 
+           format. Functionalities include visual flagging of data, comparison between different data 
+           sources and interactive plot exports. 
+           The GISMO toolbox software is distributed free of charge under the MIT license.
            """
     return text

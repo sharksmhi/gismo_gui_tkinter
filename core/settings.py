@@ -174,13 +174,13 @@ class Settings(dict):
     #===========================================================================
     def save_settings(self):
         save_dict = {}
-        print(self)
+        # print(self)
         for key in self.keys():
             save_dict[key] = self[key]
-            if key == u'map area':
-                print(self[key])
-                print(save_dict[key])
-                print(self[key] == save_dict[key])
+            # if key == u'map area':
+                # print(self[key])
+                # print(save_dict[key])
+                # print(self[key] == save_dict[key])
         fid = open(self.file_path, 'wb')
         pickle.dump(save_dict, fid)
         fid.close()

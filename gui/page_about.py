@@ -56,18 +56,36 @@ class PageAbout(tk.Frame):
         self._set_frame_cooperation()
 
     def _set_frame_about(self):
+        def _on_click_mit_link(event):
+            webbrowser.open_new(r'https://opensource.org/licenses/MIT')
         frame = self.labelframe_about
 
         padx = 5
         pady = 5
-        tk.Label(frame, text=core.texts.about()).grid(row=0, column=0, sticky='nsew', padx=padx, pady=pady)
+        tk.Label(frame, text='GISMOtoolbox', font=("Times New Roman", 40)).grid(row=0, column=0, sticky='nsew',
+                                                                                padx=padx, pady=pady)
+        tk.Label(frame, text='Version 2018.12.1', font=("Times New Roman", 10)).grid(row=1, column=0, sticky='nsew',
+                                                                                padx=padx, pady=pady)
+        # tk.Label(frame, text='').grid(row=1, column=0, sticky='nsew', padx=padx, pady=pady)
+        self.info_label = tk.Label(frame, text=core.texts.about())
+        self.info_label.grid(row=2, column=0, sticky='nsew', padx=padx, pady=pady)
+        self.info_label.bind('<Configure>', self._update_wrap)
 
-        tkw.grid_configure(frame)
+        self.mit_link = tk.Label(frame, text=r'https://opensource.org/licenses/MIT', fg="blue", cursor="hand2")
+        self.mit_link.grid(row=3, column=0, sticky='nsew', padx=padx, pady=pady)
+        self.mit_link.bind("<Button-1>", _on_click_mit_link)
+
+        tkw.grid_configure(frame, nr_rows=4, r0=10, r2=10)
+
+    def _update_wrap(self, event=None):
+        self.info_label.config(wraplength=int(self.info_label.winfo_width() * 0.9))
+        # self.info_label.config(wraplength=int(self.winfo_width() / 3))
 
     def _set_frame_cooperation(self):
         def _on_click_jerico_link(event):
             webbrowser.open_new(r'www.jerico-ri.eu')
-        frame = self.labelframe_developed
+
+        frame = self.labelframe_cooperation
 
         padx = 5
         pady = 5
@@ -87,7 +105,8 @@ class PageAbout(tk.Frame):
     def _set_frame_developed(self):
         def _on_click_smhi_link(event):
             webbrowser.open_new(r'www.smhi.se')
-        frame = self.labelframe_cooperation
+
+        frame = self.labelframe_developed
 
         padx = 5
         pady = 5

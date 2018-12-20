@@ -369,7 +369,7 @@ class PageUser(tk.Frame):
         if not parameter_list_all:
             return
         # Update widget_listbox_cmap
-        self.widget_listbox_cmap.update_items(sorted(parameter_list_all))
+        self.widget_listbox_cmap.update_items(sorted(set(parameter_list_all)))
         self.widget_listbox_cmap.move_items_to_selected(self._get_pars_for_colormap())
 
         self._save_current_colormap()

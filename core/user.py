@@ -22,7 +22,7 @@ class UserManager(object):
             if create_if_missing:
                 self.add_user(user_name)
             else:
-                raise GUIExceptionUserError('Invalid user name')
+                raise GUIExceptionUserError('Invalid user name: {}'.format(user_name))
         self.user = self.users.get(user_name)
 
     def get_user_list(self):

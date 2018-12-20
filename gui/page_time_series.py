@@ -360,9 +360,13 @@ class PageTimeSeries(tk.Frame):
         #----------------------------------------------------------------------
         # Options notebook
         
-        self.notebook_options = tkw.NotebookWidget(self.frame_notebook, 
+        # self.notebook_options = tkw.NotebookWidget(self.frame_notebook,
+        #                                            frames=['Time range', 'Select data to flag', 'Flag selected data',
+        #                                                    'Compare', 'Save data', 'Save plots', 'Map', 'Automatic QC'],
+        #                                            row=0)
+        self.notebook_options = tkw.NotebookWidget(self.frame_notebook,
                                                    frames=['Time range', 'Select data to flag', 'Flag selected data',
-                                                           'Compare', 'Save data', 'Save plots', 'Map', 'Automatic QC'],
+                                                           'Compare', 'Save data', 'Save plots', 'Map'],
                                                    row=0)
         tkw.grid_configure(self.frame_notebook, nr_rows=1)
         
@@ -374,7 +378,7 @@ class PageTimeSeries(tk.Frame):
         self._set_notebook_frame_save_data()
         self._set_notebook_frame_save_plots()
         self._set_notebook_frame_map()
-        self._set_notebook_frame_automatic_qc()
+        # self._set_notebook_frame_automatic_qc()
 
     def _set_notebook_frame_automatic_qc(self):
         frame = self.notebook_options.frame_automatic_qc
@@ -607,10 +611,14 @@ class PageTimeSeries(tk.Frame):
                                                     command=self._update_file_reference)
         self.button_load_current_sample.grid(row=0, column=1, sticky='w', **pad)
 
+        file_frame = tk.Frame(self.labelframe_reference)
+        file_frame.grid(row=1, column=0, columnspan=2, sticky='w', **pad)
+        tk.Label(file_frame, text='Active file:').grid(row=0, column=0, sticky='w', **pad)
         self.stringvar_current_reference_file = tk.StringVar()
-        tk.Label(self.labelframe_reference,
+        tk.Label(file_frame,
                  textvariable=self.stringvar_current_reference_file,
-                 bg=None).grid(row=2, column=0, columnspan=2, sticky='w', **pad)
+                 bg=None).grid(row=0, column=1, columnspan=2, sticky='w', **pad)
+        tkw.grid_configure(file_frame, nr_columns=2)
         tkw.grid_configure(self.labelframe_reference, nr_rows=2)
 
         self.compare_widget = gui.CompareWidget(frame,
@@ -1291,7 +1299,7 @@ class PageTimeSeries(tk.Frame):
 
         self._update_frame_reference_file()
 
-        self._update_frame_automatic_qc()
+        # self._update_frame_automatic_qc()
 
         self.controller.update_help_information('File updated: {}'.format(self.current_file_id), bg='green')
 
@@ -1328,9 +1336,9 @@ class PageTimeSeries(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
-                print('NOT MAP_WIDGET 1')
+                # print('NOT MAP_WIDGET 1')
                 continue
-            print('RUNNING')
+            # print('RUNNING')
             map_widget.delete_all_markers()
             map_widget.delete_all_map_items()
             map_widget.set_title('', position=title_position)
@@ -1387,7 +1395,7 @@ class PageTimeSeries(tk.Frame):
 
         for map_widget in map_list:
             if not map_widget:
-                print('NOT MAP_WIDGET 2')
+                # print('NOT MAP_WIDGET 2')
                 continue
 
             map_widget.delete_all_markers()
