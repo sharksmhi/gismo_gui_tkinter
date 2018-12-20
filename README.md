@@ -22,6 +22,10 @@ Application uses basemap for showing maps. The module requires Microsoft Visual 
 
       git clone https://github.com/sharksmhi/sharkpylib.git 
       
+      
+If you do not have git installed and find it easier you can download the repositories manually by following the links and select "Clone or download" 
+
+
 You should now have three folders (venv36, gismo_gui_tkinter and sharkylib). 
 - Copy the folder sharkpylib to gimso_gui_tkinger/libs 
 
