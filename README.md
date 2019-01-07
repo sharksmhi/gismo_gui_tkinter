@@ -21,8 +21,8 @@ Download the the latest versions of gismo_gui_tkinter and sharkpylib here:
 
 Unzip and rename (remove version number)
 
-You should now have three folders (venv36, gismo_gui_tkinter and sharkylib). 
-- Copy the folder sharkpylib to gimso_gui_tkinger/libs 
+You should now have three folders (venv36, gismo_gui_tkinter and sharkpylib). 
+- Copy the folder sharkpylib to gimso_gui_tkinter/libs 
 
 #### Install required packages 
 - Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/ and download the following packages based on your operating system. Make sure you download packages for python36 (the packages filenames should contain cp36): 
