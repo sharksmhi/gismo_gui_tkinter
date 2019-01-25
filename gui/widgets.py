@@ -22,6 +22,7 @@ import numpy as np
 import gui
 
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
+import libs.sharkpylib.tklib.tkmap as tkmap
 
 import logging 
 
@@ -1395,7 +1396,7 @@ class InformationPopup(object):
 
 class EntryPopup(object):
     """
-    Handles popop for a entry.
+    Handles popop for an entry.
     """
     def __init__(self, controller, text=''):
         self.controller = controller
@@ -1439,6 +1440,315 @@ class EntryPopup(object):
         # self.controller.deiconify()
 
 
+class FilterPopup(object):
+    """
+    Handles popup for filter widget.
+    """
+    def __init__(self,
+                 parent,
+                 controller,
+                 session=None,
+                 callback_target=None):
+        self.parent = parent
+        self.controller = controller
+        self.session = session
+        self.user = self.controller.user
+        self.callback_target = callback_target
+        self.popup_frame = None
+
+    def display(self):
+
+        if self.popup_frame:
+            self.popup_frame.tkraise()
+            return
+        padx = 5
+        pady = 5
+
+        self.popup_frame = tk.Toplevel(self.parent)
+        self.popup_frame.withdraw()
+
+        # Set filter frame
+        self.filter_widget = FilterWidgetSelection(self.popup_frame,
+                                                    user=self.user,
+                                                    # controller=None,
+                                                    session=self.session,
+                                                    callback=None,
+                                                    prop_frame={},
+                                                    padx=padx,
+                                                    pady=pady,
+                                                    columnspan=2)
+
+        button_ok = tk.Button(self.popup_frame, text='Save filter', command=self._ok)
+        button_ok.grid(row=1, column=0, padx=padx, pady=pady)
+
+        button_cancel = tk.Button(self.popup_frame, text='Cancel', command=self._exit)
+        button_cancel.grid(row=1, column=1, padx=padx, pady=pady)
+
+        tkw.grid_configure(self.popup_frame, nr_rows=2, nr_columns=2, r0=10)
+
+        root_position = self.controller.get_root_window_position()
+        w = self.popup_frame.winfo_width()
+        h = self.popup_frame.winfo_height()
+
+        x = root_position['x']
+        y = root_position['y']
+
+        dx = abs(int(root_position['w']/4))
+        dy = abs(int(root_position['h']/4))
+
+        self.popup_frame.geometry("%dx%d+%d+%d" % (w, h, x + dx, y + dy))
+        self.popup_frame.update_idletasks()
+        self.popup_frame.tkraise()
+        self.popup_frame.deiconify()
+
+        # print('root_position', root_position)
+        # popup_position = dict(x=self.popup_frame.winfo_x(),
+        #                       y=self.popup_frame.winfo_y(),
+        #                       w=self.popup_frame.winfo_width(),
+        #                       h=self.popup_frame.winfo_height())
+        # print('popu_position', popup_position)
+
+
+        # print('root x:', self.controller.winfo_x())
+        # print('root y:', self.controller.winfo_y())
+        # print('popup x:', self.popup_frame.winfo_x())
+        # print('popup y:', self.popup_frame.winfo_y())
+        # print('')
+        # print()
+
+        self.popup_frame.protocol('WM_DELETE_WINDOW', self._exit)
+
+        tk.Tk.wm_title(self.popup_frame, 'Filter for user: {}'.format(self.user.name))
+
+        self.popup_frame.update_idletasks()
+        self.popup_frame.deiconify()
+
+    def _ok(self):
+        old_filter = self.user.filter.get_settings()
+        filter_dict = self.filter_widget.get_filter()
+        if filter_dict == old_filter:
+            print('Unchanged filter. Will not save filter to user!')
+            self._exit()
+        else:
+            # Save to user
+            for key, value in filter_dict.items():
+                self.user.filter.set(key, value)
+            self._exit(update=True)
+
+    def _exit(self, **kwargs):
+        """
+
+        :type kwargs: object
+        """
+        self.popup_frame.destroy()
+        self.popup_frame = None
+        if self.callback_target:
+            self.callback_target(**kwargs)
+
+class FilterWidgetTable(tk.Frame):
+    """
+    Widget contains
+    """
+    def __init__(self,
+                 parent,
+                 controller=None,
+                 session=None,
+                 callback_update=None,
+                 callback_select=None,
+                 prop_frame={},
+                 **kwargs):
+        self.prop_frame = {}
+        self.prop_frame.update(prop_frame)
+        self.parent = parent
+        self.controller = controller
+        self.session = session
+        self.callback_update = callback_update
+        self.callback_select = callback_select
+
+        self.grid_frame = {'padx': 5,
+                           'pady': 5,
+                           'sticky': 'nsew'}
+        self.grid_frame.update(kwargs)
+
+        tk.Frame.__init__(self, parent, **self.prop_frame)
+        self.grid(**self.grid_frame)
+
+        self.columns = ['File ID', 'Station']
+
+        self.filter_popup = None
+
+        self._set_frame()
+
+    def _get_current_user(self):
+        return self.controller.user
+
+    def _set_frame(self):
+        pad = {'padx': 5,
+               'pady': 5}
+        # ----------------------------------------------------------------------
+
+        self.table_widget = tkw.TableWidget(self,
+                                            columns=self.columns,
+                                            callback_select=self._callback_table_select,
+                                            row=0,
+                                            sticky='nsew',
+                                            **pad)
+
+        self.button_filter_data = tk.Button(self,
+                                            text='Filter profiles',
+                                            command=self._filter_data)
+        self.button_filter_data.grid(row=1, column=0, sticky='ne', **pad)
+
+        tkw.grid_configure(self, nr_rows=2)
+
+    def _filter_data(self):
+        if self.filter_popup:
+            self.filter_popup.display()
+            return
+        self.filter_popup = gui.widgets.FilterPopup(self,
+                                                    controller=self.controller,
+                                                    callback_target=self._callback_filter_data,
+                                                    session=self.session)
+        self.filter_popup.display()
+
+    def _callback_filter_data(self, **kwargs):
+        if not kwargs.get('update', False):
+            self.filter_popup = None
+            return
+
+        user = self._get_current_user()
+        user_filter = user.filter.get_settings()
+        self.table_widget.reset_table()
+        filtered_file_id_list = self.session.get_filtered_file_id_list(**user_filter)
+        if not filtered_file_id_list:
+            self.filter_popup = None
+            return
+        data = []
+        for file_id in filtered_file_id_list:
+            data_line = []
+            data_line.append(file_id)
+            gismo_object = self.session.get_gismo_object(file_id)
+            data_line.append(gismo_object.get_station_name())
+            data.append(data_line)
+
+        self.table_widget.set_table(data)
+
+        self.filter_popup = None
+
+        if self.callback_update:
+            self.callback_update()
+
+    def _callback_table_select(self, **kwargs):
+        if self.callback_select:
+            self.callback_select(**self.get_selected())
+
+    def get_selected(self):
+        return self.table_widget.get_selected()
+
+    def update_widget(self):
+        """
+        Should be called when self.session is updated.
+        :return:
+        """
+        self._callback_filter_data(update=True)
+
+
+class FilterWidgetSelection(tk.Frame):
+        """
+        Handles a pop up with
+        """
+
+        def __init__(self,
+                     parent,
+                     user=None, 
+                     # controller=None,
+                     session=None,
+                     callback=None,
+                     prop_frame={},
+                     **kwargs):
+            self.prop_frame = {}
+            self.prop_frame.update(prop_frame)
+            # self.controller = controller
+            self.session = session
+            self.user = user
+            self.callback = callback
+
+            self.grid_frame = {'padx': 5,
+                               'pady': 5,
+                               'sticky': 'nsew'}
+            self.grid_frame.update(kwargs)
+
+            tk.Frame.__init__(self, parent, **self.prop_frame)
+            self.grid(**self.grid_frame)
+
+            self._set_frame()
+
+            self._add_data_to_map_widget()
+            self._add_data_to_station_widget()
+
+        def _get_map_boundaries(self):
+            boundaries = [self.user.map_boundries.setdefault('lon_min', 9),
+                          self.user.map_boundries.setdefault('lon_max', 31),
+                          self.user.map_boundries.setdefault('lat_min', 53),
+                          self.user.map_boundries.setdefault('lat_max', 66)]
+            return boundaries
+
+        def _set_frame(self):
+            grid = {'padx': 5,
+                    'pady': 5,
+                    'sticky': 'nsew'}
+
+            self.labelframe_map = tk.LabelFrame(self, text='Zoom map to filter')
+            self.labelframe_map.grid(row=0, column=0, **grid)
+
+            self.labelframe_station = tk.LabelFrame(self, text='Filter on station')
+            self.labelframe_station.grid(row=0, column=1, **grid)
+
+            tkw.grid_configure(self, nr_columns=2)
+
+
+            # Map
+            boundaries = self._get_map_boundaries()
+            self.map_widget = tkmap.TkMap(self.labelframe_map,
+                                          map_resolution='l',
+                                          boundaries=boundaries,
+                                          toolbar=True,
+                                          figsize=(5, 5))
+            tkw.grid_configure(self.labelframe_map)
+
+            # Station
+            prop = {'width': 40}
+            self.station_widget = tkw.ListboxSelectionWidget(self.labelframe_station,
+                                                             prop_items=prop,
+                                                             prop_selected=prop)
+            tkw.grid_configure(self.labelframe_station)
+
+        def _add_data_to_map_widget(self):
+            gui.plot_map_background_data(map_widget=self.map_widget,
+                                         session=self.session,
+                                         user=self.user)
+
+            self.map_widget.zoom(**self.user.filter.get_settings())
+
+        def _add_data_to_station_widget(self):
+            station_list = self.session.get_station_list()
+
+            # Add stations
+            self.station_widget.update_items(station_list)
+
+            # Select stations from user filter
+            user_station_list = self.user.filter.get('stations')
+            if user_station_list:
+                self.station_widget.move_items_to_selected(user_station_list)
+
+        def get_filter(self):
+            filter_dict = {}
+            map_limits = self.map_widget.get_map_limits()
+            filter_dict.update(map_limits)
+
+            filter_dict['stations'] = self.station_widget.get_selected()
+
+            return filter_dict
 
 
 

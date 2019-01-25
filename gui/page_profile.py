@@ -41,7 +41,7 @@ import logging
 ================================================================================
 ================================================================================
 """
-class PageTimeSeries(tk.Frame):
+class PageProfile(tk.Frame):
     """
     """
     def __init__(self, parent, controller, **kwargs):
@@ -61,6 +61,7 @@ class PageTimeSeries(tk.Frame):
         self.current_ref_file_id = ''
         self.current_file_id = ''
         self.current_sampling_type = ''
+        self.current_parameter = ''
 
         self.toplevel_map_widget_1 = None
         self.toplevel_map_widget_2 = None
@@ -69,7 +70,7 @@ class PageTimeSeries(tk.Frame):
 
         self.current_correlation_plot = None
 
-        self.allowed_data_files = ['Ferrybox', 'Fixed platform']
+        self.allowed_data_files = ['CTD']
         self.allowed_compare_files = ['PhysicalChemical']
 
         self._reset_merge_data()
@@ -88,7 +89,30 @@ class PageTimeSeries(tk.Frame):
         self._update_frame_reference_file()
         self._check_on_remove_file()
 
-        self._update_map_1() # To add background data
+        self._update_map_1()  # To add background data
+
+        # Update filter widget
+        self.select_data_widget.update_widget()
+
+        # TEMP: UPDATE background data in plot 
+        if self.current_parameter:
+            self._update_plot_background()
+
+
+    def _update_plot_background(self):
+        gismo_objects = []
+        for item in self.select_data_widget.items:
+            file_id = gui.get_file_id(item)
+            gismo_objects.append(self.session.get_gismo_object(file_id))
+
+        print('len(gismo_objects)', len(gismo_objects))
+        gui.communicate.update_profile_plot_background(gismo_objects=gismo_objects,
+                                                       par=self.current_parameter,
+                                                       plot_object=self.plot_object,
+                                                       flag_widget=self.flag_widget,
+                                                       help_info_function=self.controller.update_help_information,
+                                                       call_targets=False,
+                                                       clear_plot=True)
 
     def _reset_merge_data(self):
         self.current_gismo_match_object = None
@@ -102,14 +126,19 @@ class PageTimeSeries(tk.Frame):
             for data_file in self.allowed_data_files:
                 if item.startswith(data_file):
                     add_file_list.append(item)
-        self.select_data_widget.update_items(add_file_list)
+        #self.select_data_widget.update_items(add_file_list)
 
     def _update_frame_reference_file(self):
         # Update reference file combobox. Should not include selected file.
         loaded_file_list = self.controller.get_loaded_files_list()
         add_ref_file_list = []
+
+        selected_file_id_dict = self.select_data_widget.get_selected()
+        print('selected_file_id_dict')
+        print(selected_file_id_dict)
+
         for item in loaded_file_list:
-            if item == self.select_data_widget.get_value():
+            if item == None:
                 continue
             for data_file in self.allowed_compare_files:
                 if item.startswith(data_file):
@@ -147,11 +176,11 @@ class PageTimeSeries(tk.Frame):
         """
         frame = self.labelframe_plot
 #        self.notebook_plot = tkw.NotebookWidget(frame, ['Time plot', 'Contour plot'])
-        self.notebook_plot = tkw.NotebookWidget(frame, ['Time series plot', 'Correlation plot'])
+        self.notebook_plot = tkw.NotebookWidget(frame, ['Single profile plot', 'Correlation plot'])
 
         tkw.grid_configure(frame)
 
-        self._set_notebook_time_plot()
+        self._set_notebook_single_profile_plot()
         self._set_notebook_compare_plot()
 #        self._set_notebook_contour_plot()
 
@@ -166,19 +195,18 @@ class PageTimeSeries(tk.Frame):
                                                  include_toolbar=False)
 
 
-    def _set_notebook_time_plot(self):
-        frame = self.notebook_plot.frame_time_series_plot
+    def _set_notebook_single_profile_plot(self):
+        frame = self.notebook_plot.frame_single_profile_plot
 
         self.plot_object = plot_selector.Plot(sync_colors=True, 
                                               allow_two_axis=False, 
                                               orientation='horizontal', 
                                               figsize=(2, 2),
-                                              hover_target=self._on_plot_hover,
-                                              time_axis='x')
+                                              hover_target=None)
         margins = {'right': 0.03, 
                    'left': 0.08,
                    'top': 0.04,
-                   'bottom': 0.03}
+                   'bottom': 0.08}
 
         self.plot_object.add_first_ax(margins=margins)
 
@@ -274,104 +302,83 @@ class PageTimeSeries(tk.Frame):
                'pady': 5, 
                'sticky': 'nsew'}
 
-        
-        
         self.labelframe_data = tk.LabelFrame(frame, text='Select data file')
-        self.labelframe_data.grid(row=0, column=0, columnspan=2, **opt)
+        self.labelframe_data.grid(row=0, column=0, **opt)
         
         self.labelframe_parameter = tk.LabelFrame(frame, text='Parameter')
-        self.labelframe_parameter.grid(row=2, column=0, **opt)
+        self.labelframe_parameter.grid(row=1, column=0, **opt)
 
 #        self.labelframe_parameter_contour = tk.LabelFrame(frame, text='Contour plot')
 #        self.labelframe_parameter_contour.grid(row=2, column=1, **opt)
         
         self.frame_notebook = tk.Frame(frame)
-        self.frame_notebook.grid(row=3, column=0, columnspan=2, **opt)
+        self.frame_notebook.grid(row=2, column=0, **opt)
 
         # tkw.grid_configure(frame, nr_rows=4, r0=4, r1=4, r3=5)
-        tkw.grid_configure(frame, nr_rows=4, nr_columns=1, r3=10)
-        
-        
-        pad = {'padx': 5, 
-               'pady': 5}
-        prop_combobox = {'width': 60}
-        #----------------------------------------------------------------------
+        tkw.grid_configure(frame, nr_rows=3, nr_columns=1, r2=10)
 
-        # Data file
-        self.select_data_widget = tkw.ComboboxWidget(self.labelframe_data, 
-                                                   title='',
-                                                   prop_combobox=prop_combobox,
-#                                                   callback_target=self._on_select_parameter, 
-                                                   row=0, 
-                                                   pady=5, 
-                                                   sticky='w')
-        
-        
-        self.button_load_current = tk.Button(self.labelframe_data, 
-                                             text='Update data file',
-                                             command=self._update_file)
-        self.button_load_current.grid(row=0, column=1, sticky='w', **pad)
+        self.select_data_widget = gui.widgets.FilterWidgetTable(self.labelframe_data,
+                                                                 controller=self.controller,
+                                                                 session=self.session,
+                                                                 callback_update=self._callback_filter_update,
+                                                                 callback_select=self._callback_filter_select,
+                                                                 prop_frame={})
+        tkw.grid_configure(self.labelframe_data)
 
-        file_frame = tk.Frame(self.labelframe_data)
-        file_frame.grid(row=1, column=0, columnspan=2, sticky='w', **pad)
-        tk.Label(file_frame, text='Active file:').grid(row=0, column=0, sticky='w', **pad)
-        self.stringvar_current_data_file = tk.StringVar()
-        tk.Label(file_frame,
-                 textvariable=self.stringvar_current_data_file, 
-                 bg=None).grid(row=0, column=1, sticky='w', **pad)
-        tkw.grid_configure(file_frame, nr_columns=2)
-        tkw.grid_configure(self.labelframe_data, nr_rows=2, nr_columns=2)
+#         # Data file
+#         self.select_data_widget = tkw.ComboboxWidget(self.labelframe_data,
+#                                                    title='',
+#                                                    prop_combobox=prop_combobox,
+# #                                                   callback_target=self._on_select_parameter,
+#                                                    row=1,
+#                                                    pady=5,
+#                                                    sticky='w')
+#
+#         self.button_load_current = tk.Button(self.labelframe_data,
+#                                              text='Update data file',
+#                                              command=self._update_file)
+#         self.button_load_current.grid(row=0, column=1, sticky='w', **pad)
+#
+#         file_frame = tk.Frame(self.labelframe_data)
+#         file_frame.grid(row=1, column=0, columnspan=2, sticky='w', **pad)
+#         tk.Label(file_frame, text='Active file:').grid(row=0, column=0, sticky='w', **pad)
+#         self.stringvar_current_data_file = tk.StringVar()
+#         tk.Label(file_frame,
+#                  textvariable=self.stringvar_current_data_file,
+#                  bg=None).grid(row=0, column=1, sticky='w', **pad)
+#         tkw.grid_configure(file_frame, nr_columns=2)
+#         tkw.grid_configure(self.labelframe_data, nr_rows=2, nr_columns=2)
         
         #----------------------------------------------------------------------
         # Parameter listbox 
         self.parameter_widget = tkw.ComboboxWidget(self.labelframe_parameter, 
                                                    title='',
+                                                   prop_combobox={'width': 40},
                                                    callback_target=self._on_select_parameter, 
                                                    row=0, 
                                                    pady=0,
                                                    sticky='w')
 
-        self.yrange_widget = gui.AxisSettingsFloatWidget(self.labelframe_parameter,
+        self.xrange_widget = gui.AxisSettingsFloatWidget(self.labelframe_parameter,
                                                          self.plot_object,
-                                                         callback=self._callback_yaxis_widgets,
+                                                         callback=self._callback_xaxis_widgets,
                                                          label='Set range',
-                                                         axis='y',
+                                                         axis='x',
                                                          row=0,
                                                          column=1,
                                                          pady=1,
                                                          sticky='nsew')
         tkw.grid_configure(self.labelframe_parameter, nr_columns=2)
-        # tkw.grid_configure(self.labelframe_parameter)
 
-        # ----------------------------------------------------------------------
-        # Parameter contour plot
-#        self.parameter_contour_plot_widget = tkw.ComboboxWidget(self.labelframe_parameter_contour,
-#                                                               title='',
-#                                                               row=0,
-#                                                               pady=5,
-#                                                               sticky='w')
-#        self.button_plot_contour = tk.Button(self.labelframe_parameter_contour,
-#                                             text='Update contour plot',
-#                                             command=self._update_contour_plot)
-#        self.button_plot_contour.grid(row=0, column=1, **pad)
-#
-#        tkw.grid_configure(self.labelframe_parameter_contour, nr_columns=2)
-        
-        #----------------------------------------------------------------------
-        # Options notebook
-        
-        # self.notebook_options = tkw.NotebookWidget(self.frame_notebook,
-        #                                            frames=['Time range', 'Select data to flag', 'Flag selected data',
-        #                                                    'Compare', 'Save data', 'Save plots', 'Map', 'Automatic QC'],
         #                                            row=0)
         self.notebook_options = tkw.NotebookWidget(self.frame_notebook,
-                                                   frames=['Time range', 'Select data to flag', 'Flag selected data',
+                                                   frames=['Depth range', 'Select data to flag', 'Flag selected data',
                                                            'Compare', 'Save data', 'Save plots', 'Map'],
                                                    row=0)
         tkw.grid_configure(self.frame_notebook, nr_rows=1)
         
         
-        self._set_notebook_frame_time_range()
+        self._set_notebook_frame_depth_range()
         self._set_notebook_frame_select()
         self._set_notebook_frame_flag()
         self._set_notebook_frame_compare()
@@ -379,6 +386,12 @@ class PageTimeSeries(tk.Frame):
         self._set_notebook_frame_save_plots()
         self._set_notebook_frame_map()
         # self._set_notebook_frame_automatic_qc()
+
+    def _callback_filter_update(self, **kwargs):
+        print('_callback_filter_update:', kwargs)
+
+    def _callback_filter_select(self, **kwargs):
+        print('_callback_filter_select:', kwargs)
 
     def _set_notebook_frame_automatic_qc(self):
         frame = self.notebook_options.frame_automatic_qc
@@ -472,35 +485,24 @@ class PageTimeSeries(tk.Frame):
         return boundaries        
 
     #===========================================================================
-    def _set_notebook_frame_time_range(self):
-        frame = self.notebook_options.frame_time_range
+    def _set_notebook_frame_depth_range(self):
+        frame = self.notebook_options.frame_depth_range
 
         r=0
         
         #----------------------------------------------------------------------
-        # x-axis options
-        self.xrange_widget = gui.AxisSettingsTimeWidget(frame, 
+        # z-axis options
+        self.zrange_widget = gui.AxisSettingsFloatWidget(frame,
                                                    plot_object=self.plot_object, 
-                                                   callback=self._callback_xaxis_widgets,
-                                                   label='time-axis', 
-                                                   axis='x', 
+                                                   callback=self._callback_zaxis_widgets,
+                                                   label='depth range',
+                                                   axis='z',
                                                    row=r, 
                                                    pady=1,
                                                    sticky='nw')
         r+=1
         
-        
-        #----------------------------------------------------------------------
-        # y-axis options
-        # self.yrange_widget = gui.AxisSettingsFloatWidget(frame,
-        #                                             self.plot_object,
-        #                                             callback=self._callback_axis_widgets,
-        #                                             label='y-axis',
-        #                                             axis='y',
-        #                                             row=r,
-        #                                             pady=1,
-        #                                             sticky='nw')
-        # r+=1
+
         
         tkw.grid_configure(frame, nr_rows=2)
         
@@ -513,17 +515,17 @@ class PageTimeSeries(tk.Frame):
         
         #----------------------------------------------------------------------
         # Range widget
-        self.xrange_selection_widget = gui.RangeSelectorTimeWidget(frame, 
-                                                          label='time-range', 
-                                                          plot_object=self.plot_object,
-                                                          axis='t', 
-                                                          row=r)
+        self.xrange_selection_widget = gui.RangeSelectorFloatWidget(frame,
+                                                                    label='Value range',
+                                                                    plot_object=self.plot_object,
+                                                                    axis='x',
+                                                                    row=r)
         r+=1
         
-        self.yrange_selection_widget = gui.RangeSelectorFloatWidget(frame, 
-                                                          label='y-range', 
+        self.zrange_selection_widget = gui.RangeSelectorFloatWidget(frame,
+                                                          label='Depth range',
                                                           plot_object=self.plot_object, 
-                                                          axis='y', 
+                                                          axis='z',
                                                           row=r)
         tkw.grid_configure(frame, nr_rows=2)
         
@@ -966,7 +968,7 @@ class PageTimeSeries(tk.Frame):
         gui.communicate.save_plot(self, self.plot_object, self.save_plots_directory_widget,
                                   file_format=file_format, in_file_name=in_file_name)
 
-    def _callback_xaxis_widgets(self):
+    def _callback_zaxis_widgets(self):
         """
         gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
                                                           user_object=self.user,
@@ -978,22 +980,22 @@ class PageTimeSeries(tk.Frame):
         """
         gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
                                                           user_object=self.user,
-                                                          axis_widget=self.xrange_widget,
-                                                          par='time',
-                                                          axis='x',
+                                                          axis_widget=self.zrange_widget,
+                                                          par='depth',
+                                                          axis='z',
                                                           call_targets=True,
                                                           source='axis')
 
         self._update_map_1()
         self._update_map_2()
 
-    def _callback_yaxis_widgets(self):
+    def _callback_xaxis_widgets(self):
 
         gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
                                                           user_object=self.user,
-                                                          axis_widget=self.yrange_widget,
+                                                          axis_widget=self.xrange_widget,
                                                           par=self.current_parameter,
-                                                          axis='y',
+                                                          axis='x',
                                                           call_targets=True,
                                                           source='axis')
         """
@@ -1013,7 +1015,7 @@ class PageTimeSeries(tk.Frame):
             return
         elif self.plot_object.mark_range_orientation == 'vertical':
             gui.update_range_selection_widget(plot_object=self.plot_object,
-                                              range_selection_widget=self.yrange_selection_widget,
+                                              range_selection_widget=self.zrange_selection_widget,
                                               time_axis=False)
         elif self.plot_object.mark_range_orientation == 'horizontal':
             gui.update_range_selection_widget(plot_object=self.plot_object,
@@ -1021,7 +1023,7 @@ class PageTimeSeries(tk.Frame):
                                               time_axis=False)
 
     def _update_parameter_list(self):
-        exclude_parameters = ['time', 'lat', 'lon']
+        exclude_parameters = ['time', 'lat', 'lon', 'depth']
         parameter_list = [item for item in self.session.get_parameter_list(self.current_file_id) if item not in exclude_parameters]
 
         # Single (plot) parameter widget
@@ -1046,23 +1048,27 @@ class PageTimeSeries(tk.Frame):
         self.save_widget_html.update_parameters(parameter_list)
 
     def _reset_widgets(self):
-        self.plot_object.reset_plot()
-        self.parameter_widget.update_items()
+        # self.plot_object.reset_plot()
+        # self.parameter_widget.update_items()
 
         self.xrange_widget.reset_widget()
-        self.yrange_widget.reset_widget()
+        self.zrange_widget.reset_widget()
         self.xrange_selection_widget.reset_widget()
-        self.yrange_selection_widget.reset_widget()
+        self.zrange_selection_widget.reset_widget()
 
     def _on_select_parameter(self):
         # Reset plot
         self.controller.update_help_information()
-        self.plot_object.reset_plot()
-
+        # self.plot_object.reset_plot()
+        
+        self.old_parameter = self.current_parameter
         self.current_parameter = self.parameter_widget.get_value()
 
         if not self.current_parameter:
-            return
+            return 
+            
+        if self.current_parameter != self.old_parameter:
+            self._update_plot_background()
 
         # Save parameter
         self.user.parameter_priority.set_priority(self.current_parameter)
@@ -1077,17 +1083,17 @@ class PageTimeSeries(tk.Frame):
         # Update limits in plot from user
         gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
                                                           user_object=self.user,
-                                                          axis_widget=self.yrange_widget,
+                                                          axis_widget=self.xrange_widget,
                                                           par=self.current_parameter,
-                                                          axis='y',
+                                                          axis='x',
                                                           call_targets=False,
                                                           source='user')
 
         gui.communicate.sync_limits_in_plot_user_and_axis(plot_object=self.plot_object,
                                                           user_object=self.user,
-                                                          axis_widget=self.xrange_widget,
-                                                          par='time',
-                                                          axis='x',
+                                                          axis_widget=self.zrange_widget,
+                                                          par='depth',
+                                                          axis='z',
                                                           call_targets=True,
                                                           source='plot')
 
@@ -1115,13 +1121,13 @@ class PageTimeSeries(tk.Frame):
         if not self._check_loaded_data():
             return
         try:
-            gui.flag_data_time_series(flag_widget=self.flag_widget,
-                                      gismo_object=self.current_gismo_object,
-                                      plot_object=self.plot_object,
-                                      par=self.current_parameter)
+            gui.flag_data_profile(flag_widget=self.flag_widget,
+                                  gismo_object=self.current_gismo_object,
+                                  plot_object=self.plot_object,
+                                  par=self.current_parameter)
             self._update_plot()
             self.xrange_selection_widget.clear_widget()
-            self.yrange_selection_widget.clear_widget()
+            self.zrange_selection_widget.clear_widget()
         except GUIExceptionNoRangeSelection:
             gui.show_information('Could not flag data',
                                  'You need to make a selection under tab "Select data to flag" before you can flag data')
@@ -1133,12 +1139,13 @@ class PageTimeSeries(tk.Frame):
         if not self._check_loaded_data():
             return
 
-        gui.update_time_series_plot(gismo_object=self.current_gismo_object,
-                                    par=self.current_parameter,
-                                    plot_object=self.plot_object,
-                                    flag_widget=self.flag_widget,
-                                    help_info_function=self.controller.update_help_information,
-                                    call_targets=kwargs.get('call_targets', True))
+        gui.update_profile_plot(gismo_object=self.current_gismo_object,
+                                par=self.current_parameter,
+                                plot_object=self.plot_object,
+                                flag_widget=self.flag_widget,
+                                help_info_function=self.controller.update_help_information,
+                                call_targets=kwargs.get('call_targets', True),
+                                clear_plot=False)
 
         try:
             self.plot_object.set_title(self.current_gismo_object.get_station_name())
@@ -1192,8 +1199,8 @@ class PageTimeSeries(tk.Frame):
         Information taken from self.select_data_widget
         :return:
         """
-        self.current_sampling_type = self.select_data_widget.get_value().split(':')[0].strip()
-        self.current_file_id = self._get_file_id(self.select_data_widget.get_value())
+        self.current_sampling_type = self.select_data_widget.get_selected_file_id().split(':')[0].strip()
+        self.current_file_id = self._get_file_id(self.select_data_widget.get_selected_file_id())
         self.current_file_path = self.session.get_file_path(self.current_file_id)
         self.current_gismo_object = self.session.get_gismo_object(self.current_file_id)
 
@@ -1272,6 +1279,7 @@ class PageTimeSeries(tk.Frame):
 
     #===========================================================================
     def _update_file(self):
+
         self._set_current_file()
 
         self._reset_merge_data()
@@ -1285,7 +1293,7 @@ class PageTimeSeries(tk.Frame):
 
         self._update_notebook_frame_flag()
 
-        self._update_valid_time_range_in_time_axis()
+        # self._update_valid_time_range_in_time_axis()
 
         self._set_notebook_compare_plot()
 
@@ -1310,7 +1318,7 @@ class PageTimeSeries(tk.Frame):
             self.widget_automatic_qc_options.activate(routine)
 
     def _update_valid_time_range_in_time_axis(self):
-        data_file_string = self.select_data_widget.get_value()
+        data_file_string = self.select_data_widget.get_selected_file_id()
         data_file_id = self._get_file_id(data_file_string)
         gui.set_valid_time_in_time_axis(gismo_object=self.current_gismo_object,
                                         time_axis_widget=self.xrange_widget)
@@ -1357,7 +1365,29 @@ class PageTimeSeries(tk.Frame):
                 # Plot current file
                 data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter)
 
-                map_widget.add_markers(np.nanmean(data['lat']), np.nanmean(data['lon']), marker_id='all_pos', linestyle='None', marker='*', color='red', markersize=10, zorder=20)
+                map_widget.add_markers(np.nanmean(data['lat']),
+                                       np.nanmean(data['lon']),
+                                       marker_id='all_pos',
+                                       linestyle='None',
+                                       marker='s',
+                                       color=self.user.map_prop.setdefault('fixed_platform_color', 'green'),
+                                       markersize=10,
+                                       zorder=20)
+
+                map_widget.set_title(title, position=title_position)
+            elif 'ctd' in self.current_sampling_type.lower():
+                title = 'All loaded data\n(current platform data highlighted)'
+                # Plot current file
+                data = self.session.get_data(self.current_file_id, 'lat', 'lon', self.current_parameter)
+
+                map_widget.add_markers(np.nanmean(data['lat']),
+                                       np.nanmean(data['lon']),
+                                       marker_id='all_pos',
+                                       linestyle='None',
+                                       marker='d',
+                                       color=self.user.map_prop.setdefault('ferrybox_ctd_color', 'blue'),
+                                       markersize=10,
+                                       zorder=21)
 
                 map_widget.set_title(title, position=title_position)
             elif 'ferrybox' in self.current_sampling_type.lower():
@@ -1460,6 +1490,7 @@ class PageTimeSeries(tk.Frame):
         
 
     def _check_on_remove_file(self):
+        return
         if not self.stringvar_current_data_file.get():
             self.plot_object.reset_plot()
             self._update_map_1()

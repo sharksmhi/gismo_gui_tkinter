@@ -221,14 +221,29 @@ class PageUser(tk.Frame):
         map_color_list = ['ferrybox_track_color',
                           'ferrybox_track_color_highlighted',
                           'ferrybox_track_color_background',
+                          'fixed_platform_color',
                           'fixed_platform_color_background',
-                          'physicalchemical_color_background']
+                          'physicalchemical_color_background',
+                          'ctd_profile_color_background',
+                          'ctd_profile_color']
 
         default_colors = dict(ferrybox_track_color_background='gray',
                               ferrybox_track_color='pink',
                               ferrybox_track_color_highlighted='red',
+                              fixed_platform_color='green',
                               fixed_platform_color_background='gray',
-                              physicalchemical_color_background='gray')
+                              physicalchemical_color_background='gray',
+                              ctd_profile_color_background='gray',
+                              ctd_profile_color='blue')
+
+        # default_marker = dict(ferrybox_track_color_background='gray',
+        #                       ferrybox_track_color='pink',
+        #                       ferrybox_track_color_highlighted='red',
+        #                       fixed_platform_color='green',
+        #                       fixed_platform_color_background='gray',
+        #                       physicalchemical_color_background='gray',
+        #                       ctd_profile_color_background='gray',
+        #                       ctd_profile_color='blue')
 
         self.combobox_map_color = {}
         self.labels_map_color = {}

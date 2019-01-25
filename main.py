@@ -39,10 +39,8 @@ all_pages.add(gui.PageStart)
 all_pages.add(gui.PageUser)
 all_pages.add(gui.PageAbout)
 all_pages.add(gui.PageTimeSeries)
-
-
-#============================================================================
-
+all_pages.add(gui.PageMetadata)
+all_pages.add(gui.PageProfile)
 
 
 class App(tk.Tk):
@@ -203,10 +201,17 @@ class App(tk.Tk):
         self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageFerrybox)
         # self.show_frame(gui.PageFixedPlatforms)
-        self.show_frame(gui.PageTimeSeries)
+        # self.show_frame(gui.PageTimeSeries)
+        self.show_frame(gui.PageProfile)
 
         self.update_all()
         self.deiconify()
+
+    def get_root_window_position(self):
+        return dict(x=self.winfo_x(),
+                    y=self.winfo_y(),
+                    w=self.winfo_width(),
+                    h=self.winfo_height())
 
     #==========================================================================
     def _set_frame(self):
@@ -387,12 +392,12 @@ class App(tk.Tk):
                                                        command=lambda: self._get_data_file_path('Ferrybox CMEMS'))
         self.button_get_fixed_platform_data_file = tk.Button(frame_data, text='Fixed platform CMEMS',
                                                              command=lambda: self._get_data_file_path('Fixed platforms CMEMS'))
-        self.button_get_ctd_data_file = tk.Button(frame_data, text='CTD-profile',
-                                                  command=lambda: self._get_data_file_path('CTD SHARK'))
+        self.button_get_ctd_data_file = tk.Button(frame_data, text='SHARK CTD standard format',
+                                                  command=lambda: self._get_data_file_paths('CTD SHARK'))
         self.button_get_sampling_file = tk.Button(frame_data, text='SHARKweb bottle data',
                                                   command=lambda: self._get_data_file_path('PhysicalChemical SHARK'))
 
-        tkw.disable_widgets(self.button_get_ctd_data_file)
+        # tkw.disable_widgets(self.button_get_ctd_data_file)
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -495,6 +500,29 @@ class App(tk.Tk):
         self.session.remove_file(file_id)
         self.update_all()
 
+    def _get_data_file_paths(self, sampling_type):
+
+        open_directory = self._get_open_directory()
+        file_paths = filedialog.askopenfilenames(initialdir=open_directory,
+                                                 filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
+
+        if file_paths:
+            self._set_open_directory(file_paths[0])
+            old_sampling_type = self.combobox_widget_sampling_type.get_value()
+            self.combobox_widget_sampling_type.set_value(sampling_type)
+            file_path_list = []
+            for file_path in file_paths:
+                file_name = os.path.basename(file_path)
+                if sampling_type == 'CTD SHARK' and not file_name.startswith('ctd_profile_'):
+                    continue
+                if not file_path_list:
+                    file_path_list.append(file_path)
+                else:
+                    file_path_list.append(file_name)
+
+            self.stringvar_data_file.set('; '.join(file_path_list))
+
+        self._set_settings(sampling_type, file_paths[0])
 
     #===========================================================================
     def _get_data_file_path(self, sampling_type):
@@ -502,8 +530,7 @@ class App(tk.Tk):
         Created     20180821
         """
         open_directory = self._get_open_directory()
-        print(open_directory)
-        file_path = filedialog.askopenfilename(initialdir=open_directory, 
+        file_path = filedialog.askopenfilename(initialdir=open_directory,
                                                filetypes=[('GISMO-file ({})'.format(sampling_type), '*.txt')])
 
         if file_path:
@@ -511,15 +538,16 @@ class App(tk.Tk):
             old_sampling_type = self.combobox_widget_sampling_type.get_value() 
             self.combobox_widget_sampling_type.set_value(sampling_type)
             self.stringvar_data_file.set(file_path)
-            
+
+        self._set_settings(sampling_type, file_path)
+
+    def _set_settings(self, sampling_type, file_path):
+        print('sammpling_type', sampling_type)
+        print('file_path', file_path)
+        if file_path:
             # Check settings file path
-            settings_file_path = self.combobox_widget_settings_file.get_value()
-            # if not settings_file_path and sampling_type != old_sampling_type:
-            # print('sampling_type', sampling_type)
-            # print(self.settings['directory']['Default {} settings'.format(sampling_type)])
-            # print('-')
-            # print(self.combobox_widget_settings_file.items)
-            # print(self.settings['directory']['Default {} settings'.format(sampling_type)])
+            # settings_file_path = self.combobox_widget_settings_file.get_value()
+            print(self.settings['directory']['Default {} settings'.format(sampling_type)])
             self.combobox_widget_settings_file.set_value(self.settings['directory']['Default {} settings'.format(sampling_type)])
 
             # User settings
@@ -571,11 +599,10 @@ class App(tk.Tk):
     #===========================================================================
     def _load_file(self):
 
-        def load_file(**kwargs):
+        def load_file(data_file_path, **kwargs):
             self.update_help_information('')
             self.button_load_file.configure(state='disabled')
 
-            data_file_path = self.stringvar_data_file.get()
             settings_file = self.combobox_widget_settings_file.get_value()
             settings_file_path = self.settings_files.get_path(settings_file)
             sampling_type = self.combobox_widget_sampling_type.get_value()
@@ -588,82 +615,64 @@ class App(tk.Tk):
                                    root_directory=self.root_directory,
                                    **kwargs)
 
-            # Update user settings
-            if self.latest_loaded_sampling_type:
-                self.user.settingsfile.set(self.latest_loaded_sampling_type,
-                                           self.combobox_widget_settings_file.get_value())
-
-            # Remove data file text
-            self.stringvar_data_file.set('')
-
-            self._update_loaded_files_widget()
-            self.update_all()
-            self.button_load_file.configure(state='normal')
-
-            self.update_help_information('File loaded! Please continue.', bg='green')
 
         self.reset_help_information()
         data_file_path = self.stringvar_data_file.get()
         settings_file = self.combobox_widget_settings_file.get_value()
         settings_file_path = self.settings_files.get_path(settings_file)
 
-        sampling_type = self.combobox_widget_sampling_type.get_value()
+        # sampling_type = self.combobox_widget_sampling_type.get_value()
         
         if not all([data_file_path, settings_file_path]): 
             self.update_help_information('No file selected!', fg='red')
             return
 
-        # Load file
-        try:
-            load_file()
-            # self.run_progress(load_file, message='Loading file...please wait...')
-        except GISMOExceptionMissingPath as e:
-            gui.show_information('Invalid path',
-                                 'The path "{}" given in i settings file "{} can not be found'.format(e.message,
-                                                                                                      settings_file_path))
-            self.update_help_information('Please try again with a different settings file.')
+        data_file_path = self.stringvar_data_file.get()
+        if ';' in data_file_path:
+            data_file_list = []
+            for k, file_name in enumerate(data_file_path.split(';')):
+                file_name = file_name.strip()
+                if k==0:
+                    directory = os.path.dirname(file_name)
+                    data_file_list.append(file_name)
+                else:
+                    data_file_list.append(os.path.join(directory, file_name))
+        else:
+            data_file_list = [data_file_path]
 
-        except GISMOExceptionMissingInputArgument as e:
-            # print(e.message, '#{}#'.format(e.message), type(e.message))
-            if 'depth' in e.message:
-                platform_depth = self.entry_widget_platform_depth.get_value()
-                if not platform_depth:
-                    gui.show_information('No depth found!', 'You need to provide platform depth for this sampling type!')
-                    return
-                load_file(depth=platform_depth)
+        for file_path in data_file_list:
+            # Load file
+            try:
+                load_file(file_path)
+                # self.run_progress(load_file, message='Loading file...please wait...')
+            except GISMOExceptionMissingPath as e:
+                gui.show_information('Invalid path',
+                                     'The path "{}" given in i settings file "{} can not be found'.format(e.message,
+                                                                                                          settings_file_path))
+                self.update_help_information('Please try again with a different settings file.')
 
-        # except Exception as e:
-        #     gui.show_information('Load file error',
-        #                          'Something went wrong when trying to load file. Maybe you have provided the wrong Settings file?')
-        #     print(e)
+            except GISMOExceptionMissingInputArgument as e:
+                # print(e.message, '#{}#'.format(e.message), type(e.message))
+                if 'depth' in e.message:
+                    platform_depth = self.entry_widget_platform_depth.get_value()
+                    if not platform_depth:
+                        gui.show_information('No depth found!', 'You need to provide platform depth for this sampling type!')
+                        return
+                    load_file(file_path, depth=platform_depth)
 
+        # Update user settings
+        if self.latest_loaded_sampling_type:
+            self.user.settingsfile.set(self.latest_loaded_sampling_type,
+                                       self.combobox_widget_settings_file.get_value())
 
+        # Remove data file text
+        self.stringvar_data_file.set('')
 
-            # # Load file
-            # try:
-            #     self.update_help_information('Loading file...please wait...', fg='red')
-            #     all_ok = self.session.load_file(sampling_type=sampling_type,
-            #                                     file_path=data_file_path,
-            #                                     settings_file_path=settings_file_path,
-            #                                     reload=False)
-            #
-            # except GISMOExceptionMissingPath as e:
-            #     gui.show_information('Invalid path',
-            #                          'The path "{}" given in i settings file "{} can not be found'.format(e.message,
-            #                                                                                               settings_file_path))
-            #     self.update_help_information('Please try again with a different settings file.')
-            #     return
-            #
-            # self._update_loaded_files_widget()
-            #
-            # self.update_all()
-            #
-            # # Update user settings
-            # if self.latest_loaded_sampling_type:
-            #     self.user.settingsfile.set(self.latest_loaded_sampling_type,
-            #                                self.combobox_widget_settings_file.get_value())
-            #
-            # self.update_help_information('File loaded! Please continue by selecting a parameter.')
+        self._update_loaded_files_widget()
+        self.update_all()
+        self.button_load_file.configure(state='normal')
+
+        self.update_help_information('File loaded! Please continue.', bg='green')
 
     def _update_loaded_files_widget(self):
         loaded_files = [] 
@@ -776,6 +785,12 @@ class App(tk.Tk):
         if 'gui.page_time_series' in sys.modules:
             self.goto_menu.add_command(label='Time series',
                                        command=lambda: self.show_frame(gui.PageTimeSeries))
+        if 'gui.page_profile' in sys.modules:
+            self.goto_menu.add_command(label='Profiles',
+                                       command=lambda: self.show_frame(gui.PageProfile))
+        if 'gui.page_metadata' in sys.modules:
+            self.goto_menu.add_command(label='Metadata',
+                                       command=lambda: self.show_frame(gui.PageMetadata))
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 
@@ -931,14 +946,7 @@ class App(tk.Tk):
             if page in self.page_history:
                 self.page_history.pop()
                 self.page_history.append(page)
-                
-                
-        try:
-            if self.active_page == gui.PageCTD:
-                self.notebook_load.select_frame('CTD files')
-                
-        except:
-            pass
+
         self.update()
 
 
@@ -947,7 +955,6 @@ class App(tk.Tk):
         # self._show_frame(page)
         self.run_progress_in_toplevel(lambda x=page: self._show_frame(x), 'Opening page, please wait...')
         self.deiconify()
-
 
 #     def show_frame(self, page):
 #         """
@@ -1061,7 +1068,7 @@ class App(tk.Tk):
             pass
         
         try:
-            self.titles[gui.PageCTD] = 'CTD'
+            self.titles[gui.PageProfile] = 'Profiles'
         except:
             pass
 

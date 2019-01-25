@@ -1,0 +1,532 @@
+//FORMAT=CTDPRO
+//METADATA_DELIMITER=;
+//DATA_DELIMITER=\t
+//METADATA;MYEAR;2017
+//METADATA;PROJ;BAS
+//METADATA;ORDERER;HAV, SMHI
+//METADATA;SLABO;SMHI
+//METADATA;ALABO;SMHI
+//METADATA;SDATE;2017-11-13
+//METADATA;STIME;12:55:08
+//METADATA;EDATE;
+//METADATA;ETIME;
+//METADATA;SHIPC;34EB
+//METADATA;CRUISE_NO;2
+//METADATA;SERNO;0042
+//METADATA;STATN;W LANDSKRONA
+//METADATA;LATIT;5552.01
+//METADATA;LONGI;01244.91
+//METADATA;POSYS;GPS
+//METADATA;WADEP;50
+//METADATA;COMNT_VISIT;
+//METADATA;ADD_SMP;PHYCHE
+//METADATA;SMTYP;CTD
+//METADATA;INSTRUMENT_ID;SBE1044
+//METADATA;REFSK_SMP;HC-C-C2
+//METADATA;REV_DATE;2017-12-07
+//METADATA;FILE_NAME;SBE09_1044_20171113_1254_34_07_0042.cnv
+//METADATA;WINDIR;5
+//METADATA;WINSP;9.3
+//METADATA;AIRTEMP;7.6
+//METADATA;AIRPRES;1013
+//METADATA;WEATH;1
+//METADATA;CLOUD;2
+//METADATA;WAVES;3
+//METADATA;ICEOB;0
+//SENSORINFO;INSTRUMENT_ID;INSTRUMENT_PROD;INSTRUMENT_MOD;INSTRUMENT_SERIE;VALIDFR;VALIDTO;PARAM_REPORTED;PARAM_SIMPLE;PARAM;MUNIT;CALCULATED;CALCULATE_REF;SENSOR_PROD;SENSOR_MOD;SENSOR_ID;CALIB_DATE;LMQNT;RANA;UNCERT;FREQ;MET_COMNT
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;depFM: Depth [true depth, m], lat ;Djup;DEPH;m;ja;Calculated from true density profile;;;;;;;;;calculated from density and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;prDM: Pressure, Digiquartz [db];Tryck;PRES_CTD;dbar;;;Paroscientific;Digiquartz 8000-series;1044;2016-12-14;0;0-1400 m;0.01% Typical Accuracy;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;c0S/m: Conductivity [S/m];Konduktivitet;CNDC_CTD;S/m;;;Seabird;SBE 4C;3941;2014-07-17;0;0.0-7.0 S/m;± 0.0003 S/m;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;c1S/m: Conductivity, 2 [S/m];Konduktivitet2;CNDC2_CTD;S/m;;;Seabird;SBE 4C;3943;2014-07-17;0;0.0-7.0 S/m;± 0.0003 S/m;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sal00: Salinity, Practical [PSU];Salthalt;SALT_CTD;psu (PSS-78);ja;UNESCO 1983 (EOS 80);;;;;2;;;;calculated from conductivity, temperature and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sal11: Salinity, Practical, 2 [PSU];Salthalt2;SALT2_CTD;psu (PSS-78);ja;UNESCO 1983 (EOS 80);;;;;2;;;;calculated from conductivity, temperature and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;t090C: Temperature [ITS-90, deg C];Temperatur;TEMP_CTD;°C (ITS-90);;;Seabird;SBE 3plus;5351;2014-07-16;-5.0;-5.0 - +35 °C;± 0.001 °C;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;t190C: Temperature, 2 [ITS-90, deg C];Temperatur2;TEMP2_CTD;°C (ITS-90);;;Seabird;SBE 3plus;5355;2014-07-16;-5.0;-5.0 - +35 °C;± 0.001 °C;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sbeox0ML/L: Oxygen, SBE 43 [ml/l];Syrgashalt;DOXY_CTD;ml/l;;;Seabird;SBE 43;0732;2016-11-12;0.1;120% of surface saturation in all natural waters, fresh and salt;± 2% of saturation;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sbeox1ML/L: Oxygen, SBE 43, 2 [ml/l];Syrgashalt2;DOXY2_CTD;ml/l;;;Seabird;SBE 43;1243;2016-10-28;0.1;120% of surface saturation in all natural waters, fresh and salt;± 2% of saturation;24;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;par: PAR/Irradiance, Biospherical/Licor;PAR;PAR_CTD;µE/(cm2 sec);;;Biospherical;QSP-2000;70374;2014-09-25;1.4x10e-5;1.4x10e-5 µE/(cm2 ·sec) to 0.5 µE/(cm2 ·sec);;;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;flECO-AFL: Fluorescence, WET Labs ECO-AFL/FL [mg/m^3];Klorofyllfluorescens;CHLFLUO_CTD;mg/m3;;;WET Labs;ECO-FLNTU-RTD;2288;2014-08-19*;0;0-50 µg/I;0.025 µg/I;8;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;turbWETntu0: Turbidity, WET Labs ECO [NTU];Turbiditet;TURB_CTD;NTU;;;WET Labs;ECO-FLNTU-RTD;2288;2014-08-19*;0;0-25 NTU;0.013 NTU;8;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;flECO-AFL1: Fluorescence, WET Labs ECO-AFL/FL, 2 [mg/m^3];Phycocyaninfluorescens;PHYC_CTD;ppb;;;WET Labs;ECO-FLPC-RTD;2290;2011-06-24*;0;0-230 ppb;0.03 ppb;8;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;altM: Altimeter [m];Altimeter;ALTM_CTD;m;;;Teledyne;PSA-916;53447;2014-09-10;1;1-100 m;2.5 cm;;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;dz/dtM: Descent Rate [m/s], WS ;fallhastighet;DESC_RATE_CTD;m/s;ja;derivative of pressure with respect to time;;;;;;;;;calculated in seabird dataprocessing by using the derivative of pressure with respect to time
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;scan: Scan Count;scan nummer;SCAN_CTD;;;;;;;;;;;;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;pumps: Pump Status;pump status;PUMP_CTD;;;;Seabird;SBE 5T;;;;;;;
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sigma-t00: Density [sigma-t, Kg/m^3 ];Densitet;DENS_CTD;kg/m3;ja;UNESCO 1983 (EOS 80);;;;;;;;;calculated from salinity, temperature and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;sigma-t11: Density, 2 [sigma-t, Kg/m^3 ];Densitet2;DENS2_CTD;kg/m3;ja;UNESCO 1983 (EOS 80);;;;;;;;;calculated from salinity, temperature and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;svCM: Sound Velocity [Chen-Millero, m/s];Ljudhastighet;SVEL_CTD;m/s;ja;UNESCO 1983 (EOS 80) Chen-Millero;;;;;;;;;calculated from salinity, temperature and pressure
+//SENSORINFO;SBE1044;Seabird;911plus;1044;2017-11-01;2017-12-31;svCM1: Sound Velocity, 2 [Chen-Millero, m/s];Ljudhastighet2;SVEL2_CTD;m/s;ja;UNESCO 1983 (EOS 80) Chen-Millero;;;;;;;;;calculated from salinity, temperature and pressure
+//INFORMATION;Sensors are regularly calibrated, cleaned and stored according to the latest recommendations from the manufacturer. 
+//INFORMATION;Data is processed by the following seabird steps: datcnv, filter, alignctd, celltm, loopedit, derive, binavg, bottlesum and split. 
+//INFORMATION;These steps with some extra information are available in the data file header. After processing, the data is plotted and visually quality controlled and possible errors are flagged as bad.
+//INSTRUMENT_METADATA;* FileName = C:\ctd\temp\2017\AU17D042.hex
+//INSTRUMENT_METADATA;* Software Version Seasave V 7.26.6.26
+//INSTRUMENT_METADATA;* Temperature SN = 5351
+//INSTRUMENT_METADATA;* Conductivity SN = 3941
+//INSTRUMENT_METADATA;* Number of Bytes Per Scan = 41
+//INSTRUMENT_METADATA;* Number of Voltage Words = 4
+//INSTRUMENT_METADATA;* Number of Scans Averaged by the Deck Unit = 1
+//INSTRUMENT_METADATA;* System UpLoad Time = Nov 13 2017 12:54:21
+//INSTRUMENT_METADATA;* NMEA Latitude = 55 52.01 N
+//INSTRUMENT_METADATA;* NMEA Longitude = 012 44.91 E
+//INSTRUMENT_METADATA;* NMEA UTC (Time) = Nov 13 2017  12:55:08
+//INSTRUMENT_METADATA;* Store Lat/Lon Data = Append to Every Scan
+//INSTRUMENT_METADATA;* SBE 11plus V 5.2
+//INSTRUMENT_METADATA;* number of scans to average = 1
+//INSTRUMENT_METADATA;* pressure baud rate = 9600
+//INSTRUMENT_METADATA;* NMEA baud rate = 4800
+//INSTRUMENT_METADATA;* GPIB address = 1
+//INSTRUMENT_METADATA;* advance primary conductivity  0.073 seconds
+//INSTRUMENT_METADATA;* advance secondary conductivity  0.073 seconds
+//INSTRUMENT_METADATA;* autorun on power up is disabled
+//INSTRUMENT_METADATA;* S>
+//INSTRUMENT_METADATA;** Station:  W Landskrona
+//INSTRUMENT_METADATA;** Operator:  SSip
+//INSTRUMENT_METADATA;** Ship: AURA
+//INSTRUMENT_METADATA;** Average sound velocity: 1487.08 m/s
+//INSTRUMENT_METADATA;** True-depth calculation Mon, 13 Nov 2017 15:09:29 +0000
+//INSTRUMENT_METADATA;** CTD Python Module SMHI /ver 3-12/ feb 2012 
+//INSTRUMENT_METADATA;** LIMS Job: 20173407-0042
+//INSTRUMENT_METADATA;** Cruise: SMHI-02-2017
+//INSTRUMENT_METADATA;** Latitude [GG MM.mm N] :
+//INSTRUMENT_METADATA;** Longitude [GG MM.mm E]:
+//INSTRUMENT_METADATA;* System UTC = Nov 13 2017 12:54:21
+//INSTRUMENT_METADATA;# nquan = 26
+//INSTRUMENT_METADATA;# nvalues = 94                          
+//INSTRUMENT_METADATA;# units = specified
+//INSTRUMENT_METADATA;# name 0 = scan: Scan Count
+//INSTRUMENT_METADATA;# name 1 = prDM: Pressure, Digiquartz [db]
+//INSTRUMENT_METADATA;# name 2 = t090C: Temperature [ITS-90, deg C]
+//INSTRUMENT_METADATA;# name 3 = t190C: Temperature, 2 [ITS-90, deg C]
+//INSTRUMENT_METADATA;# name 4 = T2-T190C: Temperature Difference, 2 - 1 [ITS-90, deg C]
+//INSTRUMENT_METADATA;# name 5 = c0S/m: Conductivity [S/m]
+//INSTRUMENT_METADATA;# name 6 = c1S/m: Conductivity, 2 [S/m]
+//INSTRUMENT_METADATA;# name 7 = pumps: Pump Status
+//INSTRUMENT_METADATA;# name 8 = sbeox0ML/L: Oxygen, SBE 43 [ml/l]
+//INSTRUMENT_METADATA;# name 9 = sbeox1ML/L: Oxygen, SBE 43, 2 [ml/l]
+//INSTRUMENT_METADATA;# name 10 = altM: Altimeter [m]
+//INSTRUMENT_METADATA;# name 11 = flECO-AFL: Fluorescence, WET Labs ECO-AFL/FL [mg/m^3]
+//INSTRUMENT_METADATA;# name 12 = flECO-AFL1: Fluorescence, WET Labs ECO-AFL/FL, 2 [mg/m^3]
+//INSTRUMENT_METADATA;# name 13 = par: PAR/Irradiance, Biospherical/Licor
+//INSTRUMENT_METADATA;# name 14 = turbWETntu0: Turbidity, WET Labs ECO [NTU]
+//INSTRUMENT_METADATA;# name 15 = sal00: Salinity, Practical [PSU]
+//INSTRUMENT_METADATA;# name 16 = sal11: Salinity, Practical, 2 [PSU]
+//INSTRUMENT_METADATA;# name 17 = secS-priS: Salinity, Practical, Difference, 2 - 1 [PSU]
+//INSTRUMENT_METADATA;# name 18 = sigma-t00: Density [sigma-t, Kg/m^3 ]
+//INSTRUMENT_METADATA;# name 19 = sigma-t11: Density, 2 [sigma-t, Kg/m^3 ]
+//INSTRUMENT_METADATA;# name 20 = depSM: Depth [salt water, m], lat = 55.8668
+//INSTRUMENT_METADATA;# name 21 = depFM: Depth [true depth, m], lat = 55.8668
+//INSTRUMENT_METADATA;# name 22 = dz/dtM: Descent Rate [m/s], WS = 2
+//INSTRUMENT_METADATA;# name 23 = svCM: Sound Velocity [Chen-Millero, m/s]
+//INSTRUMENT_METADATA;# name 24 = svCM1: Sound Velocity, 2 [Chen-Millero, m/s]
+//INSTRUMENT_METADATA;# name 25 = flag: flag
+//INSTRUMENT_METADATA;# span 0 =       5871,       8203       
+//INSTRUMENT_METADATA;# span 1 =      1.000,     47.500       
+//INSTRUMENT_METADATA;# span 2 =     8.8961,    13.5754       
+//INSTRUMENT_METADATA;# span 3 =     8.9026,    13.5753       
+//INSTRUMENT_METADATA;# span 4 =    -0.0841,     0.0612       
+//INSTRUMENT_METADATA;# span 5 =   1.868501,   3.803331       
+//INSTRUMENT_METADATA;# span 6 =   1.871202,   3.803188       
+//INSTRUMENT_METADATA;# span 7 =          1,          1       
+//INSTRUMENT_METADATA;# span 8 =    2.85658,    6.67638       
+//INSTRUMENT_METADATA;# span 9 =    2.87209,    6.65014       
+//INSTRUMENT_METADATA;# span 10 =       2.56,      42.64      
+//INSTRUMENT_METADATA;# span 11 =     0.3162,     1.6876      
+//INSTRUMENT_METADATA;# span 12 =     0.2893,     0.5115      
+//INSTRUMENT_METADATA;# span 13 = 1.0000e-12, 3.9794e+02      
+//INSTRUMENT_METADATA;# span 14 =     0.4365,     2.6729      
+//INSTRUMENT_METADATA;# span 15 =    16.4850,    31.7169      
+//INSTRUMENT_METADATA;# span 16 =    16.5080,    31.7157      
+//INSTRUMENT_METADATA;# span 17 =    -0.2153,     0.1703      
+//INSTRUMENT_METADATA;# span 18 =    12.6738,    23.7372      
+//INSTRUMENT_METADATA;# span 19 =    12.6909,    23.7363      
+//INSTRUMENT_METADATA;# span 20 =      0.991,     47.063      
+//INSTRUMENT_METADATA;# span 21 =      1.006,     47.435      
+//INSTRUMENT_METADATA;# span 22 =      0.003,      0.592      
+//INSTRUMENT_METADATA;# span 23 =    1463.18,    1499.00      
+//INSTRUMENT_METADATA;# span 24 =    1463.23,    1499.00      
+//INSTRUMENT_METADATA;# span 25 = 0.0000e+00, 0.0000e+00      
+//INSTRUMENT_METADATA;# interval = decibars: 0.5              
+//INSTRUMENT_METADATA;# start_time = Nov 13 2017 12:55:09 [NMEA time, first data scan]
+//INSTRUMENT_METADATA;# bad_flag = -9.990e-29
+//INSTRUMENT_METADATA;# <Sensors count="13" >
+//INSTRUMENT_METADATA;#   <sensor Channel="1" >
+//INSTRUMENT_METADATA;#     <!-- Frequency 0, Temperature -->
+//INSTRUMENT_METADATA;#     <TemperatureSensor SensorID="55" >
+//INSTRUMENT_METADATA;#       <SerialNumber>5351</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>16-Jul-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <UseG_J>1</UseG_J>
+//INSTRUMENT_METADATA;#       <A>0.00000000e+000</A>
+//INSTRUMENT_METADATA;#       <B>0.00000000e+000</B>
+//INSTRUMENT_METADATA;#       <C>0.00000000e+000</C>
+//INSTRUMENT_METADATA;#       <D>0.00000000e+000</D>
+//INSTRUMENT_METADATA;#       <F0_Old>0.000</F0_Old>
+//INSTRUMENT_METADATA;#       <G>4.33354868e-003</G>
+//INSTRUMENT_METADATA;#       <H>6.28341990e-004</H>
+//INSTRUMENT_METADATA;#       <I>1.96454944e-005</I>
+//INSTRUMENT_METADATA;#       <J>1.44205343e-006</J>
+//INSTRUMENT_METADATA;#       <F0>1000.000</F0>
+//INSTRUMENT_METADATA;#       <Slope>1.00000000</Slope>
+//INSTRUMENT_METADATA;#       <Offset>0.0000</Offset>
+//INSTRUMENT_METADATA;#     </TemperatureSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="2" >
+//INSTRUMENT_METADATA;#     <!-- Frequency 1, Conductivity -->
+//INSTRUMENT_METADATA;#     <ConductivitySensor SensorID="3" >
+//INSTRUMENT_METADATA;#       <SerialNumber>3941</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>17-Jul-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <UseG_J>1</UseG_J>
+//INSTRUMENT_METADATA;#       <!-- Cell const and series R are applicable only for wide range sensors. -->
+//INSTRUMENT_METADATA;#       <SeriesR>0.0000</SeriesR>
+//INSTRUMENT_METADATA;#       <CellConst>2000.0000</CellConst>
+//INSTRUMENT_METADATA;#       <ConductivityType>0</ConductivityType>
+//INSTRUMENT_METADATA;#       <Coefficients equation="0" >
+//INSTRUMENT_METADATA;#         <A>0.00000000e+000</A>
+//INSTRUMENT_METADATA;#         <B>0.00000000e+000</B>
+//INSTRUMENT_METADATA;#         <C>0.00000000e+000</C>
+//INSTRUMENT_METADATA;#         <D>0.00000000e+000</D>
+//INSTRUMENT_METADATA;#         <M>0.0</M>
+//INSTRUMENT_METADATA;#         <CPcor>-9.57000000e-008</CPcor>
+//INSTRUMENT_METADATA;#       </Coefficients>
+//INSTRUMENT_METADATA;#       <Coefficients equation="1" >
+//INSTRUMENT_METADATA;#         <G>-1.02606387e+001</G>
+//INSTRUMENT_METADATA;#         <H>1.60795490e+000</H>
+//INSTRUMENT_METADATA;#         <I>-1.64752998e-003</I>
+//INSTRUMENT_METADATA;#         <J>2.22862581e-004</J>
+//INSTRUMENT_METADATA;#         <CPcor>-9.57000000e-008</CPcor>
+//INSTRUMENT_METADATA;#         <CTcor>3.2500e-006</CTcor>
+//INSTRUMENT_METADATA;#         <!-- WBOTC not applicable unless ConductivityType = 1. -->
+//INSTRUMENT_METADATA;#         <WBOTC>0.00000000e+000</WBOTC>
+//INSTRUMENT_METADATA;#       </Coefficients>
+//INSTRUMENT_METADATA;#       <Slope>1.00000000</Slope>
+//INSTRUMENT_METADATA;#       <Offset>0.00000</Offset>
+//INSTRUMENT_METADATA;#     </ConductivitySensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="3" >
+//INSTRUMENT_METADATA;#     <!-- Frequency 2, Pressure, Digiquartz with TC -->
+//INSTRUMENT_METADATA;#     <PressureSensor SensorID="45" >
+//INSTRUMENT_METADATA;#       <SerialNumber>1044</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>14-Dec-16</CalibrationDate>
+//INSTRUMENT_METADATA;#       <C1>-9.860530e+003</C1>
+//INSTRUMENT_METADATA;#       <C2>-4.859610e-002</C2>
+//INSTRUMENT_METADATA;#       <C3>2.526990e-003</C3>
+//INSTRUMENT_METADATA;#       <D1>5.661700e-002</D1>
+//INSTRUMENT_METADATA;#       <D2>0.000000e+000</D2>
+//INSTRUMENT_METADATA;#       <T1>3.000165e+001</T1>
+//INSTRUMENT_METADATA;#       <T2>-2.536130e-004</T2>
+//INSTRUMENT_METADATA;#       <T3>3.090200e-006</T3>
+//INSTRUMENT_METADATA;#       <T4>4.120580e-009</T4>
+//INSTRUMENT_METADATA;#       <Slope>1.00010000</Slope>
+//INSTRUMENT_METADATA;#       <Offset>0.46860</Offset>
+//INSTRUMENT_METADATA;#       <T5>0.000000e+000</T5>
+//INSTRUMENT_METADATA;#       <AD590M>1.284700e-002</AD590M>
+//INSTRUMENT_METADATA;#       <AD590B>-9.290830e+000</AD590B>
+//INSTRUMENT_METADATA;#     </PressureSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="4" >
+//INSTRUMENT_METADATA;#     <!-- Frequency 3, Temperature, 2 -->
+//INSTRUMENT_METADATA;#     <TemperatureSensor SensorID="55" >
+//INSTRUMENT_METADATA;#       <SerialNumber>5355</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>16-Jul-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <UseG_J>1</UseG_J>
+//INSTRUMENT_METADATA;#       <A>0.00000000e+000</A>
+//INSTRUMENT_METADATA;#       <B>0.00000000e+000</B>
+//INSTRUMENT_METADATA;#       <C>0.00000000e+000</C>
+//INSTRUMENT_METADATA;#       <D>0.00000000e+000</D>
+//INSTRUMENT_METADATA;#       <F0_Old>0.000</F0_Old>
+//INSTRUMENT_METADATA;#       <G>4.39734208e-003</G>
+//INSTRUMENT_METADATA;#       <H>6.40996843e-004</H>
+//INSTRUMENT_METADATA;#       <I>2.25657229e-005</I>
+//INSTRUMENT_METADATA;#       <J>2.03815767e-006</J>
+//INSTRUMENT_METADATA;#       <F0>1000.000</F0>
+//INSTRUMENT_METADATA;#       <Slope>1.00000000</Slope>
+//INSTRUMENT_METADATA;#       <Offset>0.0000</Offset>
+//INSTRUMENT_METADATA;#     </TemperatureSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="5" >
+//INSTRUMENT_METADATA;#     <!-- Frequency 4, Conductivity, 2 -->
+//INSTRUMENT_METADATA;#     <ConductivitySensor SensorID="3" >
+//INSTRUMENT_METADATA;#       <SerialNumber>3943</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>17-Jul-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <UseG_J>1</UseG_J>
+//INSTRUMENT_METADATA;#       <!-- Cell const and series R are applicable only for wide range sensors. -->
+//INSTRUMENT_METADATA;#       <SeriesR>0.0000</SeriesR>
+//INSTRUMENT_METADATA;#       <CellConst>2000.0000</CellConst>
+//INSTRUMENT_METADATA;#       <ConductivityType>0</ConductivityType>
+//INSTRUMENT_METADATA;#       <Coefficients equation="0" >
+//INSTRUMENT_METADATA;#         <A>0.00000000e+000</A>
+//INSTRUMENT_METADATA;#         <B>0.00000000e+000</B>
+//INSTRUMENT_METADATA;#         <C>0.00000000e+000</C>
+//INSTRUMENT_METADATA;#         <D>0.00000000e+000</D>
+//INSTRUMENT_METADATA;#         <M>0.0</M>
+//INSTRUMENT_METADATA;#         <CPcor>-9.57000000e-008</CPcor>
+//INSTRUMENT_METADATA;#       </Coefficients>
+//INSTRUMENT_METADATA;#       <Coefficients equation="1" >
+//INSTRUMENT_METADATA;#         <G>-1.03008068e+001</G>
+//INSTRUMENT_METADATA;#         <H>1.61622390e+000</H>
+//INSTRUMENT_METADATA;#         <I>-1.43836136e-003</I>
+//INSTRUMENT_METADATA;#         <J>2.05891922e-004</J>
+//INSTRUMENT_METADATA;#         <CPcor>-9.57000000e-008</CPcor>
+//INSTRUMENT_METADATA;#         <CTcor>3.2500e-006</CTcor>
+//INSTRUMENT_METADATA;#         <!-- WBOTC not applicable unless ConductivityType = 1. -->
+//INSTRUMENT_METADATA;#         <WBOTC>0.00000000e+000</WBOTC>
+//INSTRUMENT_METADATA;#       </Coefficients>
+//INSTRUMENT_METADATA;#       <Slope>1.00000000</Slope>
+//INSTRUMENT_METADATA;#       <Offset>0.00000</Offset>
+//INSTRUMENT_METADATA;#     </ConductivitySensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="6" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 0, Oxygen, SBE 43 -->
+//INSTRUMENT_METADATA;#     <OxygenSensor SensorID="38" >
+//INSTRUMENT_METADATA;#       <SerialNumber>0732</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>12-Nov-16</CalibrationDate>
+//INSTRUMENT_METADATA;#       <Use2007Equation>1</Use2007Equation>
+//INSTRUMENT_METADATA;#       <CalibrationCoefficients equation="0" >
+//INSTRUMENT_METADATA;#         <!-- Coefficients for Owens-Millard equation. -->
+//INSTRUMENT_METADATA;#         <Boc>0.0000</Boc>
+//INSTRUMENT_METADATA;#         <Soc>0.0000e+000</Soc>
+//INSTRUMENT_METADATA;#         <offset>0.0000</offset>
+//INSTRUMENT_METADATA;#         <Pcor>0.00e+000</Pcor>
+//INSTRUMENT_METADATA;#         <Tcor>0.0000</Tcor>
+//INSTRUMENT_METADATA;#         <Tau>0.0</Tau>
+//INSTRUMENT_METADATA;#       </CalibrationCoefficients>
+//INSTRUMENT_METADATA;#       <CalibrationCoefficients equation="1" >
+//INSTRUMENT_METADATA;#         <!-- Coefficients for Sea-Bird equation - SBE calibration in 2007 and later. -->
+//INSTRUMENT_METADATA;#         <Soc>4.1726e-001</Soc>
+//INSTRUMENT_METADATA;#         <offset>-0.4966</offset>
+//INSTRUMENT_METADATA;#         <A>-4.3976e-003</A>
+//INSTRUMENT_METADATA;#         <B> 1.9128e-004</B>
+//INSTRUMENT_METADATA;#         <C>-2.2963e-006</C>
+//INSTRUMENT_METADATA;#         <D0> 2.5826e+000</D0>
+//INSTRUMENT_METADATA;#         <D1> 1.92634e-004</D1>
+//INSTRUMENT_METADATA;#         <D2>-4.64803e-002</D2>
+//INSTRUMENT_METADATA;#         <E> 3.6000e-002</E>
+//INSTRUMENT_METADATA;#         <Tau20> 1.6300</Tau20>
+//INSTRUMENT_METADATA;#         <H1>-3.3000e-002</H1>
+//INSTRUMENT_METADATA;#         <H2> 5.0000e+003</H2>
+//INSTRUMENT_METADATA;#         <H3> 1.4500e+003</H3>
+//INSTRUMENT_METADATA;#       </CalibrationCoefficients>
+//INSTRUMENT_METADATA;#     </OxygenSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="7" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 1, Oxygen, SBE 43, 2 -->
+//INSTRUMENT_METADATA;#     <OxygenSensor SensorID="38" >
+//INSTRUMENT_METADATA;#       <SerialNumber>1243</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>28-Oct-16</CalibrationDate>
+//INSTRUMENT_METADATA;#       <Use2007Equation>1</Use2007Equation>
+//INSTRUMENT_METADATA;#       <CalibrationCoefficients equation="0" >
+//INSTRUMENT_METADATA;#         <!-- Coefficients for Owens-Millard equation. -->
+//INSTRUMENT_METADATA;#         <Boc>0.0000</Boc>
+//INSTRUMENT_METADATA;#         <Soc>0.0000e+000</Soc>
+//INSTRUMENT_METADATA;#         <offset>0.0000</offset>
+//INSTRUMENT_METADATA;#         <Pcor>0.00e+000</Pcor>
+//INSTRUMENT_METADATA;#         <Tcor>0.0000</Tcor>
+//INSTRUMENT_METADATA;#         <Tau>0.0</Tau>
+//INSTRUMENT_METADATA;#       </CalibrationCoefficients>
+//INSTRUMENT_METADATA;#       <CalibrationCoefficients equation="1" >
+//INSTRUMENT_METADATA;#         <!-- Coefficients for Sea-Bird equation - SBE calibration in 2007 and later. -->
+//INSTRUMENT_METADATA;#         <Soc>5.6887e-001</Soc>
+//INSTRUMENT_METADATA;#         <offset>-0.5000</offset>
+//INSTRUMENT_METADATA;#         <A>-4.1561e-003</A>
+//INSTRUMENT_METADATA;#         <B> 2.4526e-004</B>
+//INSTRUMENT_METADATA;#         <C>-4.4039e-006</C>
+//INSTRUMENT_METADATA;#         <D0> 2.5826e+000</D0>
+//INSTRUMENT_METADATA;#         <D1> 1.92634e-004</D1>
+//INSTRUMENT_METADATA;#         <D2>-4.64803e-002</D2>
+//INSTRUMENT_METADATA;#         <E> 3.6000e-002</E>
+//INSTRUMENT_METADATA;#         <Tau20> 1.1200</Tau20>
+//INSTRUMENT_METADATA;#         <H1>-3.3000e-002</H1>
+//INSTRUMENT_METADATA;#         <H2> 5.0000e+003</H2>
+//INSTRUMENT_METADATA;#         <H3> 1.4500e+003</H3>
+//INSTRUMENT_METADATA;#       </CalibrationCoefficients>
+//INSTRUMENT_METADATA;#     </OxygenSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="8" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 2, Fluorometer, WET Labs ECO-AFL/FL -->
+//INSTRUMENT_METADATA;#     <FluoroWetlabECO_AFL_FL_Sensor SensorID="20" >
+//INSTRUMENT_METADATA;#       <SerialNumber>FLNTURTD-2288</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>19-Aug-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <ScaleFactor>1.00000000e+001</ScaleFactor>
+//INSTRUMENT_METADATA;#       <!-- Dark output -->
+//INSTRUMENT_METADATA;#       <Vblank>0.0570</Vblank>
+//INSTRUMENT_METADATA;#     </FluoroWetlabECO_AFL_FL_Sensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="9" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 3, Turbidity Meter, WET Labs, ECO-NTU -->
+//INSTRUMENT_METADATA;#     <TurbidityMeter SensorID="67" >
+//INSTRUMENT_METADATA;#       <SerialNumber>FLNTURTD-2288</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>19-Aug-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <ScaleFactor>5.000000</ScaleFactor>
+//INSTRUMENT_METADATA;#       <!-- Dark output -->
+//INSTRUMENT_METADATA;#       <DarkVoltage>0.060000</DarkVoltage>
+//INSTRUMENT_METADATA;#     </TurbidityMeter>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="10" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 4, Fluorometer, WET Labs ECO-AFL/FL, 2 -->
+//INSTRUMENT_METADATA;#     <FluoroWetlabECO_AFL_FL_Sensor SensorID="20" >
+//INSTRUMENT_METADATA;#       <SerialNumber>FLPCRTD-2299</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>24-Jun-11</CalibrationDate>
+//INSTRUMENT_METADATA;#       <ScaleFactor>1.20000000e+001</ScaleFactor>
+//INSTRUMENT_METADATA;#       <!-- Dark output -->
+//INSTRUMENT_METADATA;#       <Vblank>0.0560</Vblank>
+//INSTRUMENT_METADATA;#     </FluoroWetlabECO_AFL_FL_Sensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="11" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 5, Altimeter -->
+//INSTRUMENT_METADATA;#     <AltimeterSensor SensorID="0" >
+//INSTRUMENT_METADATA;#       <SerialNumber>53447</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>10-Sep-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <ScaleFactor>15.000</ScaleFactor>
+//INSTRUMENT_METADATA;#       <Offset>0.000</Offset>
+//INSTRUMENT_METADATA;#     </AltimeterSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="12" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 6, PAR/Irradiance, Biospherical/Licor -->
+//INSTRUMENT_METADATA;#     <PAR_BiosphericalLicorChelseaSensor SensorID="42" >
+//INSTRUMENT_METADATA;#       <SerialNumber>70374</SerialNumber>
+//INSTRUMENT_METADATA;#       <CalibrationDate>25-Sep-14</CalibrationDate>
+//INSTRUMENT_METADATA;#       <M>1.00000000</M>
+//INSTRUMENT_METADATA;#       <B>0.00000000</B>
+//INSTRUMENT_METADATA;#       <CalibrationConstant>12005000000.00000000</CalibrationConstant>
+//INSTRUMENT_METADATA;#       <Multiplier>1.00000000</Multiplier>
+//INSTRUMENT_METADATA;#       <Offset>-0.08575215</Offset>
+//INSTRUMENT_METADATA;#     </PAR_BiosphericalLicorChelseaSensor>
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;#   <sensor Channel="13" >
+//INSTRUMENT_METADATA;#     <!-- A/D voltage 7, Free -->
+//INSTRUMENT_METADATA;#   </sensor>
+//INSTRUMENT_METADATA;# </Sensors>
+//INSTRUMENT_METADATA;# datcnv_date = Nov 13 2017 15:09:06, 7.22.4 [datcnv_vars = 15]
+//INSTRUMENT_METADATA;# datcnv_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.hex C:\ctd\temp\SBE09_1044_20171113_1254_34_07_0042.XMLCON
+//INSTRUMENT_METADATA;# datcnv_skipover = 0
+//INSTRUMENT_METADATA;# datcnv_ox_hysteresis_correction = yes
+//INSTRUMENT_METADATA;# datcnv_ox_tau_correction = yes
+//INSTRUMENT_METADATA;# filter_date = Nov 13 2017 15:09:08, 7.22.4
+//INSTRUMENT_METADATA;# filter_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# filter_low_pass_tc_A = 0.030
+//INSTRUMENT_METADATA;# filter_low_pass_tc_B = 0.150
+//INSTRUMENT_METADATA;# filter_low_pass_A_vars = T2-T190C sbeox1ML/L flECO-AFL1 par turbWETntu0
+//INSTRUMENT_METADATA;# filter_low_pass_B_vars = prDM
+//INSTRUMENT_METADATA;# alignctd_date = Nov 13 2017 15:09:12, 7.22.4
+//INSTRUMENT_METADATA;# alignctd_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# alignctd_adv = c0S/m 0.073, c1S/m 0.073, sbeox0ML/L 3.000, sbeox1ML/L 3.000                                                                                                                                                        
+//INSTRUMENT_METADATA;# celltm_date = Nov 13 2017 15:09:14, 7.22.4
+//INSTRUMENT_METADATA;# celltm_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# celltm_alpha = 0.0300, 0.0300
+//INSTRUMENT_METADATA;# celltm_tau = 7.0000, 7.0000
+//INSTRUMENT_METADATA;# celltm_temp_sensor_use_for_cond = primary, secondary
+//INSTRUMENT_METADATA;# loopedit_date = Nov 13 2017 15:09:16, 7.22.4
+//INSTRUMENT_METADATA;# loopedit_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# loopedit_minVelocity = 0.150                                                                                            
+//INSTRUMENT_METADATA;# loopedit_surfaceSoak: minDepth = 4.0, maxDepth = 15, useDeckPress = 0                                                   
+//INSTRUMENT_METADATA;# loopedit_excl_bad_scans = yes
+//INSTRUMENT_METADATA;# Derive_date = Nov 13 2017 15:09:19, 7.22.4 [derive_vars = 10]
+//INSTRUMENT_METADATA;# Derive_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.XMLCON
+//INSTRUMENT_METADATA;# derive_time_window_dzdt = seconds: 2
+//INSTRUMENT_METADATA;# binavg_date = Nov 13 2017 15:09:22, 7.22.4
+//INSTRUMENT_METADATA;# binavg_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# binavg_bintype = decibars
+//INSTRUMENT_METADATA;# binavg_binsize = 0.5
+//INSTRUMENT_METADATA;# binavg_excl_bad_scans = yes
+//INSTRUMENT_METADATA;# binavg_skipover = 0
+//INSTRUMENT_METADATA;# binavg_surface_bin = no, min = 0.000, max = 0.000, value = 0.000
+//INSTRUMENT_METADATA;# split_date = Nov 13 2017 15:09:24, 7.22.4
+//INSTRUMENT_METADATA;# split_in = C:\ctd\temp\sbe09_1044_20171113_1254_34_07_0042.cnv
+//INSTRUMENT_METADATA;# split_excl_bad_scans = yes
+//INSTRUMENT_METADATA;# file_type = ascii
+//INSTRUMENT_METADATA;*END*
+YEAR	MONTH	DAY	HOUR	MINUTE	SECOND	CRUISE	STATION	LATITUDE_DD	LONGITUDE_DD	DEPH [m]	Q_DEPH	PRES_CTD [dbar]	Q_PRES_CTD	CNDC_CTD [S/m]	Q_CNDC_CTD	CNDC2_CTD [S/m]	Q_CNDC2_CTD	SALT_CTD [psu (PSS-78)]	Q_SALT_CTD	SALT2_CTD [psu (PSS-78)]	Q_SALT2_CTD	TEMP_CTD [°C (ITS-90)]	Q_TEMP_CTD	TEMP2_CTD [°C (ITS-90)]	Q_TEMP2_CTD	DOXY_CTD [ml/l]	Q_DOXY_CTD	DOXY2_CTD [ml/l]	Q_DOXY2_CTD	PAR_CTD [µE/(cm2 sec)]	Q_PAR_CTD	CHLFLUO_CTD [mg/m3]	Q_CHLFLUO_CTD	TURB_CTD [NTU]	Q_TURB_CTD	PHYC_CTD [ppb]	Q_PHYC_CTD	ALTM_CTD [m]	Q_ALTM_CTD	DESC_RATE_CTD [m/s]	Q_DESC_RATE_CTD	SCAN_CTD []	Q_SCAN_CTD	PUMP_CTD []	Q_PUMP_CTD	DENS_CTD [kg/m3]	Q_DENS_CTD	DENS2_CTD [kg/m3]	Q_DENS2_CTD	SVEL_CTD [m/s]	Q_SVEL_CTD	SVEL2_CTD [m/s]	Q_SVEL2_CTD
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	1.006		1.000		1.90718		1.91182		16.8003		16.8465		9.0165		9.0128		6.6764		6.6501		3.979e+02		1.3740		0.4365000		0.4128		2.62		0.158		5871		1		12.9052		12.9417		1464.02		1464.06	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	1.508		1.500		1.86850		1.87120		16.4850		16.5080		8.8961		8.9026		6.6584		6.6133		3.578e+02		1.3357		0.4866000		0.4382		2.56		0.428		6101		1		12.6738		12.6909		1463.18		1463.23	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	2.011		2.000		1.88781		1.88530		16.6522		16.6293		8.9353		8.9328		6.6407		6.5998		1.018e+02		1.3611		0.5388000		0.4403		2.98		0.462		6122		1		12.7995		12.7819		1463.54		1463.50	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	2.514		2.500		1.92488		1.91356		16.9751		16.8765		9.0059		8.9846		6.6078		6.5915		8.093e+01		1.4419		0.5675000		0.4000		2.93		0.435		6150		1		13.0428		12.9684		1464.22		1464.02	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	3.017		3.000		1.98425		1.98437		17.4783		17.4840		9.1456		9.1361		6.5280		6.5354		5.881e+01		1.3813		0.5585000		0.3930		3.63		0.474		6176		1		13.4180		13.4235		1465.38		1465.35	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	3.519		3.500		2.01749		2.02857		17.7618		17.8540		9.2181		9.2466		6.4055		6.4260		5.165e+01		1.4010		0.5754000		0.4392		3.82		0.456		6202		1		13.6299		13.6982		1466.01		1466.23	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	4.022		4.000		2.03526		2.03734		17.9076		17.9244		9.2679		9.2742		6.3280		6.3138		4.323e+01		1.4372		0.6012000		0.5059		3.79		0.493		6228		1		13.7373		13.7496		1466.39		1466.44	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	4.524		4.500		2.03690		2.04324		17.9228		17.9768		9.2687		9.2825		6.3605		6.3523		3.925e+01		1.4079		0.5888000		0.5115		3.73		0.537		6251		1		13.7490		13.7893		1466.42		1466.54	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	5.026		5.000		2.11286		2.12140		18.5783		18.6527		9.4135		9.4283		6.2731		6.3089		3.136e+01		1.4202		0.5803000		0.4949		3.77		0.548		6272		1		14.2410		14.2970		1467.78		1467.93	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	5.528		5.500		2.26118		2.27673		19.8373		19.9601		9.7228		9.7708		6.1347		6.1938		2.721e+01		1.4946		0.6060000		0.4832		4.04		0.563		6294		1		15.1801		15.2692		1470.49		1470.82	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	6.030		6.000		2.31703		2.32526		20.2864		20.3521		9.8796		9.9031		6.0521		6.0974		2.241e+01		1.6195		0.6174000		0.4560		3.99		0.577		6315		1		15.5081		15.5560		1471.64		1471.80	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	6.531		6.500		2.35322		2.35875		20.5812		20.6280		9.9714		9.9822		5.9933		6.0409		1.949e+01		1.5153		0.6043000		0.4694		3.88		0.576		6336		1		15.7246		15.7596		1472.35		1472.44	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	7.032		7.000		2.36745		2.37030		20.6985		20.7208		10.0047		10.0135		5.9749		5.9928		1.654e+01		1.5058		0.6173000		0.4704		19.55		0.576		6357		1		15.8112		15.8273		1472.62		1472.68	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	7.534		7.500		2.36310		2.37076		20.6667		20.7302		9.9871		10.0044		6.0186		5.9932		1.456e+01		1.5622		0.6279000		0.4755		42.57		0.577		6378		1		15.7889		15.8359		1472.52		1472.67	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	8.035		8.000		2.37709		2.37542		20.7851		20.7702		10.0142		10.0123		5.9537		5.9407		1.262e+01		1.6186		0.6087000		0.4859		42.64		0.572		6398		1		15.8772		15.8659		1472.78		1472.75	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	8.536		8.500		2.41784		2.43109		21.1201		21.2303		10.1093		10.1375		5.8897		5.9491		1.124e+01		1.6876		0.6317000		0.4884		42.18		0.560		6420		1		16.1241		16.2057		1473.54		1473.78	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	9.037		9.000		2.42610		2.44745		21.1919		21.3622		10.1219		10.1798		5.7840		5.9028		9.903e+00		1.5025		0.5934000		0.4654		41.70		0.554		6441		1		16.1781		16.3022		1473.69		1474.11	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	9.538		9.500		2.54144		2.55908		22.1204		22.2544		10.4146		10.4715		5.6504		5.7475		8.516e+00		1.4947		0.5910000		0.4912		41.21		0.551		6463		1		16.8570		16.9526		1475.90		1476.27	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	10.039		10.000		2.58290		2.57259		22.4283		22.3428		10.5590		10.5380		5.6000		5.6222		7.465e+00		1.4621		0.5945000		0.4726		40.75		0.533		6485		1		17.0747		17.0115		1476.81		1476.63	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	10.540		10.500		2.58600		2.59045		22.4415		22.4774		10.5855		10.5961		5.5838		5.5905		6.393e+00		1.4204		0.5981000		0.4356		40.25		0.522		6508		1		17.0810		17.1073		1476.93		1477.02	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	11.041		11.000		2.61189		2.61943		22.6485		22.7110		10.6497		10.6646		5.5244		5.5664		5.530e+00		1.4070		0.6085000		0.4365		39.75		0.524		6531		1		17.2320		17.2783		1477.43		1477.56	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	11.541		11.500		2.62963		2.63941		22.7854		22.8548		10.7011		10.7390		5.4951		5.5376		4.822e+00		1.3507		0.6215000		0.4238		39.25		0.518		6554		1		17.3305		17.3786		1477.79		1478.01	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	12.042		12.000		2.64129		2.64818		22.8779		22.9298		10.7305		10.7523		5.5032		5.5174		4.201e+00		1.2656		0.6397000		0.3953		38.69		0.509		6577		1		17.3978		17.4348		1478.01		1478.16	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	12.542		12.500		2.66231		2.65452		23.0379		22.9771		10.7940		10.7730		5.4774		5.4745		3.726e+00		1.3815		0.6545000		0.4931		38.19		0.494		6601		1		17.5122		17.4683		1478.45		1478.30	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	13.043		13.000		2.67094		2.66869		23.1025		23.0828		10.8216		10.8190		5.4133		5.4319		3.321e+00		1.3836		0.6367000		0.4745		37.67		0.479		6626		1		17.5581		17.5432		1478.63		1478.60	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	13.543		13.500		2.66840		2.67095		23.0790		23.1001		10.8203		10.8253		5.4000		5.4324		2.977e+00		1.3719		0.6199000		0.4826		37.17		0.471		6651		1		17.5401		17.5557		1478.61		1478.65	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	14.044		14.000		2.67932		2.67669		23.1677		23.1447		10.8440		10.8409		5.3049		5.3281		2.653e+00		1.2143		0.6427000		0.4392		36.69		0.452		6677		1		17.6052		17.5879		1478.81		1478.77	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	14.544		14.500		2.73421		2.73486		23.5853		23.5863		11.0069		11.0151		5.1520		5.1833		2.349e+00		1.2131		0.6488000		0.4513		36.19		0.446		6704		1		17.9038		17.9033		1479.91		1479.94	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	15.044		15.000		2.81995		2.79133		24.2417		24.0263		11.2468		11.1620		4.8774		4.9659		2.088e+00		1.1077		0.7041000		0.4314		35.72		0.453		6731		1		18.3744		18.2211		1481.57		1481.01	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	15.544		15.500		2.93024		2.95077		25.0644		25.2161		11.5764		11.6381		4.5314		4.7050		1.845e+00		1.0087		0.7482000		0.4147		35.21		0.454		6757		1		18.9580		19.0653		1483.74		1484.14	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	16.044		16.000		2.98914		2.99074		25.5085		25.5193		11.7395		11.7458		4.4172		4.5465		1.638e+00		0.7446		0.9364000		0.3993		34.73		0.445		6784		1		19.2747		19.2821		1484.85		1484.89	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	16.544		16.500		3.03607		3.03309		25.8805		25.8551		11.8403		11.8364		4.3915		4.4698		1.463e+00		0.6807		1.0043000		0.3726		34.24		0.438		6811		1		19.5457		19.5266		1485.66		1485.62	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	17.043		17.000		3.04396		3.04401		25.9380		25.9378		11.8641		11.8651		4.4244		4.4773		1.314e+00		0.6587		1.0766000		0.3541		33.75		0.444		6839		1		19.5861		19.5858		1485.82		1485.82	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	17.543		17.500		3.04934		3.04881		25.9827		25.9774		11.8723		11.8728		4.4563		4.4799		1.183e+00		0.6467		1.1328000		0.3547		33.30		0.467		6865		1		19.6193		19.6152		1485.91		1485.91	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	18.042		18.000		3.05617		3.05601		26.0349		26.0328		11.8893		11.8903		4.4587		4.4695		1.050e+00		0.6673		1.1690000		0.3411		32.80		0.470		6890		1		19.6568		19.6550		1486.04		1486.04	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	18.542		18.500		3.05986		3.05984		26.0641		26.0634		11.8970		11.8978		4.4665		4.4692		9.142e-01		0.7127		1.1385000		0.3978		32.32		0.474		6916		1		19.6781		19.6774		1486.11		1486.11	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	19.041		19.000		3.06412		3.06320		26.1011		26.0931		11.9011		11.9002		4.4475		4.4703		7.992e-01		0.7077		1.1613000		0.3884		31.83		0.490		6941		1		19.7061		19.7000		1486.18		1486.17	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	19.540		19.500		3.07845		3.07824		26.2115		26.2095		11.9356		11.9357		4.3804		4.4174		6.820e-01		0.7036		1.2023000		0.3364		31.38		0.509		6965		1		19.7856		19.7840		1486.44		1486.44	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	20.040		20.000		3.09034		3.09013		26.2972		26.2947		11.9725		11.9733		4.3129		4.3503		5.873e-01		0.7079		1.2141000		0.3486		30.92		0.518		6988		1		19.8455		19.8435		1486.68		1486.68	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	20.539		20.500		3.11051		3.11142		26.4551		26.4621		12.0171		12.0192		4.2159		4.2627		5.058e-01		0.6866		1.2643000		0.3414		30.47		0.538		7011		1		19.9600		19.9650		1487.03		1487.05	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	21.038		21.000		3.14114		3.14173		26.6840		26.6870		12.0995		12.1029		4.1490		4.1991		4.299e-01		0.6262		1.3845000		0.3498		30.00		0.555		7033		1		20.1228		20.1246		1487.60		1487.61	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	21.538		21.500		3.15688		3.15698		26.7973		26.7969		12.1475		12.1493		4.1307		4.1715		3.571e-01		0.5752		1.4121000		0.3763		29.55		0.560		7054		1		20.2020		20.2014		1487.91		1487.92	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	22.037		22.000		3.17691		3.17763		26.9441		26.9488		12.2043		12.2073		4.0994		4.1374		2.995e-01		0.5524		1.3539000		0.3185		28.96		0.558		7076		1		20.3056		20.3087		1488.29		1488.31	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	22.536		22.500		3.19686		3.19720		27.0952		27.0967		12.2540		12.2563		4.0322		4.0759		2.481e-01		0.5340		1.2618000		0.3990		28.48		0.562		7097		1		20.4138		20.4145		1488.65		1488.66	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	23.035		23.000		3.20542		3.20484		27.1696		27.1644		12.2617		12.2616		3.9286		3.9833		1.959e-01		0.5212		1.2943000		0.3633		28.00		0.564		7118		1		20.4700		20.4659		1488.77		1488.77	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	23.534		23.500		3.23853		3.23848		27.4304		27.4283		12.3295		12.3318		3.8300		3.8967		1.519e-01		0.5208		1.5652000		0.3339		27.54		0.558		7140		1		20.6597		20.6576		1489.33		1489.33	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	24.033		24.000		3.26223		3.26146		27.6142		27.6075		12.3814		12.3807		3.7738		3.8380		1.184e-01		0.5001		1.8627000		0.3443		27.06		0.559		7161		1		20.7925		20.7875		1489.73		1489.72	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	24.532		24.500		3.27774		3.27729		27.7349		27.7307		12.4145		12.4146		3.7559		3.8032		9.215e-02		0.5027		1.8242000		0.4032		26.57		0.564		7183		1		20.8800		20.8766		1490.00		1489.99	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	25.031		25.000		3.28362		3.28320		27.7804		27.7762		12.4274		12.4276		3.7599		3.7955		6.011e-02		0.4848		1.8770000		0.3636		26.11		0.564		7204		1		20.9128		20.9095		1490.11		1490.10	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	25.529		25.500		3.28775		3.28768		27.8123		27.8111		12.4362		12.4369		3.7575		3.7813		3.368e-02		0.4840		1.8939000		0.3279		25.61		0.559		7225		1		20.9359		20.9348		1490.18		1490.18	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	26.028		26.000		3.29721		3.29698		27.8859		27.8831		12.4561		12.4570		3.7274		3.7391		1.516e-02		0.4945		1.8742000		0.3659		25.16		0.560		7247		1		20.9892		20.9869		1490.35		1490.35	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	26.527		26.500		3.30713		3.30712		27.9643		27.9637		12.4754		12.4761		3.7064		3.7152		8.397e-04		0.5046		1.8483000		0.3655		24.68		0.564		7268		1		21.0464		21.0457		1490.51		1490.52	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	27.026		27.000		3.32477		3.32357		28.1087		28.0974		12.5030		12.5031		3.6049		3.6424		3.516e-06		0.5139		1.8702000		0.3256		24.23		0.563		7289		1		21.1530		21.1442		1490.79		1490.77	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	27.524		27.500		3.39087		3.38750		28.6283		28.6011		12.6341		12.6283		3.4477		3.5172		1.000e-12		0.4688		1.9563000		0.3490		23.72		0.560		7311		1		21.5309		21.5109		1491.86		1491.81	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	28.023		28.000		3.42719		3.42555		28.9004		28.8853		12.7226		12.7224		3.3083		3.3923		1.000e-12		0.4566		2.0027000		0.3662		23.26		0.561		7332		1		21.7249		21.7133		1492.50		1492.48	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	28.521		28.500		3.48782		3.48726		29.3657		29.3613		12.8536		12.8525		3.1906		3.2848		1.000e-12		0.4489		2.0875000		0.3556		22.79		0.570		7354		1		22.0601		22.0569		1493.50		1493.49	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	29.019		29.000		3.52411		3.52548		29.6336		29.6426		12.9444		12.9491		3.1125		3.2145		1.000e-12		0.4240		2.1806000		0.3361		22.32		0.575		7374		1		22.2502		22.2562		1494.13		1494.16	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	29.518		29.500		3.55384		3.55449		29.8476		29.8503		13.0248		13.0292		3.0855		3.1764		1.000e-12		0.3829		2.2431000		0.3332		21.87		0.575		7395		1		22.4003		22.4015		1494.67		1494.68	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	30.016		30.000		3.56546		3.56693		29.9345		29.9459		13.0518		13.0547		3.0946		3.1637		1.000e-12		0.3953		2.1406000		0.3930		21.39		0.578		7416		1		22.4623		22.4705		1494.87		1494.89	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	30.514		30.500		3.57660		3.57896		30.0202		30.0363		13.0744		13.0819		3.1103		3.1492		1.000e-12		0.3738		2.1835000		0.3389		20.91		0.582		7437		1		22.5242		22.5352		1495.05		1495.10	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	31.012		31.000		3.59539		3.59260		30.1635		30.1409		13.1144		13.1102		3.1114		3.1332		1.000e-12		0.3471		2.1196000		0.3540		20.45		0.586		7457		1		22.6273		22.6106		1495.37		1495.32	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	31.510		31.500		3.60429		3.60260		30.2281		30.2149		13.1371		13.1340		3.0956		3.1263		1.000e-12		0.3396		2.1313000		0.3667		20.00		0.592		7478		1		22.6728		22.6632		1495.53		1495.50	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	32.008		32.000		3.61158		3.61176		30.2826		30.2839		13.1538		13.1542		3.0771		3.1118		1.000e-12		0.3487		2.2018000		0.3804		19.51		0.588		7498		1		22.7117		22.7126		1495.66		1495.66	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	32.506		32.500		3.61600		3.61538		30.3155		30.3093		13.1638		13.1644		3.0769		3.1023		1.000e-12		0.3601		2.1180000		0.3950		19.03		0.572		7519		1		22.7352		22.7303		1495.74		1495.73	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	33.004		33.000		3.61866		3.61935		30.3353		30.3404		13.1699		13.1716		3.0737		3.0995		1.000e-12		0.3609		2.0770000		0.3699		18.56		0.565		7540		1		22.7493		22.7529		1495.79		1495.80	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	33.501		33.500		3.63615		3.63682		30.4709		30.4747		13.2038		13.2068		3.0489		3.0711		1.000e-12		0.3345		2.1327000		0.3854		18.09		0.566		7561		1		22.8475		22.8499		1496.07		1496.08	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	33.999		34.000		3.64636		3.64644		30.5430		30.5428		13.2321		13.2333		3.0121		3.0364		1.000e-12		0.3371		2.1418000		0.3884		17.66		0.575		7582		1		22.8978		22.8974		1496.26		1496.26	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	34.497		34.500		3.65211		3.65198		30.5866		30.5848		13.2442		13.2450		2.9767		3.0010		1.000e-12		0.3481		2.1588000		0.3676		17.18		0.581		7603		1		22.9292		22.9276		1496.36		1496.36	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	34.995		35.000		3.66359		3.66273		30.6743		30.6663		13.2678		13.2677		2.9490		2.9787		1.000e-12		0.3498		2.2511000		0.2893		16.69		0.576		7623		1		22.9923		22.9862		1496.55		1496.54	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	35.493		35.500		3.67385		3.67324		30.7510		30.7457		13.2908		13.2903		2.9585		2.9835		1.000e-12		0.3373		2.1913000		0.3432		16.24		0.572		7645		1		23.0471		23.0431		1496.72		1496.72	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	35.991		36.000		3.67665		3.67671		30.7717		30.7714		13.2971		13.2983		2.9697		2.9871		1.000e-12		0.3488		2.3537000		0.3273		15.72		0.578		7665		1		23.0619		23.0614		1496.78		1496.78	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	36.488		36.500		3.68663		3.68709		30.8487		30.8510		13.3166		13.3190		2.9300		2.9526		1.000e-12		0.3382		2.3291000		0.3182		15.25		0.589		7686		1		23.1175		23.1189		1496.94		1496.95	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	36.986		37.000		3.70034		3.70047		30.9500		30.9500		13.3486		13.3501		2.8887		2.9169		1.000e-12		0.3293		2.3526000		0.3184		14.79		0.584		7706		1		23.1896		23.1893		1497.18		1497.18	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	37.484		37.500		3.70415		3.70355		30.9770		30.9717		13.3588		13.3585		2.8827		2.9098		1.000e-12		0.3376		2.4622000		0.3069		14.32		0.578		7727		1		23.2084		23.2044		1497.25		1497.24	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	37.982		38.000		3.71008		3.70956		31.0215		31.0171		13.3717		13.3711		2.8929		2.9138		1.000e-12		0.3272		2.2463000		0.3192		13.85		0.577		7748		1		23.2403		23.2370		1497.36		1497.35	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	38.479		38.500		3.72288		3.72276		31.1180		31.1164		13.3990		13.3996		2.8903		2.9069		1.000e-12		0.3397		2.3039000		0.3208		13.39		0.575		7769		1		23.3094		23.3081		1497.57		1497.57	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	38.977		39.000		3.73441		3.73503		31.2045		31.2087		13.4241		13.4259		2.8879		2.8994		1.000e-12		0.3325		2.2352000		0.3211		12.87		0.573		7790		1		23.3713		23.3743		1497.76		1497.77	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	39.475		39.500		3.74075		3.74069		31.2504		31.2499		13.4398		13.4397		2.8928		2.9010		1.000e-12		0.3272		2.2908000		0.3296		12.39		0.569		7811		1		23.4037		23.4034		1497.88		1497.88	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	39.972		40.000		3.74529		3.74513		31.2854		31.2845		13.4483		13.4475		2.8961		2.9088		1.000e-12		0.3306		2.3553000		0.4083		11.96		0.569		7832		1		23.4291		23.4286		1497.95		1497.95	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	40.470		40.500		3.75942		3.75975		31.3914		31.3941		13.4788		13.4793		2.8909		2.9050		1.000e-12		0.3404		2.2029000		0.3838		11.51		0.571		7853		1		23.5050		23.5069		1498.19		1498.19	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	40.967		41.000		3.76239		3.76228		31.4120		31.4110		13.4871		13.4870		2.8879		2.8996		1.000e-12		0.3376		2.6729000		0.3899		11.04		0.568		7874		1		23.5192		23.5185		1498.25		1498.25	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	41.465		41.500		3.76271		3.76265		31.4141		31.4134		13.4880		13.4880		2.8898		2.8940		1.000e-12		0.3312		2.1720000		0.4073		10.56		0.562		7895		1		23.5206		23.5201		1498.26		1498.26	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	41.963		42.000		3.76317		3.76315		31.4174		31.4172		13.4888		13.4890		2.8905		2.8933		1.000e-12		0.3369		2.1658000		0.4103		10.08		0.554		7917		1		23.5231		23.5228		1498.28		1498.28	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	42.460		42.500		3.76476		3.76494		31.4295		31.4306		13.4919		13.4926		2.8847		2.8887		1.000e-12		0.3335		2.1645000		0.3196		9.65		0.563		7938		1		23.5317		23.5324		1498.31		1498.31	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	42.958		43.000		3.77815		3.77782		31.5325		31.5294		13.5176		13.5177		2.8757		2.8858		1.000e-12		0.3274		2.1609000		0.3349		9.10		0.558		7959		1		23.6062		23.6038		1498.53		1498.52	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	43.455		43.500		3.78597		3.78592		31.5875		31.5869		13.5386		13.5388		2.8738		2.8884		1.000e-12		0.3259		2.4450000		0.3671		8.65		0.558		7981		1		23.6445		23.6440		1498.67		1498.67	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	43.953		44.000		3.79287		3.79349		31.6411		31.6455		13.5511		13.5527		2.8700		2.8855		1.000e-12		0.3280		2.1171000		0.3667		8.13		0.542		8002		1		23.6834		23.6866		1498.78		1498.79	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	44.450		44.500		3.80064		3.80058		31.6984		31.6977		13.5688		13.5689		2.8607		2.8819		1.000e-12		0.3162		2.0882000		0.3554		7.65		0.511		8025		1		23.7242		23.7237		1498.92		1498.91	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	44.948		45.000		3.80204		3.80195		31.7082		31.7072		13.5724		13.5726		2.8607		2.8827		1.000e-12		0.3482		1.9742000		0.3755		7.16		0.507		8049		1		23.7311		23.7303		1498.95		1498.95	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	45.445		45.500		3.80241		3.80240		31.7106		31.7104		13.5734		13.5735		2.8606		2.8769		1.000e-12		0.3536		2.2242000		0.3925		6.67		0.502		8073		1		23.7327		23.7325		1498.96		1498.96	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	45.942		46.000		3.80279		3.80290		31.7132		31.7140		13.5743		13.5746		2.8566		2.8721		1.000e-12		0.3180		2.3017000		0.3087		6.19		0.517		8097		1		23.7346		23.7351		1498.98		1498.98	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	46.440		46.500		3.80319		3.80309		31.7161		31.7151		13.5751		13.5751		2.8600		2.8721		1.000e-12		0.3186		2.1485000		0.3211		5.74		0.519		8120		1		23.7366		23.7358		1498.99		1498.99	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	46.937		47.000		3.80333		3.80319		31.7169		31.7157		13.5754		13.5753		2.8728		2.8838		1.000e-12		0.3303		1.9986000		0.3185		5.23		0.488		8143		1		23.7372		23.7363		1499.00		1499.00	
+2017	11	13	12	55	08	2017_34EB_2	W LANDSKRONA	55.86683	12.74850	47.435		47.500		3.80002		3.79636		31.6911		31.6638		13.5692		13.5612		2.8849		2.8818		1.000e-12		0.3334		1.9752000		0.3971		4.49		0.003		8203		1		23.7184		23.6990		1498.96		1498.90	

@@ -34,6 +34,8 @@ from .communicate import set_valid_time_in_time_axis
 
 from .communicate import plot_map_background_data
 
+from .communicate import get_file_id
+
 #----------------------------------------------------------
 from .widgets import AxisSettingsBaseWidget
 from .widgets import AxisSettingsFloatWidget
@@ -54,11 +56,13 @@ from .widgets import EntryPopup
 #----------------------------------------------------------
 
 from .page_start import PageStart
-from .page_ferrybox import PageFerrybox
-from .page_fixed_platforms import PageFixedPlatforms
+# from .page_ferrybox import PageFerrybox
+# from .page_fixed_platforms import PageFixedPlatforms
 from .page_user import PageUser
 from .page_about import PageAbout
 from .page_time_series import PageTimeSeries
+from .page_metadata import PageMetadata
+from .page_profile import PageProfile
 
 # print('GUI IMPORT')
 # for key in sorted(sys.modules.keys()):

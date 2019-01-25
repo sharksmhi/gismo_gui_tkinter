@@ -86,7 +86,7 @@ class User(object):
 
         self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority')
 
-
+        self.filter = UserSettings(self.user_directory, 'filter')
 
 class UserSettings(object):
     """

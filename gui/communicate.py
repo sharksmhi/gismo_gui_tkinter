@@ -178,7 +178,7 @@ def get_flag_widget(parent=None,
 
     for f in flags:
         f = str(f)
-        if f in '48':
+        if f in '48BS':
             color_list.append(user_object.flag_color.setdefault(f, 'red'))
         else:
             color_list.append(user_object.flag_color.setdefault(f, 'black'))
@@ -347,7 +347,7 @@ def save_file(controller, gismo_object, save_widget):
         file_name = file_name + '.txt'
     output_file_path = os.path.join(directory, file_name)
 
-    if original_file_path != output_file_path:
+    if output_file_path != original_file_path:
         try:
             gismo_object.save_file(file_path=output_file_path)
             gui.show_information('File saved', 'File saved to:\n{}'.format(output_file_path))
@@ -367,7 +367,7 @@ def save_file(controller, gismo_object, save_widget):
     temp_file_path = directory + '/temp_%s' % file_name
     gismo_object.save_file(file_path=temp_file_path, overwrite=True)
     os.remove(original_file_path)
-    shutil.copy2(temp_file_path, original_file_path)
+    shutil.copy2(temp_file_path, output_file_path)
     os.remove(temp_file_path)
 
 
@@ -642,34 +642,56 @@ def get_merge_data(controller, compare_widget, flag_widget, load_match_data=True
 ================================================================================
 ================================================================================
 """ 
-def flag_data_profile(flag_widget=None, 
-                      profile=None, 
-                      plot_object=None, 
+def flag_data_profile(flag_widget=None,
+                      gismo_object=None,
+                      plot_object=None,
                       par=None):
     """
-    Flag data in the given gismo_objects for profiles in profile_infos (keys). 
+    Flag data in the given gismo_object. 
     Takes limits from plot_object and 
-    flag information from tkw.FlagWidget. 
+    flag information from tkw.FlagWidget.
     """
-    
+    print('PROFILE!!!!!!!!!')
     selection = flag_widget.get_selection()
     flag_nr = selection.flag
-     
-    index = plot_object.get_marked_index()
+    active_flags = selection.selected_flags
 
-    profile.gismo_object.flag_parameter_at_profile_index(time_object=profile.time, 
-                                                         par=par, 
-                                                         index=index, 
-                                                         qflag=flag_nr) 
-#     # Flag dependent parameters
-#     dependent_list = gismo_object.get_dependent_parameters(par)
-#     if dependent_list:
-#         print 'par', par
-#         for sub_par in dependent_list:
-#             print 'sub_par', sub_par
-#             core.Boxen().current_ferrybox_object.flag_parameter_at_index(par=sub_par, 
-#                                                                  index=index, 
-#                                                                  qflag=flag_nr) 
+    # if 'no flag' in active_flags:
+    #     active_flags.pop('no flag')
+    #     active_flags.append('')
+
+    mark_from = plot_object.get_mark_from_value()
+    mark_to = plot_object.get_mark_to_value()
+
+    if not all([mark_from, mark_to]):
+        raise GUIExceptionNoRangeSelection
+
+    print('ORIENTATION', plot_object.mark_range_orientation)
+    if plot_object.mark_range_orientation == 'horizontal':
+        value_from, value_to = plot_object.get_xlim()
+        par_from = float(value_from)
+        par_to = float(value_to)
+
+        data = gismo_object.get_data('depth', par)
+        par_array = data[par]
+
+        boolean = (par_array >= par_from) & \
+                  (par_array <= par_to) & \
+                  (data['depth'] >= mark_from) & \
+                  (data['depth'] <= mark_to)
+        depth_to_flag = -data['depth'][boolean]
+
+        # Flag data
+        gismo_object.flag_data(flag_nr, par, depth=depth_to_flag, flags=active_flags)
+
+    else:
+        depth_max = -float(mark_from)
+        depth_min = -float(mark_to)
+
+        print('depth_min', depth_min)
+        print('depth_max', depth_max)
+        # Flag data
+        gismo_object.flag_data(flag_nr, par, depth_min=depth_min, depth_max=depth_max, flags=active_flags)
 
 """
 ================================================================================
@@ -686,6 +708,7 @@ def update_range_selection_widget(plot_object=None,
     This is to get live update from the plot when "mark range" is active.
     line_id='current_flags' indicates that alla flags that are ploted are taken into consideration. 
     """
+    # TODO: Not sure "time_axis" is used here!
     logging.debug('IN: update_range_selection_widget')
     min_value = None
     min_value = None
@@ -942,6 +965,155 @@ def update_time_series_plot(gismo_object=None,
 
         plot_object.set_data(x=data['time'], y=data[par], line_id=flag, call_targets=call_targets, **prop)
 
+    try:
+        plot_object.set_title(gismo_object.get_station_name())
+    except GISMOExceptionMethodNotImplemented:
+        pass
+
+    if help_info_function:
+        help_info_function('Done!')
+
+
+"""
+================================================================================
+================================================================================
+================================================================================
+"""
+def update_profile_plot_background(gismo_objects=[],
+                                   par=None,
+                                   plot_object=None,
+                                   flag_widget=None,
+                                   help_info_function=None,
+                                   call_targets=False,
+                                   clear_plot=True):
+    """
+    Updates the plot_object (profile) using information from gismo_object, par and flag_widget.
+    If help_info_function (updating tkText) is given text information is passed to the function.
+
+    :param gismo_object:
+    :param par:
+    :param plot_object:
+    :param flag_widget:
+    :param help_info_function:
+    :return:
+    """
+
+    if help_info_function:
+        help_info_function('Updating profile plot with background data...please wait...')
+
+    # Clear old data from plot
+    if clear_plot:
+        plot_object.reset_plot()
+
+    for gismo_object in gismo_objects:
+        settings = gismo_object.settings
+        selection = flag_widget.get_selection()
+
+        # Set labels
+        plot_object.set_x_label(par)
+        plot_object.set_y_label('Depth')
+
+        # Plot all flags combined. This is used for range selection.
+        data = gismo_object.get_data('depth', par, mask_options={'include_flags': selection.selected_flags})
+
+        prop = {'linestyle': '',
+                'marker': None}
+
+        # Plot individual flags
+        for k, flag in enumerate(selection.selected_flags):
+
+            data = gismo_object.get_data('depth', par, mask_options={'include_flags': [flag]})
+
+            if all(np.isnan(data[par])):
+                #            print 'No data for flag "%s", will not plot.' % flag
+                continue
+            prop = settings.get_flag_prop_dict(flag)
+            prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
+            prop.update({'linestyle': '',
+                         'marker': '.',
+                         'alpha': 0.2})
+
+            marker_id = '{}_{}'.format(gismo_object.file_id, flag)
+            plot_object.delete_data(marker_id)
+            plot_object.set_data(x=data[par], y=-data['depth'], line_id=marker_id, call_targets=call_targets, **prop)
+
+
+def update_profile_plot(gismo_object=None,
+                        par=None,
+                        plot_object=None,
+                        flag_widget=None,
+                        help_info_function=None,
+                        call_targets=True,
+                        clear_plot=True):
+    """
+    Updates the plot_object (profile) using information from gismo_object, par and flag_widget.
+    If help_info_function (updating tkText) is given text information is passed to the function.
+
+    :param gismo_object:
+    :param par:
+    :param plot_object:
+    :param flag_widget:
+    :param help_info_function:
+    :return:
+    """
+
+    if help_info_function:
+        help_info_function('Updating profile plot...please wait...')
+
+    settings = gismo_object.settings
+    selection = flag_widget.get_selection()
+
+    # Clear old data from plot
+    if clear_plot:
+        plot_object.reset_plot()
+
+    # Set labels
+    plot_object.set_x_label(par)
+    plot_object.set_y_label('Depth')
+
+    # Check if data is available
+    # check_data = gismo_object.get_data(par)
+    # print(np.where(~np.isnan(check_data[par])))
+    # print('no', len(np.where(~np.isnan(check_data[par]))[0]))
+    # print('yes', len(np.where(np.isnan(check_data[par]))[0]))
+
+    # Plot all flags combined. This is used for range selection.
+    data = gismo_object.get_data('depth', par, mask_options={'include_flags': selection.selected_flags})
+
+    prop = {'linestyle': '',
+            'marker': None}
+
+    # print('=== par {} ==='.format(par))
+    # print(data['time'][0])
+    # print(data[par][0])
+    # print()
+    plot_object.delete_data('current_flags')
+    plot_object.set_data(x=data[par], y=-data['depth'], line_id='current_flags', call_targets=call_targets, **prop)
+
+    # if par in ['time', 'lat', 'lon']:
+    #
+    #     plot_object.set_data(x=data['time'], y=data[par], line_id='current_flags', **prop)
+    #     if help_info_function:
+    #         help_info_function('Done!')
+    #     return
+
+    # Plot individual flags
+    for k, flag in enumerate(selection.selected_flags):
+
+        data = gismo_object.get_data('depth', par, mask_options={'include_flags': [flag]})
+
+        if all(np.isnan(data[par])):
+            #            print 'No data for flag "%s", will not plot.' % flag
+            continue
+        prop = settings.get_flag_prop_dict(flag)
+        prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
+        prop.update({'linestyle': '',
+                     'marker': '.'})
+
+        plot_object.delete_data(flag)
+        plot_object.set_data(x=data[par], y=-data['depth'], line_id=flag, call_targets=call_targets, **prop)
+
+    # print('STATION NAME:', gismo_object.get_station_name())
     try:
         plot_object.set_title(gismo_object.get_station_name())
     except GISMOExceptionMethodNotImplemented:
@@ -1474,7 +1646,10 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
     fixed_platforms_color = user.map_prop.setdefault('fixed_platform_color_background', 'gray')
     fixed_platforms_markersize = user.map_prop.setdefault('fixed_platform_markersize_background', 5)
 
-    physicalchemical_station_color = user.map_prop.setdefault('physicalchemical_color_background', 'gray')
+    ctd_shark_color = user.map_prop.setdefault('ctd_profile_color_background', 'gray')
+    ctd_shark_markersize = user.map_prop.setdefault('ctd_profile_markersize_background', 5)
+
+    physicalchemical_color = user.map_prop.setdefault('physicalchemical_color_background', 'gray')
     physicalchemical_markersize = user.map_prop.setdefault('physicalchemical_markersize_background', 5)
 
     map_widget.delete_all_markers()
@@ -1502,7 +1677,7 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
                 lat_lon = sorted(set(zip(data['lat'], data['lon'])))
                 lat_list, lon_list = zip(*lat_lon)
                 map_widget.add_markers(list(lat_list), list(lon_list), marker_id=file_id, linestyle='None', marker='D',
-                                       color=physicalchemical_station_color, markersize=fixed_platforms_markersize, zorder=zorder)
+                                       color=physicalchemical_color, markersize=physicalchemical_markersize, zorder=zorder)
 
             elif 'fixed platform' in sampling_type.lower():
                 zorder = 12
@@ -1512,6 +1687,22 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
                 # print('lat', lat)
                 # print('lon', lon)
                 map_widget.add_markers(lat, lon, marker_id=file_id, linestyle='None', marker='s',
-                                       color=fixed_platforms_color, markersize=physicalchemical_markersize, zorder=zorder)
+                                       color=fixed_platforms_color, markersize=fixed_platforms_markersize, zorder=zorder)
 
+            elif 'ctd' in sampling_type.lower():
+                zorder = 13
+                data = session.get_data(file_id, 'lat', 'lon')
+                lat = np.nanmean(data['lat'])
+                lon = np.nanmean(data['lon'])
+                # print('lat', lat)
+                # print('lon', lon)
+                map_widget.add_markers(lat, lon, marker_id=file_id, linestyle='None', marker='d',
+                                       color=ctd_shark_color, markersize=ctd_shark_markersize, zorder=zorder)
 
+def get_file_id(string):
+    """
+    Returns file_id from a information string like Ferrybox CMEMS: <file_id>
+    :param string:
+    :return:
+    """
+    return string.split(':')[-1].strip()
