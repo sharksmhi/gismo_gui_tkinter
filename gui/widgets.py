@@ -1597,9 +1597,9 @@ class FilterWidgetTable(tk.Frame):
         self.button_filter_data = tk.Button(self,
                                             text='Filter profiles',
                                             command=self._filter_data)
-        self.button_filter_data.grid(row=1, column=0, sticky='ne', **pad)
+        self.button_filter_data.grid(row=1, column=0, sticky='nw', **pad)
 
-        tkw.grid_configure(self, nr_rows=2)
+        tkw.grid_configure(self, nr_rows=2, r0=10)
 
     def _filter_data(self):
         if self.filter_popup:

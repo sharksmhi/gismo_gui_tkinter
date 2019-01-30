@@ -22,7 +22,7 @@ class PageTemplate(tk.Frame):
     #===========================================================================
     def startup(self):
         self._set_frame()
-        self.update()
+        self.update_page()
     
     #===========================================================================
     def update_page(self):

@@ -346,8 +346,9 @@ def save_file(controller, gismo_object, save_widget):
     if not file_name.endswith('.txt'):
         file_name = file_name + '.txt'
     output_file_path = os.path.join(directory, file_name)
-
-    if output_file_path != original_file_path:
+    print(output_file_path)
+    print(original_file_path)
+    if not os.path.samefile(output_file_path, original_file_path):
         try:
             gismo_object.save_file(file_path=output_file_path)
             gui.show_information('File saved', 'File saved to:\n{}'.format(output_file_path))
@@ -366,9 +367,10 @@ def save_file(controller, gismo_object, save_widget):
         os.makedirs(directory)
     temp_file_path = directory + '/temp_%s' % file_name
     gismo_object.save_file(file_path=temp_file_path, overwrite=True)
-    os.remove(original_file_path)
+    os.remove(output_file_path)
     shutil.copy2(temp_file_path, output_file_path)
     os.remove(temp_file_path)
+    gui.show_information('File saved', 'File saved to:\n{}'.format(output_file_path))
 
 
 def save_plot(controller, plot_object, save_directory_widget, in_file_name='plot', **kwargs):

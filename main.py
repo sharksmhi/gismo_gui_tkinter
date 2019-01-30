@@ -34,13 +34,9 @@ all_pages.add(gui.PageStart)
 
 #============================================================================
 # Timeseries pages
-# all_pages.add(gui.PageFerrybox)
-# all_pages.add(gui.PageFixedPlatforms)
 all_pages.add(gui.PageUser)
 all_pages.add(gui.PageAbout)
 all_pages.add(gui.PageTimeSeries)
-all_pages.add(gui.PageMetadata)
-all_pages.add(gui.PageProfile)
 
 
 class App(tk.Tk):
@@ -198,11 +194,8 @@ class App(tk.Tk):
         # Show start page given in settings.ini
         self.page_history = [gui.PageUser]
         # self.show_frame(gui.PageStart)
-        self.show_frame(gui.PageUser)
-        # self.show_frame(gui.PageFerrybox)
-        # self.show_frame(gui.PageFixedPlatforms)
-        # self.show_frame(gui.PageTimeSeries)
-        self.show_frame(gui.PageProfile)
+        # self.show_frame(gui.PageUser)
+        self.show_frame(gui.PageTimeSeries)
 
         self.update_all()
         self.deiconify()
@@ -397,7 +390,7 @@ class App(tk.Tk):
         self.button_get_sampling_file = tk.Button(frame_data, text='SHARKweb bottle data',
                                                   command=lambda: self._get_data_file_path('PhysicalChemical SHARK'))
 
-        # tkw.disable_widgets(self.button_get_ctd_data_file)
+        tkw.disable_widgets(self.button_get_ctd_data_file)
         
         self.stringvar_data_file = tk.StringVar()
         self.entry_data_file = tk.Entry(frame_data, textvariable=self.stringvar_data_file, state='disabled')
@@ -785,12 +778,12 @@ class App(tk.Tk):
         if 'gui.page_time_series' in sys.modules:
             self.goto_menu.add_command(label='Time series',
                                        command=lambda: self.show_frame(gui.PageTimeSeries))
-        if 'gui.page_profile' in sys.modules:
-            self.goto_menu.add_command(label='Profiles',
-                                       command=lambda: self.show_frame(gui.PageProfile))
-        if 'gui.page_metadata' in sys.modules:
-            self.goto_menu.add_command(label='Metadata',
-                                       command=lambda: self.show_frame(gui.PageMetadata))
+        # if 'gui.page_profile' in sys.modules:
+        #     self.goto_menu.add_command(label='Profiles',
+        #                                command=lambda: self.show_frame(gui.PageProfile))
+        # if 'gui.page_metadata' in sys.modules:
+        #     self.goto_menu.add_command(label='Metadata',
+        #                                command=lambda: self.show_frame(gui.PageMetadata))
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 

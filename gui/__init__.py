@@ -61,8 +61,6 @@ from .page_start import PageStart
 from .page_user import PageUser
 from .page_about import PageAbout
 from .page_time_series import PageTimeSeries
-from .page_metadata import PageMetadata
-from .page_profile import PageProfile
 
 # print('GUI IMPORT')
 # for key in sorted(sys.modules.keys()):
