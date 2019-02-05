@@ -16,6 +16,7 @@ import datetime
 
 import os
 import numpy as np
+import pandas as pd
 #import shutil
 
 
@@ -1556,6 +1557,7 @@ class FilterWidgetTable(tk.Frame):
                  callback_update=None,
                  callback_select=None,
                  prop_frame={},
+                 file_id_startswith='',
                  **kwargs):
         self.prop_frame = {}
         self.prop_frame.update(prop_frame)
@@ -1565,6 +1567,8 @@ class FilterWidgetTable(tk.Frame):
         self.callback_update = callback_update
         self.callback_select = callback_select
 
+        self.file_id_startswith = file_id_startswith
+
         self.grid_frame = {'padx': 5,
                            'pady': 5,
                            'sticky': 'nsew'}
@@ -1573,7 +1577,7 @@ class FilterWidgetTable(tk.Frame):
         tk.Frame.__init__(self, parent, **self.prop_frame)
         self.grid(**self.grid_frame)
 
-        self.columns = ['File ID', 'Station']
+        self.columns = ['File ID', 'Station', 'Time']
 
         self.filter_popup = None
 
@@ -1590,16 +1594,26 @@ class FilterWidgetTable(tk.Frame):
         self.table_widget = tkw.TableWidget(self,
                                             columns=self.columns,
                                             callback_select=self._callback_table_select,
+                                            callback_rightclick=self._filter_data,
                                             row=0,
                                             sticky='nsew',
+                                            columnspan=3,
                                             **pad)
 
         self.button_filter_data = tk.Button(self,
-                                            text='Filter profiles',
+                                            text='Show filter',
                                             command=self._filter_data)
         self.button_filter_data.grid(row=1, column=0, sticky='nw', **pad)
 
-        tkw.grid_configure(self, nr_rows=2, r0=10)
+        self.button_reset_filter = tk.Button(self,
+                                            text='Reset filter',
+                                            command=self._reset_filter)
+        self.button_reset_filter.grid(row=1, column=1, sticky='nw', **pad)
+
+        self.stringvar_info = tk.StringVar()
+        tk.Label(self, textvariable=self.stringvar_info).grid(row=1, column=2, sticky='nw', **pad)
+
+        tkw.grid_configure(self, nr_rows=2, nr_columns=3, r0=10)
 
     def _filter_data(self):
         if self.filter_popup:
@@ -1611,6 +1625,12 @@ class FilterWidgetTable(tk.Frame):
                                                     session=self.session)
         self.filter_popup.display()
 
+    def _reset_filter(self):
+        if self.filter_popup:
+            self.filter_popup.destroy()
+        self.controller.user.filter.reset()
+        self._callback_filter_data(update=True)
+
     def _callback_filter_data(self, **kwargs):
         if not kwargs.get('update', False):
             self.filter_popup = None
@@ -1619,21 +1639,38 @@ class FilterWidgetTable(tk.Frame):
         user = self._get_current_user()
         user_filter = user.filter.get_settings()
         self.table_widget.reset_table()
+        user_filter['startswith'] = self.file_id_startswith
+        print('user_filter'.upper(), user_filter)
         filtered_file_id_list = self.session.get_filtered_file_id_list(**user_filter)
+        print('filtered_file_id_list'.upper(), filtered_file_id_list)
+
         if not filtered_file_id_list:
             self.filter_popup = None
             return
         data = []
         for file_id in filtered_file_id_list:
             data_line = []
+            # File id
             data_line.append(file_id)
             gismo_object = self.session.get_gismo_object(file_id)
+            # Station name
             data_line.append(gismo_object.get_station_name())
+            # Time
+            t = pd.to_datetime(str(gismo_object.get_time()[0]))
+            data_line.append(t.strftime('%Y-%m-%d %H:%M'))
             data.append(data_line)
 
         self.table_widget.set_table(data)
 
         self.filter_popup = None
+
+        # Check if filter is set
+        if sorted(self.session.get_filtered_file_id_list(startswith=self.file_id_startswith)) == sorted(filtered_file_id_list):
+            # self.button_filter_data.config(bg='green')
+            self.stringvar_info.set('Filter is not set')
+        else:
+            # self.button_filter_data.config(bg='red')
+            self.stringvar_info.set('Filter is active')
 
         if self.callback_update:
             self.callback_update()
@@ -1644,6 +1681,10 @@ class FilterWidgetTable(tk.Frame):
 
     def get_selected(self):
         return self.table_widget.get_selected()
+
+    def get_filtered_file_id_list(self):
+        filtered_items = self.table_widget.get_filtered_items()
+        return [item['File ID'] for item in filtered_items]
 
     def update_widget(self):
         """

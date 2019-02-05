@@ -88,6 +88,7 @@ class User(object):
 
         self.filter = UserSettings(self.user_directory, 'filter')
 
+
 class UserSettings(object):
     """
     Baseclass for user settings.
@@ -174,6 +175,10 @@ class UserSettings(object):
         if key in self.data:
             self.data.pop(key)
             self._save()
+
+    def reset(self):
+        self.data = {}
+        self._save()
 
 
 class UserSettingsParameter(UserSettings):

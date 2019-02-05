@@ -52,9 +52,9 @@ def add_compare_to_timeseries_plot(plot_object=None,
     # par = compare_widget.get_parameter()
     #
     match_data = session.get_match_data(file_id, ref_file_id, 'time', 'lat', 'lon', par)
-    print('='*50)
-    print('match_data')
-    print(match_data)
+    # print('='*50)
+    # print('match_data')
+    # print(match_data)
     if not len(np.where(~np.isnan(np.array(match_data[par])))):
         help_info_function('No matching data!', bg='red')
         return
@@ -987,7 +987,8 @@ def update_profile_plot_background(gismo_objects=[],
                                    flag_widget=None,
                                    help_info_function=None,
                                    call_targets=False,
-                                   clear_plot=True):
+                                   clear_plot=True,
+                                   user=False):
     """
     Updates the plot_object (profile) using information from gismo_object, par and flag_widget.
     If help_info_function (updating tkText) is given text information is passed to the function.
@@ -1016,10 +1017,10 @@ def update_profile_plot_background(gismo_objects=[],
         plot_object.set_y_label('Depth')
 
         # Plot all flags combined. This is used for range selection.
-        data = gismo_object.get_data('depth', par, mask_options={'include_flags': selection.selected_flags})
-
-        prop = {'linestyle': '',
-                'marker': None}
+        # data = gismo_object.get_data('depth', par, mask_options={'include_flags': selection.selected_flags})
+        #
+        # prop = {'linestyle': '',
+        #         'marker': None}
 
         # Plot individual flags
         for k, flag in enumerate(selection.selected_flags):
@@ -1027,7 +1028,6 @@ def update_profile_plot_background(gismo_objects=[],
             data = gismo_object.get_data('depth', par, mask_options={'include_flags': [flag]})
 
             if all(np.isnan(data[par])):
-                #            print 'No data for flag "%s", will not plot.' % flag
                 continue
             prop = settings.get_flag_prop_dict(flag)
             prop.update(selection.get_prop(flag))  # Is empty if no settings file is added while loading data
@@ -1037,7 +1037,9 @@ def update_profile_plot_background(gismo_objects=[],
 
             marker_id = '{}_{}'.format(gismo_object.file_id, flag)
             plot_object.delete_data(marker_id)
-            plot_object.set_data(x=data[par], y=-data['depth'], line_id=marker_id, call_targets=call_targets, **prop)
+            plot_object.set_data(x=data[par], y=-data['depth'], line_id=marker_id, call_targets=False, **prop)
+    if call_targets:
+        plot_object.call_targets()
 
 
 def update_profile_plot(gismo_object=None,
@@ -1104,6 +1106,7 @@ def update_profile_plot(gismo_object=None,
 
         data = gismo_object.get_data('depth', par, mask_options={'include_flags': [flag]})
 
+        plot_object.delete_data(flag)
         if all(np.isnan(data[par])):
             #            print 'No data for flag "%s", will not plot.' % flag
             continue
@@ -1112,7 +1115,6 @@ def update_profile_plot(gismo_object=None,
         prop.update({'linestyle': '',
                      'marker': '.'})
 
-        plot_object.delete_data(flag)
         plot_object.set_data(x=data[par], y=-data['depth'], line_id=flag, call_targets=call_targets, **prop)
 
     # print('STATION NAME:', gismo_object.get_station_name())
@@ -1305,6 +1307,8 @@ def sync_limits_in_plot_user_and_axis(plot_object=None,
         min_value, max_value = axis_widget.get_limits()
 
     if par != 'time':
+        # print('min_vale', min_value)
+        # print('max_value', max_value)
         min_value = float(min_value)
         max_value = float(max_value)
     # print('=' * 60)
