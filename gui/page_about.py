@@ -64,7 +64,7 @@ class PageAbout(tk.Frame):
         pady = 5
         tk.Label(frame, text='GISMOtoolbox', font=("Times New Roman", 40)).grid(row=0, column=0, sticky='nsew',
                                                                                 padx=padx, pady=pady)
-        tk.Label(frame, text='Version 2018.12.1', font=("Times New Roman", 10)).grid(row=1, column=0, sticky='nsew',
+        tk.Label(frame, text='Version {}'.format(self.controller.version), font=("Times New Roman", 10)).grid(row=1, column=0, sticky='nsew',
                                                                                 padx=padx, pady=pady)
         # tk.Label(frame, text='').grid(row=1, column=0, sticky='nsew', padx=padx, pady=pady)
         self.info_label = tk.Label(frame, text=core.texts.about())

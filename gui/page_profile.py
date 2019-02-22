@@ -34,6 +34,7 @@ from libs.sharkpylib.gismo.exceptions import *
 from core.exceptions import *
 
 import logging
+gui_logger = logging.getLogger('gui_logger')
 
 
 """
@@ -71,7 +72,6 @@ class PageProfile(tk.Frame):
 
         self.current_correlation_plot = None
 
-        self.allowed_data_files = ['CTD']
         self.allowed_compare_files = ['PhysicalChemical']
 
         self._reset_merge_data()
@@ -81,26 +81,20 @@ class PageProfile(tk.Frame):
         self._set_frame()
 
         self._add_popup_menu_to_fig()
-        # self.update_page()
+        self.update_page()
 
     #===========================================================================
-    def update_page(self):
+    def update_page(self, **kwargs):
         self.user = self.user_manager.user
         self.info_popup = gui.InformationPopup(self.controller)
 
         # Update filter widget
-        self.select_data_widget.update_widget()
+        self.select_data_widget.update_widget(**kwargs)
 
-        # self._update_frame_data_file()
-        # self._update_frame_reference_file()
-        # self._check_on_remove_file()
+        # Update referens file
+        self._update_frame_reference_file()
 
         self._update_map_1()  # To add background data
-
-        # TEMP: UPDATE background data in plot
-        if self.current_parameter:
-            self._update_plot_background()
-
 
     def _update_plot_background(self, file_id=None):
         if not self.current_parameter:
@@ -411,7 +405,7 @@ class PageProfile(tk.Frame):
         #                                            row=0)
         self.notebook_options = tkw.NotebookWidget(self.frame_notebook,
                                                    frames=['Depth range', 'Select data to flag', 'Flag selected data',
-                                                           'Compare', 'Save data', 'Save plots', 'Map'],
+                                                           'Compare', 'Save data', 'Save plots', 'Map', 'Automatic QC'],
                                                    row=0)
         tkw.grid_configure(self.frame_notebook, nr_rows=1)
 
@@ -421,9 +415,9 @@ class PageProfile(tk.Frame):
         self._set_notebook_frame_flag()
         self._set_notebook_frame_compare()
         self._set_notebook_frame_save_data()
-        self._set_notebook_frame_save_plots()
+        # self._set_notebook_frame_save_plots()
         self._set_notebook_frame_map()
-        # self._set_notebook_frame_automatic_qc()
+        self._set_notebook_frame_automatic_qc()
 
     def _callback_filter_update(self, **kwargs):
         file_id_list = self.select_data_widget.get_filtered_file_id_list()
@@ -431,11 +425,15 @@ class PageProfile(tk.Frame):
         self._update_parameter_list()
 
         if file_id_list == self.current_file_id_list:
+            if kwargs.get('update_plot_background'):
+                self._update_plot_background()
             return
 
         self._update_notebook_frame_flag()
 
         self._update_plot_background()
+
+        self.qc_routine_widget.update_widget(file_id_list)
 
     def _callback_filter_select(self, **kwargs):
         self._set_current_file()
@@ -444,16 +442,69 @@ class PageProfile(tk.Frame):
 
     def _set_notebook_frame_automatic_qc(self):
         frame = self.notebook_options.frame_automatic_qc
-        qc_routines = self.session.get_qc_routines()
-        grip_prop = dict(padx=5,
-                         pady=5,
-                         sticky='sw')
-        self.widget_automatic_qc_options = tkw.CheckbuttonWidget(frame, items=qc_routines, **grip_prop)
+        padx = 5
+        pady = 5
+        self.qc_routine_widget = gui.widgets.QCroutineWidget(frame,
+                                                             controller=self.controller,
+                                                             session=self.session,
+                                                             sticky='nw')
 
+        self.boolvar_run_all_files = tk.BooleanVar()
+        self.checkbutton_run_all_files = tk.Checkbutton(frame, text='Run QC on all filtered files',
+                                                        variable=self.boolvar_run_all_files)
+        self.checkbutton_run_all_files.grid(row=1, column=0, sticky='sw', padx=padx, pady=pady)
 
-        self.button_run_automatic_qc = tk.Button(frame, text='Run QC', command=self._run_automatic_qc)
-        self.button_run_automatic_qc.grid(row=0, column=1, **grip_prop)
-        tkw.grid_configure(frame, nr_columns=2)
+        self.button_run_automatic_qc = tk.Button(frame, text='Run QC', command=self._run_qc)
+        self.button_run_automatic_qc.grid(row=2, column=0, sticky='sw', padx=padx, pady=pady)
+
+        tkw.grid_configure(frame, nr_rows=3)
+
+    def _run_qc(self):
+        """
+        Runs quality control on the given file_id_list.
+
+        :param file_id_list: sting or list of file_ids
+        :return:
+        """
+        if self.boolvar_run_all_files.get():
+            file_id_list = self.select_data_widget.get_filtered_file_id_list()
+        else:
+            if not self.current_file_id:
+                gui.show_information('No file selected', 'No file selected for Quality Control. '
+                                                         'Select a file in list or check '
+                                                         '"Run QC on all filtered files" to run QC on all files.')
+                return
+            else:
+                file_id_list = [self.current_file_id]
+
+        for qc_routine in self.qc_routine_widget.get_selected_qc_routines():
+            options = self.user.qc_routine_options.get_settings(par=qc_routine)
+            gismo_object_list = []
+            for file_id in file_id_list:
+                gismo_object = self.session.get_gismo_object(file_id)
+                if qc_routine in gismo_object.valid_qc_routines:
+                    gismo_object_list.append(gismo_object)
+            self.session.run_automatic_qc(gismo_objects=gismo_object_list, qc_routine=qc_routine, **options)
+            # Run QC with matching file_id and qc_routines
+            try:
+                self.session.run_automatic_qc(gismo_objects=gismo_object_list, qc_routine=qc_routine, **options)
+
+            except GISMOExceptionMissingInputArgument as e:
+                if 'parameter' in e.message and 'list' in e.message:
+                    gui.show_warning('No parameter selected', 'You need to specify parameters for QC routine {} '
+                                                                  'Please open option ans select parameters.'.format(qc_routine))
+                    gui_logger.warning(e)
+                elif 'save' in e.message and 'directory' in e.message:
+                    gui.show_warning('Invalid save directory', 'It seems like the saving directory for QC routine {} '
+                                                               'is not valid. Please open option ans change or update '
+                                                               'directory.'.format(qc_routine))
+                    gui_logger.warning(e)
+                else:
+                    gui.show_error('Unknown error', 'An unknown error related to missing input variable occurred. '
+                                                    'Please contact the suupport team: shark@smhi.se')
+                    gui_logger.error(e)
+
+        self.update_page(update_plot_background=True)
 
     def _set_notebook_frame_map(self):
         frame = self.notebook_options.frame_map
@@ -467,7 +518,6 @@ class PageProfile(tk.Frame):
         tkw.grid_configure(frame_map_1)
         tkw.grid_configure(frame_map_2)
         tkw.grid_configure(frame_buttons, nr_columns=2)
-
 
 
         # self.map_widget_1 = tkmap.MapWidget(frame_map)
@@ -579,24 +629,6 @@ class PageProfile(tk.Frame):
         tkw.grid_configure(frame, nr_rows=2)
 
 
-        #----------------------------------------------------------------------
-        # Lasso
-#        self.button_lasso_select = ttk.Button(frame, text=u'Lasso select', command=self._lasso_select)
-#        self.button_lasso_select.grid(row=r, column=c, padx=padx, pady=pady, sticky='se')
-
-    def _run_automatic_qc(self):
-        try:
-            qc_routine_list = gui.communicate.run_automatic_qc(self, self.widget_automatic_qc_options)
-            if qc_routine_list:
-                if messagebox.askyesno('Automatic QC',
-                                       'The following automatic quality control(s) are finished:\n\n{}\n\n'
-                                       'Do you want to reload plots?'.format('\n'.join(sorted(qc_routine_list)))):
-                    self._on_select_parameter()
-        except GISMOExceptionInvalidFlag as e:
-            gui.show_information('QC failed', e.message)
-
-
-
     def _update_notebook_frame_flag(self):
         """
         Update flag widget. The apperance of flag widget will change depending on the loaded settings file
@@ -679,45 +711,59 @@ class PageProfile(tk.Frame):
         self.compare_widget = gui.CompareWidget(frame,
                                                 controller=self,
                                                 session=self.controller.session,
+                                                include_depth=False,
                                                 row=1,
                                                 **grid_opt)
 
-
-        button_frame = tk.Frame(frame)
-        button_frame.grid(row=2, column=0, sticky='nsew', **pad)
-
-        # Button plot
-        self.button_compare_plot_in_timeseries = tk.Button(button_frame, text='Plot in time series',
-                                                      comman=lambda: self._compare_data_plot('in_timeseries'))
-        self.button_compare_plot_in_timeseries.grid(row=0, column=0, sticky='nsew', **pad)
-
-        self.button_compare_plot_by_flags = tk.Button(button_frame, text='Plot correlation plot\n(color by flag)',
-                                                  comman=lambda: self._compare_data_plot('color_by_flag'))
-        self.button_compare_plot_by_flags.grid(row=0, column=1, sticky='nsew', **pad)
-
-        self.button_compare_plot_by_depth = tk.Button(button_frame, text='Plot correlation plot\n(color by depth)',
-                                                      comman=lambda: self._compare_data_plot('color_by_depth'))
-        self.button_compare_plot_by_depth.grid(row=0, column=2, sticky='nsew', **pad)
-
-        # Button save data
-        self.button_compare_save_data = tk.Button(button_frame, text='Save correlated dataset\n'
-                                                                     '(tab separated ascii file)',
-                                                  comman=self._compare_data_save_data)
-        self.button_compare_save_data.grid(row=0, column=3, sticky='nsew', **pad)
-
-        self.save_correlation_directory_widget = tkw.DirectoryWidget(button_frame,
-                                                                     label='Save directory',
-                                                                     row=1, column=0, columnspan=3)
-        tkw.grid_configure(button_frame, nr_rows=2, nr_columns=4)
-
-        default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
-                                         datetime.datetime.now().strftime('%Y%m%d'))
-        self.save_correlation_directory_widget.set_directory(default_directory)
-
+        self.include_ref_data_widget = tkw.CheckbuttonWidgetSingle(frame,
+                                                                   'Show reference data in profile plot',
+                                                                   callback=self._on_toggle_ref_data,
+                                                                   row=2, **grid_opt)
 
         tkw.grid_configure(frame, nr_rows=3)
 
-    def _save_correlation_plot_html(self):
+
+        # button_frame = tk.Frame(frame)
+        # button_frame.grid(row=2, column=0, sticky='nsew', **pad)
+        #
+        # # Button plot
+        # self.button_compare_plot_in_timeseries = tk.Button(button_frame, text='Plot in time series',
+        #                                               comman=lambda: self._compare_data_plot('in_timeseries'))
+        # self.button_compare_plot_in_timeseries.grid(row=0, column=0, sticky='nsew', **pad)
+        #
+        # self.button_compare_plot_by_flags = tk.Button(button_frame, text='Plot correlation plot\n(color by flag)',
+        #                                           comman=lambda: self._compare_data_plot('color_by_flag'))
+        # self.button_compare_plot_by_flags.grid(row=0, column=1, sticky='nsew', **pad)
+        #
+        # self.button_compare_plot_by_depth = tk.Button(button_frame, text='Plot correlation plot\n(color by depth)',
+        #                                               comman=lambda: self._compare_data_plot('color_by_depth'))
+        # self.button_compare_plot_by_depth.grid(row=0, column=2, sticky='nsew', **pad)
+        #
+        # # Button save data
+        # self.button_compare_save_data = tk.Button(button_frame, text='Save correlated dataset\n'
+        #                                                              '(tab separated ascii file)',
+        #                                           comman=self._compare_data_save_data)
+        # self.button_compare_save_data.grid(row=0, column=3, sticky='nsew', **pad)
+        #
+        # self.save_correlation_directory_widget = tkw.DirectoryWidgetLabelframe(button_frame,
+        #                                                                        label='Save directory',
+        #                                                                        row=1, column=0, columnspan=3)
+        # tkw.grid_configure(button_frame, nr_rows=2, nr_columns=4)
+        #
+        # default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
+        #                                  datetime.datetime.now().strftime('%Y%m%d'))
+        # self.save_correlation_directory_widget.set_directory(default_directory)
+        #
+        #
+        # tkw.grid_configure(frame, nr_rows=3)
+
+    def _on_toggle_ref_data(self):
+        add_ref_data = self.include_ref_data_widget.get_value()
+        self.plot_object.delete_data('ref_data')
+        if add_ref_data:
+            self._add_ref_data_to_plot()
+
+    def old_save_correlation_plot_html(self):
         if not gui.communicate.match_data(self, self.compare_widget):
             self.plot_object_compare.reset_plot()
             return
@@ -796,7 +842,7 @@ class PageProfile(tk.Frame):
         plot_object.plot_to_file(os.path.join(self.save_plots_directory_widget.get_directory(),
                                               '{}_{}.html'.format(current_par_name, compare_par_name)))
 
-    def _compare_data_plot(self, *args):
+    def old_compare_data_plot(self, *args):
 
         # Recreate plot object if
         self._set_notebook_compare_plot()
@@ -884,7 +930,7 @@ class PageProfile(tk.Frame):
             self.plot_object_compare.set_y_label(data['compare_par_file_id'])
 
 
-    def _compare_data_save_data(self):
+    def old_compare_data_save_data(self):
         if not gui.communicate.match_data(self, self.compare_widget):
             return
         merge_df = self.session.get_merge_data(self.current_file_id, self.current_ref_file_id)
@@ -900,16 +946,16 @@ class PageProfile(tk.Frame):
     def _update_compare_widget(self):
         self.compare_widget.update_parameter_list(self.current_ref_file_id)
 
-    def _compare_update_plot(self):
+    def _add_ref_data_to_plot(self):
         logging.debug('page_fixed_platforms._callback_compare: Start')
         try:
-            match_data = gui.add_compare_to_timeseries_plot(plot_object=self.plot_object,
-                                                            session=self.session,
-                                                            sample_file_id=self.current_ref_file_id,
-                                                            main_file_id=self.current_file_id,
-                                                            compare_widget=self.compare_widget,
-                                                            help_info_function=self.controller.update_help_information,
-                                                            user=self.user)
+            match_data = gui.add_compare_to_profile_plot(plot_object=self.plot_object,
+                                                         session=self.session,
+                                                         ref_file_id=self.current_ref_file_id,
+                                                         file_id=self.current_file_id,
+                                                         compare_widget=self.compare_widget,
+                                                         help_info_function=self.controller.update_help_information,
+                                                         user=self.user)
 
             self.map_widget_1.add_scatter(match_data['lat'], match_data['lat'], marker_id='match_data')
         except GISMOExceptionInvalidOption as e:
@@ -926,9 +972,17 @@ class PageProfile(tk.Frame):
                                                user=self.user,
                                                sticky='nw')
 
-        tkw.grid_configure(frame, nr_rows=1)
+        self.save_all_files_widget = gui.SaveWidget(frame,
+                                                    label='Save all files (filtered)',
+                                                    include_file_name=False,
+                                                    callback=self._callback_save_all_files,
+                                                    user=self.user,
+                                                    sticky='nw',
+                                                    row=1)
 
-    def _set_notebook_frame_save_plots(self):
+        tkw.grid_configure(frame, nr_rows=2)
+
+    def old_set_notebook_frame_save_plots(self):
 
         def on_change_file_format():
             self.user.save.set('plot_file_format', self.combobox_widget_file_format.get_value())
@@ -940,9 +994,9 @@ class PageProfile(tk.Frame):
                 'sticky': 'nsew'}
 
         # Save directory
-        self.save_plots_directory_widget = tkw.DirectoryWidget(frame,
-                                                               label='Save in directory',
-                                                               row=0, columnspan=2, **prop)
+        self.save_plots_directory_widget = tkw.DirectoryWidgetLabelframe(frame,
+                                                                       label='Save in directory',
+                                                                       row=0, columnspan=2, **prop)
         default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
                                          datetime.datetime.now().strftime('%Y%m%d'))
         self.save_plots_directory_widget.set_directory(default_directory)
@@ -962,13 +1016,13 @@ class PageProfile(tk.Frame):
                                                               callback_target=on_change_file_format, row=0)
         self.combobox_widget_file_format.set_value(self.user.save.setdefault('plot_file_format', 'png'))
 
-        self.button_save_time_plot = tk.Button(pic_frame, text='Save time series plot',
-                                               comman=self._save_time_plot)
-        self.button_save_time_plot.grid(row=1, column=0, **prop)
-
-        self.button_save_correlation_plot = tk.Button(pic_frame, text='Save correlation plot',
-                                                      comman=self._save_correlation_plot)
-        self.button_save_correlation_plot.grid(row=2, column=0, **prop)
+        # self.button_save_time_plot = tk.Button(pic_frame, text='Save time series plot',
+        #                                        comman=self._save_time_plot)
+        # self.button_save_time_plot.grid(row=1, column=0, **prop)
+        #
+        # self.button_save_correlation_plot = tk.Button(pic_frame, text='Save correlation plot',
+        #                                               comman=self._save_correlation_plot)
+        # self.button_save_correlation_plot.grid(row=2, column=0, **prop)
 
         tkw.grid_configure(pic_frame, nr_rows=3)
 
@@ -983,31 +1037,37 @@ class PageProfile(tk.Frame):
 
 
         # Export html plot
-        self.save_widget_html = gui.SaveWidgetHTML(frame,
-                                                   label='Show and save time series plots in HTML format',
-                                                   callback=self._callback_save_html,
-                                                   default_directory=self.settings['directory']['Export directory'],
-                                                   user=self.user,
-                                                   sticky='nw',
-                                                   row=2,
-                                                   columnspan=2)
+        # self.save_widget_html = gui.SaveWidgetHTML(frame,
+        #                                            label='Show and save time series plots in HTML format',
+        #                                            callback=self._callback_save_html,
+        #                                            default_directory=self.settings['directory']['Export directory'],
+        #                                            user=self.user,
+        #                                            sticky='nw',
+        #                                            row=2,
+        #                                            columnspan=2)
 
         tkw.grid_configure(frame, nr_rows=3)
 
     def _callback_save_file(self, *args, **kwargs):
-        gui.communicate.save_file(self, self.current_gismo_object, self.save_file_widget)
+        gui.communicate.save_file(self.current_gismo_object, self.save_file_widget)
 
-    def _callback_save_html(self):
+    def _callback_save_all_files(self, *args, **kwargs):
+        gismo_objects = []
+        for file_id in self.select_data_widget.get_filtered_file_id_list():
+            gismo_objects.append(self.session.get_gismo_object(file_id))
+        gui.communicate.save_files(gismo_objects, self.save_all_files_widget)
+
+    def old_callback_save_html(self):
         if self.save_widget_html.has_sufficient_selections():
             self.controller.run_progress(self._save_html, 'Saving plots...')
         else:
             gui.show_information('Missing selection', 'You did not provide enough information for plotting htlm plots.')
 
-    def _save_html(self):
+    def old_save_html(self):
         gui.communicate.save_html_plot(self, self.save_widget_html, flag_widget=self.flag_widget,
                                        save_directory_widget=self.save_plots_directory_widget)
 
-    def _save_correlation_plot(self):
+    def old_save_correlation_plot(self):
         file_format = self.combobox_widget_file_format.get_value()
         # self.current_correlation_plot = 'color_by_depth'
         in_file_name = 'correlation_{}_{}_{}_{}'.format(self.current_parameter, self.current_file_id,
@@ -1015,7 +1075,7 @@ class PageProfile(tk.Frame):
         gui.communicate.save_plot(self, self.plot_object_compare, self.save_plots_directory_widget,
                                   file_format=file_format, in_file_name=in_file_name)
 
-    def _save_time_plot(self, *args, **kwargs):
+    def old_save_time_plot(self, *args, **kwargs):
         file_format = self.combobox_widget_file_format.get_value()
         in_file_name = 'time_series_{}_{}'.format(self.current_parameter, self.current_file_id)
         gui.communicate.save_plot(self, self.plot_object, self.save_plots_directory_widget,
@@ -1077,7 +1137,7 @@ class PageProfile(tk.Frame):
 
         self.current_parameter = self.parameter_widget.get_value()
 
-        self._update_export_parameter_list()
+        # self._update_export_parameter_list()
 
     def _update_export_parameter_list(self):
         # Parameters for exporting
@@ -1124,6 +1184,7 @@ class PageProfile(tk.Frame):
 
         # First plot...
         self._update_plot(call_targets=False)
+        self._on_toggle_ref_data()
 
         # ...then set full range in plot without updating (not calling to update the tk.canvas).
         if self.user.options.setdefault('zoom_to_data_on_parameter_update', True):
@@ -1267,13 +1328,13 @@ class PageProfile(tk.Frame):
         self.current_file_path = ''
         self.current_gismo_object = None
 
-    def _reset_ref_file_id(self):
+    def old_reset_ref_file_id(self):
         self.current_ref_sampling_type = ''
         self.current_ref_file_id = ''
         self.current_ref_file_path = ''
         self.current_ref_gismo_object = None
 
-    def _update_contour_parameters(self):
+    def old_update_contour_parameters(self):
         """
         Creates the contour parameter list and updates the contour parameter widget.
         :return:
@@ -1527,13 +1588,3 @@ class PageProfile(tk.Frame):
         logging.debug('page_fixed_platforms._update_file_reference: End')
         self.controller.update_help_information('Reference file updated: {}'.format(self.current_ref_file_id), bg='green')
 
-
-    def _check_on_remove_file(self):
-        return
-        if not self.stringvar_current_data_file.get():
-            self.plot_object.reset_plot()
-            self._update_map_1()
-            # self._update_map_2()
-            self.save_file_widget.set_file_path()  # Resets the plot
-            # self.save_plot_widget.set_file_path()  # Resets the plot
-            self.save_widget_html.update_parameters([])

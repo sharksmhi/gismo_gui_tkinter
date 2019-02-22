@@ -28,6 +28,7 @@ from core.exceptions import *
 import threading
 import logging
 
+
 all_pages = set()
 
 all_pages.add(gui.PageStart)
@@ -68,9 +69,9 @@ class App(tk.Tk):
         """
         Updated 20181002
         """
+        self.version = '2019.01.1'
 
         tk.Tk.__init__(self, *args, **kwargs)
-
         self.withdraw()
 
         if not all([users_directory, root_directory, log_directory, sampling_types_factory, qc_routines_factory]):
@@ -84,18 +85,41 @@ class App(tk.Tk):
         self.mapping_files_directory = mapping_files_directory
         self.settings_files_directory = settings_files_directory
 
+        # Setting upp GUI logger
+        if not os.path.exists(self.log_directory):
+            os.makedirs(self.log_directory)
+
+        # Format
+        formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(module)s (row=%(lineno)d)\t%(message)s')
+
+
+        # Main gui logger
+        gui_logger = logging.getLogger('gui_logger')
+        gui_logger.setLevel(logging.DEBUG)
+
+        # File logger
+        logger_file_path = os.path.join(self.log_directory, 'gismo_gui_tkinter.log')
+        file_handler = logging.FileHandler(logger_file_path)
+        file_handler.setLevel(logging.WARNING)
+        file_handler.setFormatter(formatter)
+
+        # Console logger
+        # console = logging.StreamHandler()
+        # console.setLevel(logging.ERROR)
+        # console.setFormatter(formatter)
+
+        # Add handlers
+        gui_logger.addHandler(file_handler)
+        # gui_logger.addHandler(console)
+
+
+        gui_logger.info('Starting application')
 
         # Load paths
         self.paths = core.Paths(self.app_directory)
 
         # Load settings files object
         self.settings_files = core.SettingsFiles(self.paths.directory_settings_files)
-
-        
-        # Initiate logging
-        log_file = os.path.join(self.log_directory, 'gismo.log')
-        logging.basicConfig(filename=log_file, filemode='w', level=logging.DEBUG) 
-        logging.info('=== NEW RUN ===')       
         
 
         self.settings = core.Settings(default_settings_file_path=default_settings_file_path,
@@ -538,8 +562,6 @@ class App(tk.Tk):
         self._set_settings(sampling_type, file_path)
 
     def _set_settings(self, sampling_type, file_path):
-        print('sammpling_type', sampling_type)
-        print('file_path', file_path)
         if file_path:
             # Check settings file path
             # settings_file_path = self.combobox_widget_settings_file.get_value()

@@ -11,6 +11,7 @@ import sys
 
 
 #----------------------------------------------------------
+from .communicate import add_compare_to_profile_plot
 from .communicate import add_compare_to_timeseries_plot
 
 from .communicate import flag_data_profile

@@ -650,9 +650,9 @@ class PageTimeSeries(tk.Frame):
                                                   comman=self._compare_data_save_data)
         self.button_compare_save_data.grid(row=0, column=3, sticky='nsew', **pad)
 
-        self.save_correlation_directory_widget = tkw.DirectoryWidget(button_frame,
-                                                                     label='Save directory',
-                                                                     row=1, column=0, columnspan=3)
+        self.save_correlation_directory_widget = tkw.DirectoryWidgetLabelframe(button_frame,
+                                                                               label='Save directory',
+                                                                               row=1, column=0, columnspan=3)
         tkw.grid_configure(button_frame, nr_rows=2, nr_columns=4)
 
         default_directory = os.path.join(self.controller.settings['directory']['Export directory'],
@@ -885,7 +885,7 @@ class PageTimeSeries(tk.Frame):
                 'sticky': 'nsew'}
 
         # Save directory
-        self.save_plots_directory_widget = tkw.DirectoryWidget(frame,
+        self.save_plots_directory_widget = tkw.DirectoryWidgetLabelframe(frame,
                                                                label='Save in directory',
                                                                row=0, columnspan=2, **prop)
         default_directory = os.path.join(self.controller.settings['directory']['Export directory'],

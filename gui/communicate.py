@@ -26,6 +26,40 @@ from tkinter import messagebox
 
 import logging 
 
+def add_compare_to_profile_plot(plot_object=None,
+                                session=None,
+                                file_id=None,
+                                ref_file_id=None,
+                                par=None,
+                                help_info_function=None,
+                                user=None):
+
+    """
+    sample_object is the main GISMOfile.
+    gismo_object is the file where matching data will be extracted from
+    """
+
+    help_info_function('Adding reference data...please wait...')
+
+    match_data = session.get_match_data(file_id, ref_file_id, 'time', 'lat', 'lon', par)
+    # print('='*50)
+    # print('match_data')
+    # print(match_data)
+    if not len(np.where(~np.isnan(np.array(match_data[par])))):
+        help_info_function('No matching data!', bg='red')
+        return
+
+    plot_object.set_data(x=match_data[par],
+                         z=match_data['time'],
+                         line_id='ref_data',
+                         marker=user.plot_profile_ref.setdefault('marker', '*'),
+                         markersize=user.plot_profile_ref.setdefault('markersize', 10),
+                         color=user.plot_profile_ref.setdefault('color', 'red'),
+                         linestyle='None')
+
+    help_info_function('Reference data for parameter {} added!'.format(par), bg='green')
+
+    return match_data
 
 def add_compare_to_timeseries_plot(plot_object=None,
                                    session=None,
@@ -323,7 +357,74 @@ def save_user_info_from_flag_widget(flag_widget, user_object):
     #     user_object.flag_color.set(f, c)
     #     user_object.flag_markersize.set(f, ms)
 
-def save_file(controller, gismo_object, save_widget):
+def save_files(gismo_objects, save_widget):
+    """
+    Saves all gismo objects with original name in directory provided in save_widget.
+    :param gimo_objects:
+    :param save_widget:
+    :return:
+    """
+    directory = save_widget.get_directory()
+    if not os.path.exists(directory):
+        gui.show_information('Missing directory',
+                             'The given directory does not exists:\n{}\n\nNo files saved!'.format(directory))
+        return
+    file_path_mapping = {}
+    file_id_mapping = {}
+    files_to_save = []
+    original_files = []
+    existing_files = []
+    for gismo_object in gismo_objects:
+        file_id = gismo_object.file_id
+        original_file_path = gismo_object.file_path
+        save_file_path = os.path.join(directory, os.path.basename(original_file_path))
+        file_path_mapping[file_id] = save_file_path
+        file_id_mapping[file_id] = gismo_object
+
+        if not os.path.exists(save_file_path):
+            files_to_save.append(file_id)
+        elif os.path.samefile(original_file_path, save_file_path):
+            original_files.append(file_id)
+        elif os.path.exists(save_file_path):
+            existing_files.append(file_id)
+
+
+    # Check original files
+    if original_files:
+        if len(original_files) > 5:
+            text = 'You are trying to save {} files with original file path. ' \
+                   'Do you want to overwrite the original files?'.format(len(original_files))
+        else:
+            text = 'You are trying to save {} files with original file path. ' \
+                   'Do you want to overwrite the following original files?\n\n'.format(len(original_files),
+                                                                                       '\n'.join(sorted(original_files)))
+        if messagebox.askyesno('Overwrite original files?', text):
+            files_to_save.extend(original_files)
+
+    # Existing files
+    if existing_files:
+        if len(existing_files) > 5:
+            text = 'You are trying to save {} files that already exists. ' \
+                   'Do you want to overwrite the existing files?'.format(len(existing_files))
+        else:
+            text = 'You are trying to save {} files that already exists. ' \
+                   'Do you want to overwrite the following files?\n\n{}'.format(len(existing_files),
+                                                                                '\n'.join(sorted(existing_files)))
+        if messagebox.askyesno('Overwrite existing files?', text):
+            files_to_save.extend(existing_files)
+
+    # Save files
+    if files_to_save:
+        for file_id in files_to_save:
+            gismo_object = file_id_mapping[file_id]
+            gismo_object.save_file(file_path=file_path_mapping[file_id], overwrite=True)
+    gui.show_information('Files saved!', '{} files have been saved to directory: \n {}'.format(len(files_to_save),
+                                                                                               directory))
+
+
+
+
+def save_file(gismo_object, save_widget):
     """
     Saves the given gismo_object using the information in save_widget
     save_widget is a gui.SaweWidget object
@@ -332,7 +433,7 @@ def save_file(controller, gismo_object, save_widget):
     :param save_widget:
     :return:
     """
-    if not controller.current_file_id:
+    if not gismo_object:
         gui.show_information('No file loaded', 'Cant save file, no file loaded.')
         return
 
@@ -1661,7 +1762,7 @@ def plot_map_background_data(map_widget=None, session=None, user=None, current_f
     map_widget.delete_all_markers()
     map_widget.delete_all_map_items()
     for sampling_type in session.get_sampling_types():
-        for file_id in session.get_file_id_list(sampling_type):
+        for file_id in session.get_file_id_list(sampling_type=sampling_type):
             if not kwargs.get('exclude_current_file') and file_id == current_file_id:
                 continue
             # print('SAMPLING TYPE:', sampling_type, file_id)
