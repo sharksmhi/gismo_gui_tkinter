@@ -20,14 +20,13 @@ import core
 from libs.sharkpylib.gismo import GISMOsession
 
 from libs.sharkpylib import gismo
+from libs.sharkpylib.log import Logger
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 from libs.sharkpylib.gismo.exceptions import *
 from core.exceptions import *
 
 import threading
-import logging
-
 
 all_pages = set()
 
@@ -40,6 +39,7 @@ all_pages.add(gui.PageAbout)
 all_pages.add(gui.PageTimeSeries)
 all_pages.add(gui.PageMetadata)
 all_pages.add(gui.PageProfile)
+all_pages.add(gui.PageTavastland)
 
 
 class App(tk.Tk):
@@ -89,31 +89,44 @@ class App(tk.Tk):
         if not os.path.exists(self.log_directory):
             os.makedirs(self.log_directory)
 
-        # Format
-        formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(module)s (row=%(lineno)d)\t%(message)s')
+        for file_name in os.listdir(self.log_directory):
+            if file_name.endswith('.log'):
+                try:
+                    os.remove(os.path.join(self.log_directory, file_name))
+                except:
+                    pass
 
-
-        # Main gui logger
-        gui_logger = logging.getLogger('gui_logger')
-        gui_logger.setLevel(logging.DEBUG)
-
-        # File logger
-        logger_file_path = os.path.join(self.log_directory, 'gismo_gui_tkinter.log')
-        file_handler = logging.FileHandler(logger_file_path)
-        file_handler.setLevel(logging.WARNING)
-        file_handler.setFormatter(formatter)
-
-        # Console logger
-        # console = logging.StreamHandler()
-        # console.setLevel(logging.ERROR)
-        # console.setFormatter(formatter)
-
-        # Add handlers
-        gui_logger.addHandler(file_handler)
-        # gui_logger.addHandler(console)
-
-
-        gui_logger.info('Starting application')
+        self.logger_object = Logger(name='gismo_gui', level='DEBUG')
+        self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_debug.log'), level='DEBUG')
+        self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_warning.log'), level='WARNING')
+        self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_error.log'), level='ERROR')
+        self.logger = self.logger_object.get_logger()
+        self.logger.debug('='*100)
+        # # Format
+        # formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(module)s (row=%(lineno)d)\t%(message)s')
+        #
+        #
+        # # Main gui logger
+        # gui_logger = logging.getLogger('gui_logger')
+        # gui_logger.setLevel(logging.DEBUG)
+        #
+        # # File logger
+        # logger_file_path = os.path.join(self.log_directory, 'gismo_gui_tkinter.log')
+        # file_handler = logging.FileHandler(logger_file_path)
+        # file_handler.setLevel(logging.WARNING)
+        # file_handler.setFormatter(formatter)
+        #
+        # # Console logger
+        # # console = logging.StreamHandler()
+        # # console.setLevel(logging.ERROR)
+        # # console.setFormatter(formatter)
+        #
+        # # Add handlers
+        # gui_logger.addHandler(file_handler)
+        # # gui_logger.addHandler(console)
+        #
+        #
+        # gui_logger.info('Starting application')
 
         # Load paths
         self.paths = core.Paths(self.app_directory)
@@ -222,7 +235,8 @@ class App(tk.Tk):
         # self.show_frame(gui.PageStart)
         # self.show_frame(gui.PageUser)
         # self.show_frame(gui.PageTimeSeries)
-        self.show_frame(gui.PageProfile)
+        # self.show_frame(gui.PageProfile)
+        self.show_frame(gui.PageTavastland)
 
         self.update_all()
         self.deiconify()
@@ -503,6 +517,7 @@ class App(tk.Tk):
                                                              callback_delete_button=self._delete_source,
                                                              padx=1,
                                                              pady=1)
+
 #        self.listbox_widget_loaded_files = tkw.ListboxSelectionWidget(frame, 
 #                                                                      sort_selected=True, 
 #                                                                      vertical=True, 
@@ -544,7 +559,6 @@ class App(tk.Tk):
 
         self._set_settings(sampling_type, file_paths[0])
 
-    #===========================================================================
     def _get_data_file_path(self, sampling_type):
         """
         Created     20180821
@@ -809,6 +823,12 @@ class App(tk.Tk):
         if 'gui.page_metadata' in sys.modules:
             self.goto_menu.add_command(label='Metadata',
                                        command=lambda: self.show_frame(gui.PageMetadata))
+
+        # Special menue
+        self.special_menu = tk.Menu(self.goto_menu, tearoff=0)
+        self.special_menu.add_command(label='Tavastland',
+                                      command=lambda: self.show_frame(gui.PageTavastland))
+        self.goto_menu.add_cascade(label='Special', menu=self.special_menu)
 
         self.menubar.add_cascade(label='Goto', menu=self.goto_menu)
 

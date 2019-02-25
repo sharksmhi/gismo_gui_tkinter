@@ -20,13 +20,13 @@ import pandas as pd
 #import shutil
 
 
+import log
 import gui
 
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 import libs.sharkpylib.tklib.tkmap as tkmap
 
-import logging
-gui_logger = logging.getLogger('gui_logger')
+logger = log.get_logger(name='gismo_gui')
 
 """
 ================================================================================
@@ -808,10 +808,10 @@ class AxisSettingsTimeWidget(AxisSettingsBaseWidget):
         # First check so that times are in order
         time_from = self.time_widget_from.get_time_object()
         time_to = self.time_widget_to.get_time_object()
-        print('*'*50)
-        print('_callback_time_widget')
-        print(time_from, type(time_from))
-        print(time_to, type(time_to))
+        # print('*'*50)
+        # print('_callback_time_widget')
+        # print(time_from, type(time_from))
+        # print(time_to, type(time_to))
         if time_to < time_from:
             print('time_to < time_from')
             self.time_widget_to.set_time(datetime_object=time_from)
@@ -1662,7 +1662,7 @@ class QCroutineOptionsPopup(object):
         else:
             self._save_options()
             self._exit(update=True)
-            gui_logger.info('Options saved for qc_routine {}'.format(self.qc_routine))
+            logger.debug('Options saved for qc_routine {}'.format(self.qc_routine))
 
     def _save_options(self):
         # Save to user

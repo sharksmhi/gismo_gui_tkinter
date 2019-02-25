@@ -89,6 +89,8 @@ class User(object):
         self.save = UserSettings(self.user_directory, 'save', **kwargs)
         self.settingsfile = UserSettings(self.user_directory, 'settingsfile', **kwargs)
 
+        self.tavastland = UserSettings(self.user_directory, 'tavastland', **kwargs)
+
 
 class UserSettings(object):
     """
