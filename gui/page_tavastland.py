@@ -167,7 +167,6 @@ class PageTavastland(tk.Frame):
         r+=1
 
         remove_areas_file = self.user.tavastland.setdefault('primary_file_type', 'co2')
-        items
         self.remove_areas_widget = tkw.ComboboxWidget(frame,
                                                            title='Remove areas',
                                                            items=['co2', 'mit'],

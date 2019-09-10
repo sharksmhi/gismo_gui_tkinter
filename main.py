@@ -20,7 +20,7 @@ import core
 from libs.sharkpylib.gismo import GISMOsession
 
 from libs.sharkpylib import gismo
-from libs.sharkpylib.log import Logger
+from libs.sharkpylib.logger import Logger
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 
 from libs.sharkpylib.gismo.exceptions import *

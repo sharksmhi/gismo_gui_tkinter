@@ -20,13 +20,13 @@ import pandas as pd
 #import shutil
 
 
-import log
+import logger
 import gui
 
 import libs.sharkpylib.tklib.tkinter_widgets as tkw
 import libs.sharkpylib.tklib.tkmap as tkmap
 
-logger = log.get_logger(name='gismo_gui')
+logger = logger.get_logger(name='gismo_gui')
 
 """
 ================================================================================
