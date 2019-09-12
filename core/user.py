@@ -56,49 +56,50 @@ class User(object):
         if not os.path.exists(self.user_directory):
             os.mkdir(self.user_directory)
 
-        self.filter = UserSettings(self.user_directory, 'filter', **kwargs)
-        self.flag_color = UserSettings(self.user_directory, 'flag_color', **kwargs)
-        self.flag_markersize = UserSettings(self.user_directory, 'flag_markersize', **kwargs)
-        self.focus = UserSettings(self.user_directory, 'focus', **kwargs)
+        self.filter = UserSettings(self.user_directory, 'filter', self.name, **kwargs)
+        self.flag_color = UserSettings(self.user_directory, 'flag_color', self.name, **kwargs)
+        self.flag_markersize = UserSettings(self.user_directory, 'flag_markersize', self.name, **kwargs)
+        self.focus = UserSettings(self.user_directory, 'focus', self.name, **kwargs)
 
         # layout includes matplotlib styles etc
-        self.layout = UserSettings(self.user_directory, 'layout', **kwargs)
+        self.layout = UserSettings(self.user_directory, 'layout', self.name, **kwargs)
 
-        self.match = UserSettings(self.user_directory, 'match', **kwargs)
-        self.map_boundries = UserSettings(self.user_directory, 'map_boundries', **kwargs)
-        self.map_prop = UserSettings(self.user_directory, 'map_prop', **kwargs)
+        self.match = UserSettings(self.user_directory, 'match', self.name, **kwargs)
+        self.map_boundries = UserSettings(self.user_directory, 'map_boundries', self.name, **kwargs)
+        self.map_prop = UserSettings(self.user_directory, 'map_prop', self.name, **kwargs)
 
-        self.options = UserSettings(self.user_directory, 'options', **kwargs)
+        self.options = UserSettings(self.user_directory, 'options', self.name, **kwargs)
 
-        self.parameter_colormap = UserSettings(self.user_directory, 'parameter_colormap', **kwargs)
-        self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority', **kwargs)
-        self.path = UserSettings(self.user_directory, 'path', **kwargs)
-        self.plot_color = UserSettings(self.user_directory, 'plot_color', **kwargs)
-        self.plot_profile_ref = UserSettings(self.user_directory, 'plot_time_series_ref', **kwargs)
-        self.plot_time_series_ref = UserSettings(self.user_directory, 'plot_time_series_ref', **kwargs)
+        self.parameter_colormap = UserSettings(self.user_directory, 'parameter_colormap', self.name, **kwargs)
+        self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority', self.name, **kwargs)
+        self.path = UserSettings(self.user_directory, 'path', self.name, **kwargs)
+        self.plot_color = UserSettings(self.user_directory, 'plot_color', self.name, **kwargs)
+        self.plot_profile_ref = UserSettings(self.user_directory, 'plot_time_series_ref', self.name, **kwargs)
+        self.plot_time_series_ref = UserSettings(self.user_directory, 'plot_time_series_ref', self.name, **kwargs)
 
         # Save process information like warning for file size etc.
-        self.process = UserSettings(self.user_directory, 'process', **kwargs)
+        self.process = UserSettings(self.user_directory, 'process', self.name, **kwargs)
 
-        self.qc_routine_options = UserSettingsParameter(self.user_directory, 'qc_routine_options', **kwargs)
+        self.qc_routine_options = UserSettingsParameter(self.user_directory, 'qc_routine_options', self.name, **kwargs)
 
-        self.range = UserSettingsParameter(self.user_directory, 'range', **kwargs)
+        self.range = UserSettingsParameter(self.user_directory, 'range', self.name, **kwargs)
 
         # Used for saving sampling depth.
-        self.sampling_depth = UserSettings(self.user_directory, 'sampling_depth', **kwargs)
-        self.save = UserSettings(self.user_directory, 'save', **kwargs)
-        self.settingsfile = UserSettings(self.user_directory, 'settingsfile', **kwargs)
+        self.sampling_depth = UserSettings(self.user_directory, 'sampling_depth', self.name, **kwargs)
+        self.save = UserSettings(self.user_directory, 'save', self.name, **kwargs)
+        self.settingsfile = UserSettings(self.user_directory, 'settingsfile', self.name, **kwargs)
 
-        self.tavastland = UserSettings(self.user_directory, 'tavastland', **kwargs)
+        self.tavastland = UserSettings(self.user_directory, 'tavastland', self.name, **kwargs)
 
 
 class UserSettings(object):
     """
     Baseclass for user settings.
     """
-    def __init__(self, directory, settings_type, time_string_format='%Y-%m-%d %H:%M:%S'):
+    def __init__(self, directory, settings_type, user, time_string_format='%Y-%m-%d %H:%M:%S'):
         self.directory = directory
         self.settings_type = settings_type
+        self.user = user
         self.file_path = os.path.join(self.directory, '{}.json'.format(self.settings_type))
         self.time_string_format = time_string_format
         self.data = {}
@@ -138,6 +139,8 @@ class UserSettings(object):
         Writes information to json file.
         :return:
         """
+        if self.user == 'default':
+            return
         # Convert datetime object to str
         self.datetime_to_datestring()
         # print('=' * 20)
@@ -171,6 +174,8 @@ class UserSettings(object):
         :param value:
         :return:
         """
+        if self.user == 'default':
+            return
         gui_logger.debug('USER-setdefault: {}; {}, {}, {}'.format(self.settings_type, key, type(value), value))
         if self.data.get(key):
             return self.data.get(key)
@@ -187,6 +192,8 @@ class UserSettings(object):
         :param value:
         :return:
         """
+        if self.user == 'default':
+            return
         # print('set1', key, type(value), value)
         # print('set11', key, type(self.data.get(key)), self.data.get(key))
         #gui_logger.debug('USER-set1: {}; {}, {}, {}'.format(self.settings_type, key, type(value), value))
@@ -211,18 +218,22 @@ class UserSettings(object):
         return self.data
 
     def remove(self, key):
+        if self.user == 'default':
+            return
         if key in self.data:
             self.data.pop(key)
             self.save()
 
     def reset(self):
+        if self.user == 'default':
+            return
         self.data = {}
         self.save()
 
 
 class UserSettingsParameter(UserSettings):
-    def __init__(self, directory, settings_type, **kwargs):
-        UserSettings.__init__(self, directory, settings_type, **kwargs)
+    def __init__(self, directory, settings_type, user, **kwargs):
+        UserSettings.__init__(self, directory, settings_type, user, **kwargs)
 
     def setdefault(self, par, key, value, save=True):
         """
@@ -232,6 +243,8 @@ class UserSettingsParameter(UserSettings):
         :param value:
         :return:
         """
+        if self.user == 'default':
+            return
         self.data.setdefault(par, {})
         value = self.data[par].setdefault(key, value)
         if save:
@@ -246,6 +259,8 @@ class UserSettingsParameter(UserSettings):
         :param value:
         :return:
         """
+        if self.user == 'default':
+            return
         self.data.setdefault(par, {})
         self.data[par].setdefault(key, value)
         self.data[par][key] = value
@@ -288,13 +303,15 @@ class UserSettingsParameter(UserSettings):
 
 
 class UserSettingsPriorityList(UserSettings):
-    def __init__(self, directory, settings_type):
-        UserSettings.__init__(self, directory, settings_type)
+    def __init__(self, directory, settings_type, user, **kwargs):
+        UserSettings.__init__(self, directory, settings_type, user, **kwargs)
 
         self.data.setdefault('priority_list', [])
         self.save()
 
     def set_priority(self, item):
+        if self.user == 'default':
+            return
         if item in self.data['priority_list']:
             self.data['priority_list'].pop(self.data['priority_list'].index(item))
         self.data['priority_list'].insert(0, item)
