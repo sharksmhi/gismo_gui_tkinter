@@ -780,6 +780,7 @@ class App(tk.Tk):
                   fg='black')
         kw.update(kwargs)
         self.info_widget.set_text(text, **kw)
+        self.logger.debug(text)
 
     def reset_help_information(self):
         """

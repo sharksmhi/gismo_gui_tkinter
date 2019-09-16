@@ -48,6 +48,15 @@ class UserManager(object):
             pass
         self.users[user_name] = User(user_name, self.users_root_directory)
 
+    def get_default_user_settings(self, settings, key):
+        try:
+            user = self.users['default']
+            settings = getattr(user, settings)
+            value = settings.get(key)
+            return value
+        except:
+            return None
+
 class User(object):
     def __init__(self, name, users_root_directory, **kwargs):
         self.name = name

@@ -1,1 +1,1 @@
-{}
+{"t_delta": "30", "primary_file_type": "mit", "mit_directory": "C:/mw/data/tavastland/MIT", "co2_directory": "C:/mw/data/tavastland/CO2", "export_directory": "C:/mw/git/gismo_gui_tkinter/exports", "time_start": "2018-09-20 00:00:00", "time_end": "2018-09-22 00:00:00", "alert_t_delta_days": 60, "deselected_types": ["EQU", "EQU-DRAIN", "GO TO SLEEP", "STD1z-DRAIN", "WAKE UP"]}
