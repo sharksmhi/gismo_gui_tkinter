@@ -126,13 +126,14 @@ class PageTavastland(tk.Frame):
         # self.booleanvar_use_time_span = tk.BooleanVar()
         # self.booleanvar_use_time_span.set(self.user.tavastland.setdefault('use_t_span', True))
 
-        tk.Label(frame, text='Merge data from file or time span').grid(row=0, column=0, columnspan=2,
+        tk.Label(frame, text='Merge data for moth or time span').grid(row=0, column=0, columnspan=2,
                                                                        sticky='w', padx=padx, pady=pady)
         self.use_widget = tkw.RadiobuttonWidget(frame,
-                                                items=['mit-file', 'co2-file', 'time span'],
+                                                items=['month', 'time span'],
                                                 target=self._toggle_use_time_span,
+                                                row=1,
                                                 sticky='w', padx=padx, pady=pady, columnspan=2)
-        self.use_widget.set_value('time span')
+        self.use_widget.set_value('month')
 
         # self.checkbutton_use_time_span = tk.Checkbutton(frame,
         #                                                 text='Select time span',
@@ -140,14 +141,21 @@ class PageTavastland(tk.Frame):
         #                                                 command=self._toggle_use_time_span)
         # self.checkbutton_use_time_span.grid(row=1, column=0, sticky='w', padx=padx, pady=pady)
 
+        self.month_widget = tkw.TimeWidgetMonthSelector(frame, title='Select month',
+                                                        callback_target=self._save_settings_to_user,
+                                                        sticky='w', padx=padx, pady=pady, row=2, column=0,
+                                                        columnspan=2)
+        year, month = self.user.tavastland.setdefault('selected_month', (None, None))
+        self.month_widget.set(year=year, month=month)
+
         self.time_widget_start = tkw.TimeWidget(frame, title='Start time',
-                                                lowest_time_resolution='day', row=2, column=0,
+                                                lowest_time_resolution='day', row=3, column=0,
                                                 columnspan=2, sticky='nw')
         self.time_widget_end = tkw.TimeWidget(frame, title='End time',
-                                              lowest_time_resolution='day', row=3, column=0,
+                                              lowest_time_resolution='day', row=4, column=0,
                                               columnspan=2, sticky='nw')
 
-        tk.Label(frame, text='Time merge tolerance (in seconds)').grid(row=4, column=0, sticky='w', padx=padx, pady=pady)
+        tk.Label(frame, text='Time merge tolerance (in seconds)').grid(row=5, column=0, sticky='w', padx=padx, pady=pady)
 
         self.time_widget_tolerance = tkw.EntryWidget(frame,
                                                      entry_type='int',
@@ -156,16 +164,16 @@ class PageTavastland(tk.Frame):
                                                      row=4, column=1, sticky='w', padx=padx, pady=pady)
         self.time_widget_tolerance.set_value(self.user.tavastland.setdefault('t_delta', '30'))
 
-        primary_file_type = self.user.tavastland.setdefault('primary_file_type', 'mit')
-        self.primary_file_type_widget = tkw.ComboboxWidget(frame,
-                                                           title='Primary file type',
-                                                           items=['co2', 'mit'],
-                                                           default_item=primary_file_type,
-                                                           callback_target=self._save_settings_to_user,
-                                                           row=5,
-                                                           column=0,
-                                                           columnspan=2,
-                                                           sticky='nw')
+        # primary_file_type = self.user.tavastland.setdefault('primary_file_type', 'mit')
+        # self.primary_file_type_widget = tkw.ComboboxWidget(frame,
+        #                                                    title='Primary file type',
+        #                                                    items=['co2', 'mit'],
+        #                                                    default_item=primary_file_type,
+        #                                                    callback_target=self._save_settings_to_user,
+        #                                                    row=5,
+        #                                                    column=0,
+        #                                                    columnspan=2,
+        #                                                    sticky='nw')
         tkw.grid_configure(frame, nr_rows=6, nr_columns=2)
 
     def _set_frame_merge_data(self):
@@ -220,12 +228,12 @@ class PageTavastland(tk.Frame):
             self.time_widget_start.enable_widget()
             self.time_widget_end.enable_widget()
             self.time_widget_tolerance.enable_widget()
-            #self.user.tavastland.set('use_t_span', True)
+            self.month_widget.disable_widget()
         else:
             self.time_widget_start.disable_widget()
             self.time_widget_end.disable_widget()
             self.time_widget_tolerance.disable_widget()
-            #self.user.tavastland.set('use_t_span', False)
+            self.month_widget.enable_widget()
 
     def _merge_data(self):
         """
@@ -261,34 +269,37 @@ class PageTavastland(tk.Frame):
                         return
                 # Set time range to work with
                 self.handler.set_time_range(time_start=time_start, time_end=time_end)
+            elif 'month' in source:
+                year, month = self.month_widget.get() # year and month as int
+                time_start = datetime.datetime(year, month, 1)
+                time_end = datetime.datetime(year, month+1, 1) - datetime.timedelta(seconds=1)
+                # Set time range to work with
+                self.handler.set_time_range(time_start=time_start, time_end=time_end)
 
-            elif 'mit' in source:
-                selection = self.table_widget_mit.get_selected()
-                if not selection:
-                    gui.show_information('No file selected', 'You have not selected any mit file to use for merge. '
-                                                             'Merge canceled!')
-                    return
-                self.handler.set_time_range(file_id=selection['File name'], file_type='mit')
-            elif 'co2' in source:
-                selection = self.table_widget_co2.get_selected()
-                if not selection:
-                    gui.show_information('No file selected', 'You have not selected any co2 file to use for merge. '
-                                                             'Merge canceled!')
-                    return
-                self.handler.set_time_range(file_id=selection['File name'], file_type='co2')
+
+            # elif 'mit' in source:
+            #     selection = self.table_widget_mit.get_selected()
+            #     if not selection:
+            #         gui.show_information('No file selected', 'You have not selected any mit file to use for merge. '
+            #                                                  'Merge canceled!')
+            #         return
+            #     self.handler.set_time_range(file_id=selection['File name'], file_type='mit')
+            # elif 'co2' in source:
+            #     selection = self.table_widget_co2.get_selected()
+            #     if not selection:
+            #         gui.show_information('No file selected', 'You have not selected any co2 file to use for merge. '
+            #                                                  'Merge canceled!')
+            #         return
+            #     self.handler.set_time_range(file_id=selection['File name'], file_type='co2')
 
             time_delta_seconds = self.time_widget_tolerance.get_value()
-            primary_file_type = self.primary_file_type_widget.get_value()
-            if not all([time_delta_seconds, primary_file_type]):
+            if not all([time_delta_seconds]):
                 gui.show_information('Missing input', 'You have not made all required options to merge data. '
                                                       'Merge canceled!')
                 return
 
             self.controller.update_help_information('Merging data. Please wait...', bg='red')
-            if primary_file_type == 'mit':
-                second_file_type = 'co2'
-            else:
-                second_file_type = 'mit'
+
 
             # Set timedelta
             self.handler.set_time_delta(seconds=int(time_delta_seconds))
@@ -302,7 +313,7 @@ class PageTavastland(tk.Frame):
                 return
 
             # Merge data
-            self.handler.merge_data(primary_file_type, second_file_type)
+            self.handler.merge_data()
             # Calculate pCO2
             self.handler.calculate_pCO2()
 
@@ -360,7 +371,7 @@ class PageTavastland(tk.Frame):
         self.user.tavastland.set('export_directory', self.directory_widget_export.get_directory(), save=False)
         self.user.tavastland.set('mit_directory', self.directory_widget_mit.get_directory(), save=False)
         self.user.tavastland.set('co2_directory', self.directory_widget_co2.get_directory(), save=False)
-        self.user.tavastland.set('primary_file_type', self.primary_file_type_widget.get_value(), save=False)
+        self.user.tavastland.set('selected_month', self.month_widget.get(), save=False)
         self.user.tavastland.set('t_delta', str(self.time_widget_tolerance.get_value()), save=True) # Last one
 
     def _save_time_to_user(self):
