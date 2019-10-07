@@ -11,4 +11,5 @@ class Paths(object):
     def __init__(self, app_directory):
         self.app_directory = app_directory
 
-        self.directory_settings_files = os.path.join(self.app_directory, 'settings_files') 
+        self.directory_settings_files = os.path.join(self.app_directory, 'settings_files')
+        self.directory_mapping_files = os.path.join(self.app_directory, 'mapping_files')

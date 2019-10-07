@@ -15,6 +15,7 @@
 log/*
 temp/* 
 exports/*
+plugins/*
 libs/sharkpylib 
 
 system/settings.pkl

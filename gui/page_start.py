@@ -6,18 +6,6 @@
 
 import tkinter as tk
 
-import gui
-
-
-import logging
-
-pages = set()
-#============================================================================
-# Ferrybox pages
-try:
-    pages.add(gui.PageTimeSeries)
-except:
-    pass
 
 
 
@@ -28,11 +16,11 @@ except:
 """
 class PageStart(tk.Frame):
 
-    def __init__(self, parent, controller, **kwargs):
+    def __init__(self, parent, main_app, **kwargs):
         tk.Frame.__init__(self, parent, **kwargs)
         # parent is the frame "container" in App. contoller is the App class
         self.parent = parent
-        self.controller = controller
+        self.main_app = main_app
 
     
     #===========================================================================
@@ -83,32 +71,39 @@ class PageStart(tk.Frame):
 
         # self.button_texts = {gui.PageFerrybox: 'Ferrybox',
         #                      gui.PageBuoy: 'Buoy'}
-        self.button_texts = {'Ferrybox\nand\nfixed platforms': gui.PageTimeSeries}
-        self.button_colors = {gui.PageTimeSeries: 'sandybrown'}
+        # print('self.main_app.MODULES', self.main_app.get_plugins())
+        self.button_texts = {}
+        self.button_colors = {}
+        color_list = ['sandybrown', 'red', 'blue']
+        for i, (name, plugin) in enumerate(self.main_app.get_plugins().items()):
+            # plugin_app = self.main_app.get_app_class(plugin)
+            self.button_texts[plugin.INFO.get('title', 'Unknown title {}'.format(i))] = name
+            self.button_colors[name] = color_list[i]
         
         r=0
         c=0
         for text in sorted(self.button_texts):
-            page = self.button_texts[text]
-            try:
+            page_name = self.button_texts[text]
+            # try:
                 # text = self.button_texts[page]
-                color = self.button_colors[page] 
-                self.button[page] = tk.Button(self.frames[r][c], 
-                                     text=text, 
-                                     command=lambda x=page: self.controller.show_frame(x),
-                                     font=font, 
-                                     bg=color)
-            
-                self.button[page].grid(row=0, column=0, padx=padx, pady=pady, sticky='nsew') 
-                self.frames[r][c].grid_rowconfigure(0, weight=1)
-                self.frames[r][c].grid_columnconfigure(0, weight=1)
-                c+=1
-                if c >= nr_columns:
-                    c = 0
-                    r += 1
-                print('OK', text, page)
-            except:
-                pass
+            color = self.button_colors[page_name]
+            print('startup', page_name)
+            self.button[page_name] = tk.Button(self.frames[r][c],
+                                 text=text,
+                                 command=lambda x=page_name: self.main_app.show_frame(page_name=x),
+                                 font=font,
+                                 bg=color)
+
+            self.button[page_name].grid(row=0, column=0, padx=padx, pady=pady, sticky='nsew')
+            self.frames[r][c].grid_rowconfigure(0, weight=1)
+            self.frames[r][c].grid_columnconfigure(0, weight=1)
+            c+=1
+            if c >= nr_columns:
+                c = 0
+                r += 1
+            print('OK', text, page_name)
+            # except:
+            #     pass
 
 
     
