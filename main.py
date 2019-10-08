@@ -84,6 +84,8 @@ class MainApp(tk.Tk):
         if not all([users_directory, root_directory, log_directory]):
             raise AttributeError
 
+        self._set_user_settings()
+
         # Load settings and constants (singletons)
         self.app_directory = os.path.dirname(os.path.abspath(__file__))
         self.root_directory = root_directory
@@ -95,14 +97,6 @@ class MainApp(tk.Tk):
         if not os.path.exists(self.log_directory):
             os.makedirs(self.log_directory)
 
-        # for file_name in os.listdir(self.log_directory):
-        #     if file_name.endswith('.log'):
-        #         try:
-        #             os.remove(os.path.join(self.log_directory, file_name))
-        #         except:
-        #             pass
-
-        # self.logger = loglib.get_logger(name='gismo_main')
         # TODO: When to clear log files?
         self.logger = loglib.get_logger(name='gismo_main',
                                         logfiles=[dict(level='DEBUG',
@@ -115,82 +109,17 @@ class MainApp(tk.Tk):
                                                        file_path=os.path.join(self.log_directory,
                                                                               'main_error.log'))
                                                   ])
-        # self.logger_object = Logger(name='gismo_gui', level='DEBUG')
-        # self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_debug.log'), level='DEBUG')
-        # self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_warning.log'),
-        #                                level='WARNING')
-        # self.logger_object.add_logfile(file_path=os.path.join(self.log_directory, 'gismo_gui_error.log'), level='ERROR')
-        # self.logger = self.logger_object.get_logger()
-        self.logger.debug('=' * 100)
-        # # Format
-        # formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(plugin)s (row=%(lineno)d)\t%(message)s')
-        #
-        #
-        # # Main gui logger
-        # gui_logger = logging.getLogger('gui_logger')
-        # gui_logger.setLevel(logging.DEBUG)
-        #
-        # # File logger
-        # logger_file_path = os.path.join(self.log_directory, 'gismo_gui_tkinter.log')
-        # file_handler = logging.FileHandler(logger_file_path)
-        # file_handler.setLevel(logging.WARNING)
-        # file_handler.setFormatter(formatter)
-        #
-        # # Console logger
-        # # console = logging.StreamHandler()
-        # # console.setLevel(logging.ERROR)
-        # # console.setFormatter(formatter)
-        #
-        # # Add handlers
-        # gui_logger.addHandler(file_handler)
-        # # gui_logger.addHandler(console)
-        #
-        #
-        # gui_logger.info('Starting application')
+
+        self.logger.debug('===== START ======')
 
         # Load paths
         self.paths = core.Paths(self.app_directory)
 
-        # Load settings files object
-        # self.settings_files = core.SettingsFiles(self.paths.directory_settings_files)
-# TODO: See if root directory and Settings are necessary
+        # TODO: See if root directory and Settings are necessary
         self.settings = core.Settings(default_settings_file_path=default_settings_file_path,
                                       root_directory=self.root_directory)
 
         self._load_user()
-
-        # # if startup_user
-        # self.user_manager.set_user(startup_user)
-        #
-        #
-        # if startup_user == 'default':  # not in self.user_manager.get_user_list():
-        #     self.user_manager.set_user('default', create_if_missing=True)
-        #     self.settings.change_setting('user', 'Startup user', self.computer_name)
-        #     self.settings.save_settings()
-        # self.user_manager.set_user(self.computer_name, create_if_missing=True)
-        # self.user = self.user_manager.user
-
-        # plt.style.use(self.user.layout.setdefault('plotstyle', self.user.layout.setdefault('plotstyle',
-        #                                                                                    self.settings['default'][
-        #                                                                                        'plotstyle'])))
-
-        # self.boxen = Boxen(open_directory=self.settings['directory']['Input directory'])
-        # self.boxen = core.Boxen(self, root_directory=self.root_directory)
-        # self.session = GISMOsession(root_directory=self.root_directory,
-        #                             users_directory=self.users_directory,
-        #                             log_directory=self.log_directory,
-        #                             mapping_files_directory=self.mapping_files_directory,
-        #                             settings_files_directory=self.settings_files_directory,
-        #                             user=user,
-        #                             sampling_types_factory=sampling_types_factory,
-        #                             qc_routines_factory=qc_routines_factory,
-        #                             save_pkl=False)
-
-        #        CMEMSparameters(self.settings['directory']['CMEMS parameters'])
-        #        CMEMSstations(self.settings['directory']['CMEMS stations'])
-        # self.default_platform_settings = None
-        # self.default_platform_settings = gismo.sampling_types.SamplingTypeSettings(self.settings['directory']['Default ferrybox settings'],
-        #                                                                            root_directory=self.root_directory)
 
         screen_padx = self.settings['general']['Main window indent x']
         screen_pady = self.settings['general']['Main window indent y']
@@ -228,6 +157,7 @@ class MainApp(tk.Tk):
         self._set_menubar()
 
         self.startup_pages()
+        self.user_manager.set_users_directory(self.users_directory)
 
         # Show start page given in settings.ini
         self.page_history = ['PageAbout']
@@ -236,6 +166,9 @@ class MainApp(tk.Tk):
         self.update_all()
         self.deiconify()
 
+    def _set_user_settings(self):
+        self.USER_SETTINGS = [('basic', 'test2')]
+
     def get_root_window_position(self):
         return dict(x=self.winfo_x(),
                     y=self.winfo_y(),
@@ -243,27 +176,50 @@ class MainApp(tk.Tk):
                     h=self.winfo_height())
 
     def _load_user(self):
-        # Load user
-        self.user_manager = core.UserManager(os.path.join(self.app_directory, 'users'))
-        self.computer_name = 'my_computer'
-        try:
-            self.computer_name = socket.gethostname()
-        except:
-            pass
-        default_user = self.settings.get('user', {}).get('Startup user', 'default')
-        startup_user = self.computer_name
-        self.user_manager.set_user('default', create_if_missing=True)
-        self.user = self.user_manager.user
-        if default_user == 'default':
-            if startup_user not in self.user_manager.get_user_list():
-                self.user_manager.add_user(startup_user, default_user)
+        user_directories = {}
+        user_directories[self] = self.users_directory
+        plugins = self.get_plugins()
+        for name, plugin_module in plugins.items():
+            users_dir = plugin_module.INFO.get('users_directory', 'users')
+            if users_dir:
+                user_directories[plugin_module] = os.path.join(self.app_directory, 'plugins', name, users_dir)
+        self.user_manager = core.UserManager(self.users_directory)
+        for plugin_module, directory in user_directories.items():
+            # Load user managers. One for each plugin. We only use one at the end.
+            self.user_manager.set_users_directory(directory)
+            self.computer_name = 'my_computer'
+            try:
+                self.computer_name = socket.gethostname()
+            except:
+                pass
+            default_user = self.settings.get('user', {}).get('Startup user', 'default')
+            startup_user = self.computer_name
+            self.user_manager.set_user('default', create_if_missing=True)
+            # self.user = self.user_manager.user
+            if default_user == 'default':
+                if startup_user not in self.user_manager.get_user_list():
+                    self.user_manager.add_user(startup_user, default_user)
+            else:
+                startup_user = default_user
+            # print('startup_user', startup_user)
+            self.settings.change_setting('user', 'Startup user', startup_user)
+            self.settings.save_settings()
+            self.user_manager.set_user(startup_user, create_if_missing=True)
+            self.user = self.user_manager.user
+
+            self._add_user_settings(plugin_module, user_directory=directory)
+
+    def _add_user_settings(self, plugin_module, user_directory=None):
+        user_settings_list = plugin_module.USER_SETTINGS
+        if not user_settings_list:
+            return
+        if user_directory:
+            directory = user_directory
         else:
-            startup_user = default_user
-        # print('startup_user', startup_user)
-        self.settings.change_setting('user', 'Startup user', startup_user)
-        self.settings.save_settings()
-        self.user_manager.set_user(startup_user, create_if_missing=True)
-        self.user = self.user_manager.user
+            directory = os.path.join(self.app_directory, 'plugins', plugin_module.INFO.get('users_directory', 'users'))
+        for settings_type, name in user_settings_list:
+            self.user_manager.add_user_settings(users_directory=directory, settings_type=settings_type, name=name)
+
 
     # ==========================================================================
     def _set_frame(self):
@@ -390,6 +346,9 @@ class MainApp(tk.Tk):
             self.frames[page_name] = frame
 
         self.activate_binding_keys()
+
+
+
 
 
     # ===========================================================================
@@ -666,11 +625,21 @@ class MainApp(tk.Tk):
         self.frames[main_page].show_frame(sub_page)
         print(2)
 
+    def _get_users_directory_for_plugin(self, plugin_name):
+        plugin_module = PLUGINS.get(plugin_name)
+        if not plugin_module:
+            return None
+        users_directory = plugin_module.INFO.get('users_directory', 'users')
+        if not users_directory:
+            return None
+        user_dir = os.path.join(self.app_directory, 'plugins', plugin_name, users_directory)
+        return user_dir
+
+
     # ===========================================================================
     def show_frame(self, page_name=None, page=None):
         """
         This method brings the given Page to the top of the GUI.
-        Before "raise" call frame startup method.
         Before "raise" call frame startup method.
         This is so that the Page only loads ones.
         """
@@ -681,12 +650,25 @@ class MainApp(tk.Tk):
         if page:
             page_name = APP_TO_PAGE[page]
         frame = self.frames[page_name]
+
+        # Update user directory
+        # Save user name
+        user_name = self.user_manager.user.name
+        print('USER NAME', user_name)
+        user_dir = self._get_users_directory_for_plugin(page_name)
+        if user_dir:
+            self.user_manager.set_users_directory(user_dir)
+        else:
+            self.user_manager.set_users_directory(self.users_directory)
+        self.user_manager.set_user(user_name, create_if_missing=True)
+
         # self.withdraw()
         if not self.pages_started.get(page_name):
             # self.run_progress_in_toplevel(frame.startup, 'Opening page, please wait...')
             frame.startup()
             self.pages_started[page_name] = True
-        # print('CALL UPDATE PAGE', frame)
+
+
         frame.update_page()
         # self.deiconify()
         #             try:

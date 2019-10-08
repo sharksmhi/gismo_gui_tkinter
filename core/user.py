@@ -15,13 +15,23 @@ gui_logger = logging.getLogger('gui_logger')
 
 class UserManager(object):
     def __init__(self, users_root_directory):
+        self.directory_user_settings = {}
+        self.set_users_directory(users_root_directory)
+
+    def set_users_directory(self, users_root_directory):
         self.users_root_directory = users_root_directory
         if not os.path.exists(self.users_root_directory):
             os.mkdir(self.users_root_directory)
         self.users = {}
-        self.user = None # Is the current user
         for user in os.listdir(users_root_directory):
+            print('-', user)
             self.users[user] = User(user, users_root_directory)
+            directory_dict = self.directory_user_settings.get(self.users_root_directory, {})
+            for settings_type in directory_dict:
+                print('--', settings_type)
+                for item in directory_dict[settings_type]:
+                    print('---', item)
+                    self.users[user]._add_user_settings(settings_type, **item)
 
     def set_user(self, user_name, create_if_missing=False):
         if user_name not in self.users:
@@ -48,6 +58,20 @@ class UserManager(object):
             pass
         self.users[user_name] = User(user_name, self.users_root_directory)
 
+    def add_user_settings(self, users_directory=None, settings_type=None, settings_name=None, **kwargs):
+        self.directory_user_settings.setdefault(users_directory, {})
+        kw = dict(name=settings_name)
+        kw.update(kwargs)
+        if settings_type == 'basic':
+            self.directory_user_settings[users_directory].setdefault('basic', [])
+            self.directory_user_settings[users_directory]['basic'].append(kw)
+        elif settings_type == 'parameter':
+            self.directory_user_settings[users_directory].setdefault('parameter', [])
+            self.directory_user_settings[users_directory]['parameter'].append(kw)
+        elif settings_type == 'prioritylist':
+            self.directory_user_settings[users_directory].setdefault('prioritylist', [])
+            self.directory_user_settings[users_directory]['prioritylist'].append(kw)
+
     def get_default_user_settings(self, settings, key):
         try:
             user = self.users['default']
@@ -65,57 +89,35 @@ class User(object):
         if not os.path.exists(self.user_directory):
             os.mkdir(self.user_directory)
 
-        self.filter = UserSettings(self.user_directory, 'filter', self.name, **kwargs)
-        self.flag_color = UserSettings(self.user_directory, 'flag_color', self.name, **kwargs)
-        self.flag_markersize = UserSettings(self.user_directory, 'flag_markersize', self.name, **kwargs)
-        self.focus = UserSettings(self.user_directory, 'focus', self.name, **kwargs)
 
-        # layout includes matplotlib styles etc
-        self.layout = UserSettings(self.user_directory, 'layout', self.name, **kwargs)
+    def _add_user_settings(self, settings_type, **kwargs):
+        print('== _add_settings', settings_type, kwargs)
+        if settings_type == 'basic':
+            obj = UserSettings(directory=self.user_directory, user=self.name, **kwargs)
+        elif settings_type == 'parameter':
+            obj = UserSettingsParameter(directory=self.user_directory, user=self.name, **kwargs)
+        elif settings_type == 'prioritylist':
+            obj = UserSettingsPriorityList(directory=self.user_directory, user=self.name, **kwargs)
+        setattr(self, obj.name, obj)
 
-        self.match = UserSettings(self.user_directory, 'match', self.name, **kwargs)
-        self.map_boundries = UserSettings(self.user_directory, 'map_boundries', self.name, **kwargs)
-        self.map_prop = UserSettings(self.user_directory, 'map_prop', self.name, **kwargs)
-
-        self.options = UserSettings(self.user_directory, 'options', self.name, **kwargs)
-
-        self.parameter_colormap = UserSettings(self.user_directory, 'parameter_colormap', self.name, **kwargs)
-        self.parameter_priority = UserSettingsPriorityList(self.user_directory, 'parameter_priority', self.name, **kwargs)
-        self.path = UserSettings(self.user_directory, 'path', self.name, **kwargs)
-        self.plot_color = UserSettings(self.user_directory, 'plot_color', self.name, **kwargs)
-        self.plot_profile_ref = UserSettings(self.user_directory, 'plot_time_series_ref', self.name, **kwargs)
-        self.plot_time_series_ref = UserSettings(self.user_directory, 'plot_time_series_ref', self.name, **kwargs)
-
-        # Save process information like warning for file size etc.
-        self.process = UserSettings(self.user_directory, 'process', self.name, **kwargs)
-
-        self.qc_routine_options = UserSettingsParameter(self.user_directory, 'qc_routine_options', self.name, **kwargs)
-
-        self.range = UserSettingsParameter(self.user_directory, 'range', self.name, **kwargs)
-
-        # Used for saving sampling depth.
-        self.sampling_depth = UserSettings(self.user_directory, 'sampling_depth', self.name, **kwargs)
-        self.save = UserSettings(self.user_directory, 'save', self.name, **kwargs)
-        self.settingsfile = UserSettings(self.user_directory, 'settingsfile', self.name, **kwargs)
-
-        self.tavastland = UserSettings(self.user_directory, 'tavastland', self.name, **kwargs)
 
 
 class UserSettings(object):
     """
     Baseclass for user settings.
     """
-    def __init__(self, directory, settings_type, user, time_string_format='%Y-%m-%d %H:%M:%S'):
+    def __init__(self, directory=None, name=None, user=None, time_string_format='%Y-%m-%d %H:%M:%S'):
         self.directory = directory
-        self.settings_type = settings_type
+        self.name = name
         self.user = user
-        self.file_path = os.path.join(self.directory, '{}.json'.format(self.settings_type))
+        self.file_path = os.path.join(self.directory, '{}.json'.format(self.name))
         self.time_string_format = time_string_format
         self.data = {}
 
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
+        print('## self.file_path', self.file_path)
         if not os.path.exists(self.file_path):
             self.save()
 
@@ -148,8 +150,8 @@ class UserSettings(object):
         Writes information to json file.
         :return:
         """
-        if self.user == 'default':
-            return
+        # if self.user == 'default':
+        #     return
         # Convert datetime object to str
         self.datetime_to_datestring()
         # print('=' * 20)
@@ -169,7 +171,7 @@ class UserSettings(object):
         :param key:
         :return:
         """
-        gui_logger.debug('USER-get: {}; {}, {}, {}'.format(self.settings_type, key, type(self.data.get(key, if_missing)), self.data.get(key, if_missing)))
+        gui_logger.debug('USER-get: {}; {}, {}, {}'.format(self.name, key, type(self.data.get(key, if_missing)), self.data.get(key, if_missing)))
         return self.data.get(key, if_missing)
 
     def get_keys(self):
@@ -184,8 +186,8 @@ class UserSettings(object):
         :return:
         """
         if self.user == 'default':
-            return
-        gui_logger.debug('USER-setdefault: {}; {}, {}, {}'.format(self.settings_type, key, type(value), value))
+            raise GUIExceptionUserError('Cannot change default user')
+        gui_logger.debug('USER-setdefault: {}; {}, {}, {}'.format(self.name, key, type(value), value))
         if self.data.get(key):
             return self.data.get(key)
         else:
@@ -241,8 +243,8 @@ class UserSettings(object):
 
 
 class UserSettingsParameter(UserSettings):
-    def __init__(self, directory, settings_type, user, **kwargs):
-        UserSettings.__init__(self, directory, settings_type, user, **kwargs)
+    def __init__(self, directory=None, name=None, user=None, **kwargs):
+        UserSettings.__init__(self, directory=directory, name=name, user=user, **kwargs)
 
     def setdefault(self, par, key, value, save=True):
         """
@@ -312,8 +314,8 @@ class UserSettingsParameter(UserSettings):
 
 
 class UserSettingsPriorityList(UserSettings):
-    def __init__(self, directory, settings_type, user, **kwargs):
-        UserSettings.__init__(self, directory, settings_type, user, **kwargs)
+    def __init__(self, directory=None, name=None, user=None, **kwargs):
+        UserSettings.__init__(self, directory=directory, name=name, user=user, **kwargs)
 
         self.data.setdefault('priority_list', [])
         self.save()
