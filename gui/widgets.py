@@ -345,11 +345,11 @@ class InformationPopup(object):
     """
     def __init__(self, controller):
         self.controller = controller
-        self.user = self.controller.user
+        self.user_manager = self.controller.user_manager
 
     def show_information(self, text=''):
 
-        if not self.user.options.setdefault('show_info_popups', True):
+        if not self.user_manager.user.options.setdefault('show_info_popups', True):
             return
 
         padx = 5
@@ -391,7 +391,7 @@ class InformationPopup(object):
         self.controller.update_all()
 
     def _ok_and_forget(self):
-        self.user.options.set('show_info_popups', False)
+        self.user_manager.user.options.set('show_info_popups', False)
         self.popup_frame.destroy()
         # self.controller.deiconify()
         self.controller.update_all()

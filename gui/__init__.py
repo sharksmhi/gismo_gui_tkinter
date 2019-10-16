@@ -7,5 +7,8 @@ from gui.page_about import PageAbout
 from gui.widgets import InformationPopup
 from gui.widgets import SaveWidget
 from gui.widgets import SaveWidgetHTML
+from gui.widgets import show_information
+from gui.widgets import show_error
+from gui.widgets import show_warning
 
 from gui import communicate

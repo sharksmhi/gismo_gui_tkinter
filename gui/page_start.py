@@ -74,7 +74,7 @@ class PageStart(tk.Frame):
         # print('self.main_app.MODULES', self.main_app.get_plugins())
         self.button_texts = {}
         self.button_colors = {}
-        color_list = ['sandybrown', 'red', 'blue']
+        color_list = ['sandybrown', 'red', 'blue', 'green']
         for i, (name, plugin) in enumerate(self.main_app.get_plugins().items()):
             # plugin_app = self.main_app.get_app_class(plugin)
             self.button_texts[plugin.INFO.get('title', 'Unknown title {}'.format(i))] = name

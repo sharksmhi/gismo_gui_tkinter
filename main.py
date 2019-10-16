@@ -38,8 +38,7 @@ ALL_PAGES['PageAbout'] = gui.PageAbout
 PLUGINS = {}
 for plugin in plugins.PLUGIN_LIST:
     PLUGINS[plugin] = importlib.import_module('plugins.{}'.format(plugin), '.')
-    plugin_app = PLUGINS[plugin].app.App
-    ALL_PAGES[plugin] = plugin_app
+    plugin_app = PLUGINS[plugin].App
     ALL_PAGES[plugin] = plugin_app
 
 APP_TO_PAGE = dict()
@@ -167,7 +166,7 @@ class MainApp(tk.Tk):
         self.deiconify()
 
     def _set_user_settings(self):
-        self.USER_SETTINGS = [('basic', 'test2')]
+        self.USER_SETTINGS = []
 
     def get_root_window_position(self):
         return dict(x=self.winfo_x(),
@@ -190,6 +189,7 @@ class MainApp(tk.Tk):
             self.computer_name = 'my_computer'
             try:
                 self.computer_name = socket.gethostname()
+                # os.path.expanduser('~').split('\\')[-1]
             except:
                 pass
             default_user = self.settings.get('user', {}).get('Startup user', 'default')
@@ -217,8 +217,10 @@ class MainApp(tk.Tk):
             directory = user_directory
         else:
             directory = os.path.join(self.app_directory, 'plugins', plugin_module.INFO.get('users_directory', 'users'))
-        for settings_type, name in user_settings_list:
-            self.user_manager.add_user_settings(users_directory=directory, settings_type=settings_type, name=name)
+        for settings_type, settings_name in user_settings_list:
+            self.user_manager.add_user_settings(users_directory=directory,
+                                                settings_type=settings_type,
+                                                settings_name=settings_name)
 
 
     # ==========================================================================
@@ -422,12 +424,17 @@ class MainApp(tk.Tk):
 
         # ======================================================================================
         for name, plugin in PLUGINS.items():
+            sub_pages = PLUGINS[name].INFO.get('sub_pages', [])
             title = plugin.INFO.get('title')
-            special_menu = tk.Menu(self.plugins_menu, tearoff=0)
-            for sub_page in PLUGINS[name].INFO.get('sub_pages', []):
-                special_menu.add_command(label=sub_page.get('title'),
-                                         command=lambda x=name, y=sub_page.get('name'): self.show_subframe(x, y))
-            self.plugins_menu.add_cascade(label=title, menu=special_menu)
+            if sub_pages:
+                special_menu = tk.Menu(self.plugins_menu, tearoff=0)
+                for sub_page in sub_pages:
+                    special_menu.add_command(label=sub_page.get('title'),
+                                             command=lambda x=name, y=sub_page.get('name'): self.show_subframe(x, y))
+                self.plugins_menu.add_cascade(label=title, menu=special_menu)
+            else:
+                self.plugins_menu.add_command(label=title,
+                                         command=lambda x=name: self.show_frame(x))
 
         self.menubar.add_cascade(label='Plugins', menu=self.plugins_menu)
         # ======================================================================================

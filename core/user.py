@@ -5,6 +5,7 @@ import shutil
 import json
 import datetime
 import pandas as pd
+import socket
 
 from core.exceptions import *
 
@@ -16,7 +17,6 @@ gui_logger = logging.getLogger('gui_logger')
 class UserManager(object):
     def __init__(self, users_root_directory):
         self.directory_user_settings = {}
-        self.set_users_directory(users_root_directory)
 
     def set_users_directory(self, users_root_directory):
         self.users_root_directory = users_root_directory
@@ -24,14 +24,20 @@ class UserManager(object):
             os.mkdir(self.users_root_directory)
         self.users = {}
         for user in os.listdir(users_root_directory):
-            print('-', user)
+            if user == '.active':
+                continue
+            # print('-', user)
             self.users[user] = User(user, users_root_directory)
             directory_dict = self.directory_user_settings.get(self.users_root_directory, {})
             for settings_type in directory_dict:
-                print('--', settings_type)
+                # print('--', settings_type)
                 for item in directory_dict[settings_type]:
-                    print('---', item)
+                    # print('---', item)
                     self.users[user]._add_user_settings(settings_type, **item)
+        try:
+            self.set_active_user()
+        except GUIExceptionUserError:
+            pass
 
     def set_user(self, user_name, create_if_missing=False):
         if user_name not in self.users:
@@ -40,11 +46,13 @@ class UserManager(object):
             else:
                 raise GUIExceptionUserError('Invalid user name: {}'.format(user_name))
         self.user = self.users.get(user_name)
+        self._save_active_user(user_name)
 
     def get_user_list(self):
         return sorted(self.users)
 
     def add_user(self, user_name, from_user=None):
+        print('¤¤¤', self.users_root_directory)
         if user_name in self.users:
             raise GUIExceptionUserError('User already exists')
         if from_user:
@@ -81,6 +89,35 @@ class UserManager(object):
         except:
             return None
 
+    def load_active_user(self):
+        """
+        Looks in the active user file to find the latest active user. If no file found the computer name is the user.
+        :return:
+        """
+        pass
+
+    def set_active_user(self):
+        active_user = self._get_active_user()
+        self.set_user(active_user)
+
+    def _get_active_user_file_path(self):
+        return os.path.join(self.users_root_directory, '.active')
+
+    def _get_active_user(self):
+        file_path = self._get_active_user_file_path()
+        if not os.path.exists(file_path):
+            active_user = socket.gethostname()
+        else:
+            with open(file_path) as fid:
+                active_user = fid.readline().strip()
+        return active_user
+
+    def _save_active_user(self, user):
+        file_path = self._get_active_user_file_path()
+        with open(file_path, 'w') as fid:
+            fid.write(user)
+
+
 class User(object):
     def __init__(self, name, users_root_directory, **kwargs):
         self.name = name
@@ -91,7 +128,6 @@ class User(object):
 
 
     def _add_user_settings(self, settings_type, **kwargs):
-        print('== _add_settings', settings_type, kwargs)
         if settings_type == 'basic':
             obj = UserSettings(directory=self.user_directory, user=self.name, **kwargs)
         elif settings_type == 'parameter':
@@ -117,7 +153,6 @@ class UserSettings(object):
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
 
-        print('## self.file_path', self.file_path)
         if not os.path.exists(self.file_path):
             self.save()
 
